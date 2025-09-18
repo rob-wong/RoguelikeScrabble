@@ -62,7 +62,7 @@ class HomeScreenViewModelImpl @Inject constructor(
 
     private fun onRoutines() {
         viewModelScope.launch(dispatcherProvider.main) {
-            navigationReducer.update(NavigationAction.GoTo(NavigationPage.BaseRoutineScreen))
+//            navigationReducer.update(NavigationAction.GoTo(NavigationPage.BaseRoutineScreen))
         }
     }
 

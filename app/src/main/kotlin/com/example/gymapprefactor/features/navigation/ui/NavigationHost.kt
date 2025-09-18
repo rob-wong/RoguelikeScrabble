@@ -6,14 +6,10 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import com.example.gymapprefactor.features.exercises.pick.ui.PickExerciseRouter
-import com.example.gymapprefactor.features.exercises.setup.ui.SetupExerciseScreenRouter
 import com.example.gymapprefactor.features.homeScreen.ui.HomeScreenRouter
 import com.example.gymapprefactor.features.navigation.presentation.models.NavigationPage.*
 import com.example.gymapprefactor.features.navigation.presentation.models.NavigationState
 import com.example.gymapprefactor.features.navigation.presentation.viewmodel.NavigationViewModelImpl
-import com.example.gymapprefactor.features.routines.base.ui.BaseRoutineScreenRouter
-import com.example.gymapprefactor.features.routines.edit.ui.EditRoutineScreenRouter
 
 @Composable
 fun NavigationHost(
@@ -49,9 +45,6 @@ fun NavigationPageRouter(
 ) {
     when(state.page) {
         is HomeScreen -> HomeScreenRouter()
-        is BaseRoutineScreen -> BaseRoutineScreenRouter()
-        is EditRoutineScreen -> EditRoutineScreenRouter()
-        is PickExerciseScreen -> PickExerciseRouter()
-        is SetupExerciseScreen -> SetupExerciseScreenRouter()
+        else -> Unit
     }
 }
