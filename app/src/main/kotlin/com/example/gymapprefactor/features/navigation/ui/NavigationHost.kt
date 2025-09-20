@@ -45,6 +45,5 @@ fun NavigationPageRouter(
 ) {
     when(state.page) {
         is HomeScreen -> HomeScreenRouter()
-        else -> Unit
     }
 }
