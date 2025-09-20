@@ -1,5 +1,6 @@
 package com.example.gymapprefactor.common.components.ui
 
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -29,7 +30,7 @@ fun ScreenBackgroundContent(
 	painter: Painter,
 	modifier: Modifier = Modifier
 ) {
-	androidx.compose.foundation.Image(
+	Image(
 		painter = painter,
 		contentDescription = null,
 		modifier = modifier.fillMaxSize(),
