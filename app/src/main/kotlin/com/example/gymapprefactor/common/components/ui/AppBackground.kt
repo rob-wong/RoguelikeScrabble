@@ -10,8 +10,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.tooling.preview.Preview
 import com.example.gymapprefactor.app.util.DeviceUtil
-import com.example.gymapprefactor.ui.theme.BackgroundOrange
-import com.example.gymapprefactor.ui.theme.BackgroundRed
+import com.example.gymapprefactor.ui.theme.AliceBlue
+import com.example.gymapprefactor.ui.theme.DarkGrey
 
 @Composable
 fun AppBackground(
@@ -30,7 +30,7 @@ fun AppBackground(
 
 private fun Modifier.backgroundGradient() = this.background(
     brush = Brush.radialGradient(
-        colors = listOf(BackgroundOrange, BackgroundRed),
+        colors = listOf(DarkGrey, AliceBlue),
         center = gradientCornerRouter(),
         radius = DeviceUtil.getColumnWidthPx(backgroundRadiusRouter())
     )
