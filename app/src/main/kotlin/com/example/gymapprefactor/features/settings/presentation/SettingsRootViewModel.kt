@@ -5,6 +5,8 @@ import androidx.lifecycle.viewModelScope
 import com.example.gymapprefactor.app.util.dispatcher.DispatcherProvider
 import com.example.gymapprefactor.common.components.presentation.IconButtonState
 import com.example.gymapprefactor.common.components.presentation.ImageState
+import com.example.gymapprefactor.features.dialogs.presentation.models.DialogAction
+import com.example.gymapprefactor.features.dialogs.presentation.state.DialogReducer
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -15,6 +17,7 @@ abstract class SettingsRootViewModel : ViewModel() { abstract val state: Flow<Se
 
 @HiltViewModel
 class SettingsRootViewModelImpl @Inject constructor(
+	private val dialogReducer: DialogReducer,
 	private val dispatcherProvider: DispatcherProvider,
 ) : SettingsRootViewModel() {
 	override val state = MutableStateFlow<SettingsRootState>(SettingsRootState.None)
@@ -27,10 +30,26 @@ class SettingsRootViewModelImpl @Inject constructor(
 		viewModelScope.launch(dispatcherProvider.default) {
 			state.value = SettingsRootState.Content(
 				settingsButton = IconButtonState.Content(
-					onClick = { },
+					onClick = ::openSettingsDialog,
 					image = ImageState.SettingsButton
 				)
 			)
+		}
+	}
+
+	private fun openSettingsDialog() {
+		viewModelScope.launch(dispatcherProvider.main) {
+			println("Settings Button Pressed")
+			dialogReducer.update(DialogAction.TriggerDialog(
+				onDismiss = ::onDismissDialog,
+				title = ""
+			))
+		}
+	}
+
+	private fun onDismissDialog() {
+		viewModelScope.launch(dispatcherProvider.main) {
+			dialogReducer.update(DialogAction.ClearDialogs)
 		}
 	}
 }

@@ -1,38 +1,44 @@
 package com.example.gymapprefactor.common.components.ui
 
 import androidx.compose.foundation.Image
-import androidx.compose.foundation.background
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.tooling.preview.Preview
 import com.example.gymapprefactor.R
+import com.example.gymapprefactor.app.util.fitAspect
 import com.example.gymapprefactor.common.components.presentation.ImageState
 import com.example.gymapprefactor.common.components.presentation.ImageState.*
 
 @Composable
 fun ImageRouter(
 	state: ImageState,
-	modifier: Modifier = Modifier
+	modifier: Modifier = Modifier,
+	isLandscape: Boolean = false,
+	contentScale: ContentScale = ContentScale.Crop,
 ) {
 	val painter = when (state) {
 		is SettingsButton -> painterResource(R.drawable.settings_gear)
+		is DialogBackground -> if (isLandscape) {
+			painterResource(R.drawable.dialog_background_landscape)
+		} else {
+			painterResource(R.drawable.dialog_background_portrait)
+		}
 	}
-
 	Image(
 		painter = painter,
 		contentDescription = null,
-		modifier = modifier.background(color = Color.Transparent),
+		modifier = modifier
+			.fitAspect(painter),
 		alignment = Alignment.Center,
-		contentScale = ContentScale.Crop,
+		contentScale = contentScale
 	)
 }
 
 @Composable
 @Preview
 private fun ImageRouterPreview() {
-	ImageRouter(SettingsButton)
+	ImageRouter(DialogBackground, Modifier, false, ContentScale.FillWidth)
 }

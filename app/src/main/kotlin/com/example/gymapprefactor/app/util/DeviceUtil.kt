@@ -28,7 +28,7 @@ object DeviceUtil {
     }
 
     private fun determineScreenOrientation(screenWidth: Int, screenHeight: Int) {
-        isLandscape = screenWidth > screenHeight
+        isLandscape = screenWidth >= screenHeight
     }
 
     private fun calculateColumnSize(screenWidth: Int, density: Float) {
