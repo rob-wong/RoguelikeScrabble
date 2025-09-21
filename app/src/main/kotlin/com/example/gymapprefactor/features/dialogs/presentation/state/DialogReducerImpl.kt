@@ -17,7 +17,7 @@ class DialogReducerImpl : DialogReducer {
 
 	private fun setDialogContent(action: DialogAction.TriggerDialog): DialogState {
 		return with(action) {
-			DialogState.Content( onDismiss, title)
+			DialogState.Content(onDismiss, title)
 		}
 	}
 }

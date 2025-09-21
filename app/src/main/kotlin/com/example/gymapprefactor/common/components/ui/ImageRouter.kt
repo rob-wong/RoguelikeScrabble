@@ -20,12 +20,17 @@ fun ImageRouter(
 	contentScale: ContentScale = ContentScale.Crop,
 ) {
 	val painter = when (state) {
-		is SettingsButton -> painterResource(R.drawable.settings_gear)
-		is DialogBackground -> if (isLandscape) {
+		ResourceBarBackground -> painterResource(R.drawable.resource_bar)
+		SettingsButton -> painterResource(R.drawable.settings_gear)
+		DialogBackground -> if (isLandscape) {
 			painterResource(R.drawable.dialog_background_landscape)
 		} else {
 			painterResource(R.drawable.dialog_background_portrait)
 		}
+
+		GlyphIcon -> painterResource(R.drawable.icon_glyph)
+		RuneIcon -> painterResource(R.drawable.icon_rune)
+		None -> return
 	}
 	Image(
 		painter = painter,

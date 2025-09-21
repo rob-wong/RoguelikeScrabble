@@ -20,6 +20,7 @@ import com.example.gymapprefactor.app.util.DeviceUtil
 import com.example.gymapprefactor.app.util.SpacerUtil
 import com.example.gymapprefactor.common.components.presentation.ScreenBackgroundState
 import com.example.gymapprefactor.common.components.ui.ButtonRouter
+import com.example.gymapprefactor.common.components.ui.ResourceBarRouter
 import com.example.gymapprefactor.common.components.ui.ScreenBackgroundRouter
 import com.example.gymapprefactor.features.homeScreen.presentation.models.HomeScreenState
 import com.example.gymapprefactor.features.homeScreen.presentation.viewmodel.HomeScreenViewModelImpl
@@ -49,7 +50,10 @@ private fun HomeScreenLayout(
         modifier = modifier
     ) {
         ScreenBackgroundRouter(ScreenBackgroundState.Home)
-        HomeScreenContent(state, Modifier)
+        Column(horizontalAlignment = Alignment.CenterHorizontally) {
+            ResourceBarRouter(state.resourceBar)
+            HomeScreenContent(state, Modifier)
+        }
     }
 }
 

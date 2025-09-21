@@ -26,7 +26,7 @@ fun ScreenBackgroundRouter(
 	}
 }
 @Composable
-fun ScreenBackgroundContent(
+private fun ScreenBackgroundContent(
 	painter: Painter,
 	modifier: Modifier = Modifier
 ) {

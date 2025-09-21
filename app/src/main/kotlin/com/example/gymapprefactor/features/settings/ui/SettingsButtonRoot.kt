@@ -36,7 +36,9 @@ private fun SettingsRootContent(
 		modifier = modifier,
 		contentAlignment = Alignment.TopStart
 	) {
-		ButtonRouter(state.settingsButton)
+		ButtonRouter(
+			state.settingsButton
+		)
 	}
 }
 

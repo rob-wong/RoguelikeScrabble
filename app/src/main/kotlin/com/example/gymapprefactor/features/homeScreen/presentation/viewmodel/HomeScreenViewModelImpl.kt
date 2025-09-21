@@ -8,7 +8,6 @@ import com.example.gymapprefactor.common.components.presentation.adapters.Rectan
 import com.example.gymapprefactor.features.homeScreen.presentation.models.HomeScreenAction
 import com.example.gymapprefactor.features.homeScreen.presentation.state.HomeScreenReducer
 import com.example.gymapprefactor.features.navigation.presentation.models.NavigationAction
-import com.example.gymapprefactor.features.navigation.presentation.models.NavigationPage
 import com.example.gymapprefactor.features.navigation.presentation.state.NavigationReducer
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.launch
@@ -34,6 +33,7 @@ class HomeScreenViewModelImpl @Inject constructor(
                 onExercises = mapOnExercisesButton(),
                 onViewStats = mapOnViewStatsButton(),
                 topBarState = getTopBar(),
+                runesCount = 30 // TODO use a data model
             ))
         }
     }

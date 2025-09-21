@@ -2,11 +2,13 @@ package com.example.gymapprefactor.features.homeScreen.presentation.models
 
 import com.example.gymapprefactor.business.interfaces.State
 import com.example.gymapprefactor.common.components.presentation.ButtonState
+import com.example.gymapprefactor.common.components.presentation.ResourceBarState
 import com.example.gymapprefactor.common.components.presentation.TopBarState
 
 sealed class HomeScreenState: State {
 
     data class Content (
+        val resourceBar: ResourceBarState,
         val onExercises: ButtonState,
         val onRoutines: ButtonState,
         val onViewStats: ButtonState,
