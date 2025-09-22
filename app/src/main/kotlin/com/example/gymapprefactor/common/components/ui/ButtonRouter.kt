@@ -4,6 +4,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import com.example.gymapprefactor.common.components.presentation.ButtonState
 import com.example.gymapprefactor.common.components.presentation.FoldingButtonState
+import com.example.gymapprefactor.common.components.presentation.IconButtonState
 import com.example.gymapprefactor.common.components.presentation.RectangleButtonState
 
 @Composable
@@ -14,5 +15,6 @@ fun ButtonRouter(
     when(state) {
         is FoldingButtonState -> FoldingButtonRouter(state, modifier)
         is RectangleButtonState -> RectangleButtonRouter(state, modifier)
+        is IconButtonState -> IconButtonRouter(state, modifier)
     }
 }

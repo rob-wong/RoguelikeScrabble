@@ -11,8 +11,11 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.RectangleShape
+import androidx.compose.ui.text.font.Font
+import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import com.example.gymapprefactor.R
 import com.example.gymapprefactor.app.util.DeviceUtil
 import com.example.gymapprefactor.app.util.SpacerUtil
 import com.example.gymapprefactor.common.components.presentation.RectangleButtonState
@@ -61,8 +64,8 @@ private fun RectangularButton(
     ) {
         Text(
             text = text,
-            maxLines = 1
-//            style = TextStyle(fontFamily = FontFamily(Font(R.font.noto_sc))),
+            maxLines = 1,
+            fontFamily = FontFamily(Font(R.font.pixel_operator)),
         )
     }
 }

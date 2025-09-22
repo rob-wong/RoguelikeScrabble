@@ -1,6 +1,7 @@
 package com.example.gymapprefactor.features.homeScreen.ui
 
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -10,15 +11,17 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.tooling.preview.PreviewParameter
 import androidx.compose.ui.unit.Dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.example.gymapprefactor.app.util.DevicePreviews
 import com.example.gymapprefactor.app.util.DeviceUtil
 import com.example.gymapprefactor.app.util.SpacerUtil
+import com.example.gymapprefactor.common.components.presentation.ScreenBackgroundState
 import com.example.gymapprefactor.common.components.ui.ButtonRouter
-import com.example.gymapprefactor.common.components.ui.TopBarRouter
+import com.example.gymapprefactor.common.components.ui.ResourceBarRouter
+import com.example.gymapprefactor.common.components.ui.ScreenBackgroundRouter
 import com.example.gymapprefactor.features.homeScreen.presentation.models.HomeScreenState
 import com.example.gymapprefactor.features.homeScreen.presentation.viewmodel.HomeScreenViewModelImpl
 import com.example.gymapprefactor.features.homeScreen.ui.preview.HomeScreenProvider
@@ -33,8 +36,24 @@ fun HomeScreenRouter(
     )
 
     when(val state = screenState) {
-        is HomeScreenState.Content -> HomeScreenContent(state, modifier)
+        is HomeScreenState.Content -> HomeScreenLayout(state, modifier)
         is HomeScreenState.None -> Unit
+    }
+}
+
+@Composable
+private fun HomeScreenLayout(
+    state: HomeScreenState.Content,
+    modifier: Modifier = Modifier,
+) {
+    Box(
+        modifier = modifier
+    ) {
+        ScreenBackgroundRouter(ScreenBackgroundState.Home)
+        Column(horizontalAlignment = Alignment.CenterHorizontally) {
+            ResourceBarRouter(state.resourceBar)
+            HomeScreenContent(state, Modifier)
+        }
     }
 }
 
@@ -43,7 +62,6 @@ fun HomeScreenContent(
     state: HomeScreenState.Content,
     modifier: Modifier = Modifier,
 ) {
-    TopBarRouter(state = state.topBarState)
     Column(
         modifier = modifier
             .fillMaxSize()
@@ -74,10 +92,10 @@ private fun homeScreenColumnPaddingRouter(): Dp {
     }
 }
 
-@Preview
+@DevicePreviews
 @Composable
 internal fun HomeScreenPreview(
     @PreviewParameter(HomeScreenProvider::class) state: HomeScreenState.Content
 ) {
-    HomeScreenContent(state)
+    HomeScreenLayout(state)
 }

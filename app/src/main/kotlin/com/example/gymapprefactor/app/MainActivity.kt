@@ -10,7 +10,9 @@ import androidx.compose.ui.graphics.Color
 import com.example.gymapprefactor.app.util.DeviceUtil
 import com.example.gymapprefactor.business.models.AppDataModel
 import com.example.gymapprefactor.common.components.ui.AppBackground
+import com.example.gymapprefactor.features.dialogs.ui.DialogRoot
 import com.example.gymapprefactor.features.navigation.ui.NavigationHost
+import com.example.gymapprefactor.features.settings.ui.SettingsRoot
 import dagger.hilt.android.AndroidEntryPoint
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
@@ -34,5 +36,8 @@ private fun LaunchAppContent() {
         color = Color.Transparent,
     ) {
         NavigationHost()
+        
+        SettingsRoot()
+        DialogRoot()
     }
 }
