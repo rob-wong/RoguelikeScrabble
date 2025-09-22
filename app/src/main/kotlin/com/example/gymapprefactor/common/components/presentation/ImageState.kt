@@ -7,5 +7,6 @@ sealed class ImageState {
 
 	data object RuneIcon : ImageState()
 	data object GlyphIcon : ImageState()
+	data object ShopIcon : ImageState()
 	data object None : ImageState()
 }

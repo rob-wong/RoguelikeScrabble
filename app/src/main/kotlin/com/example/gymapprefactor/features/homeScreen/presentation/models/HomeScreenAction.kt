@@ -6,6 +6,7 @@ import com.example.gymapprefactor.common.components.presentation.TopBarState
 
 sealed class HomeScreenAction: Action {
     data class SetContent(
+        val navigateToShop: () -> Unit,
         val runesCount: Int,
         val onExercises: ButtonState,
         val onRoutines: ButtonState,

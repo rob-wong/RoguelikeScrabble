@@ -1,0 +1,31 @@
+package com.example.gymapprefactor.features.shop.presentation.viewmodel
+
+import androidx.lifecycle.viewModelScope
+import com.example.gymapprefactor.app.util.dispatcher.DispatcherProvider
+import com.example.gymapprefactor.features.shop.presentation.models.ShopScreenAction
+import com.example.gymapprefactor.features.shop.presentation.state.ShopScreenReducer
+import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.launch
+import javax.inject.Inject
+
+@HiltViewModel
+class ShopScreenViewModelImpl @Inject constructor(
+	private val shopScreenReducer: ShopScreenReducer,
+	private val dispatcherProvider: DispatcherProvider
+): ShopScreenViewModel() {
+	override val state = shopScreenReducer.state
+
+	init {
+		setContent()
+	}
+
+	private fun setContent() {
+		viewModelScope.launch(dispatcherProvider.default) {
+			shopScreenReducer.update(
+				ShopScreenAction.SetContent(
+					runesCount = 20
+				)
+			)
+		}
+	}
+}

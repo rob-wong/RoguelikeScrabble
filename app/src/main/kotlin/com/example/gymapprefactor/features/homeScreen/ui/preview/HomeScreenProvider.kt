@@ -1,6 +1,7 @@
 package com.example.gymapprefactor.features.homeScreen.ui.preview
 
 import androidx.compose.ui.tooling.preview.PreviewParameterProvider
+import com.example.gymapprefactor.common.components.presentation.IconButtonState
 import com.example.gymapprefactor.common.components.presentation.ImageState
 import com.example.gymapprefactor.common.components.presentation.RectangleButtonState
 import com.example.gymapprefactor.common.components.presentation.ResourceBarState
@@ -34,7 +35,11 @@ class HomeScreenProvider : PreviewParameterProvider<HomeScreenState.Content> {
 				onClick = { },
 				text = "View Stats"
 			),
-			topBarState = TopBarState.Content(title = "Home Screen", onBack = { })
+			topBarState = TopBarState.Content(title = "Home Screen", onBack = { }),
+			shopButton = IconButtonState.Content(
+				onClick = { },
+				image = ImageState.ShopIcon,
+			)
 		)
 	)
 }

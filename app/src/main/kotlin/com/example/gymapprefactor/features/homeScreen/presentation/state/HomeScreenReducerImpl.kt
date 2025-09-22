@@ -1,5 +1,7 @@
 package com.example.gymapprefactor.features.homeScreen.presentation.state
 
+import com.example.gymapprefactor.common.components.presentation.ButtonState
+import com.example.gymapprefactor.common.components.presentation.IconButtonState
 import com.example.gymapprefactor.common.components.presentation.ImageState
 import com.example.gymapprefactor.common.components.presentation.ResourceBarState
 import com.example.gymapprefactor.features.homeScreen.presentation.models.HomeScreenAction
@@ -24,6 +26,7 @@ class HomeScreenReducerImpl : HomeScreenReducer {
                 onExercises = onExercises,
                 onViewStats = onViewStats,
                 topBarState = topBarState,
+                shopButton = mapShopButton(action)
             )
         }
     }
@@ -40,6 +43,13 @@ class HomeScreenReducerImpl : HomeScreenReducer {
                 amount = "0",
                 icon = ImageState.None
             )
+        )
+    }
+
+    private fun mapShopButton(action: HomeScreenAction.SetContent): ButtonState {
+        return IconButtonState.Content(
+	        onClick = action.navigateToShop,
+	        image = ImageState.ShopIcon,
         )
     }
 }

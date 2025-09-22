@@ -10,6 +10,7 @@ import com.example.gymapprefactor.features.homeScreen.ui.HomeScreenRouter
 import com.example.gymapprefactor.features.navigation.presentation.models.NavigationPage.*
 import com.example.gymapprefactor.features.navigation.presentation.models.NavigationState
 import com.example.gymapprefactor.features.navigation.presentation.viewmodel.NavigationViewModelImpl
+import com.example.gymapprefactor.features.shop.ui.ShopScreen
 
 @Composable
 fun NavigationHost(
@@ -45,5 +46,6 @@ fun NavigationPageRouter(
 ) {
     when(state.page) {
         is HomeScreen -> HomeScreenRouter()
+        is ShopScreen -> ShopScreen()
     }
 }

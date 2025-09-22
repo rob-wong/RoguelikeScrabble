@@ -18,8 +18,14 @@ fun ScreenBackgroundRouter(
 	modifier: Modifier = Modifier
 ) {
 	when(state) {
+		is ScreenBackgroundState.Shop -> ScreenBackgroundContent(
+			painter = painterResource(R.drawable.background_shop),
+			modifier = modifier,
+			alignment = Alignment.Center,
+			contentScale = ContentScale.Crop
+		)
 		is ScreenBackgroundState.Home -> ScreenBackgroundContent(
-			painter = painterResource(id = R.drawable.background),
+			painter = painterResource(id = R.drawable.background_home),
 			modifier = modifier
 		)
 		is ScreenBackgroundState.None -> Unit
@@ -28,14 +34,16 @@ fun ScreenBackgroundRouter(
 @Composable
 private fun ScreenBackgroundContent(
 	painter: Painter,
-	modifier: Modifier = Modifier
+	modifier: Modifier = Modifier,
+	alignment: Alignment = Alignment.BottomCenter,
+	contentScale: ContentScale = ContentScale.Crop
 ) {
 	Image(
 		painter = painter,
 		contentDescription = null,
 		modifier = modifier.fillMaxSize(),
-		contentScale = ContentScale.Crop,
-		alignment = Alignment.BottomCenter,
+		contentScale = contentScale,
+		alignment = alignment,
 	)
 }
 
