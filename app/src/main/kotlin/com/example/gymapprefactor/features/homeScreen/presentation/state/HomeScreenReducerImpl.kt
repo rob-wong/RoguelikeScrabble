@@ -27,7 +27,8 @@ class HomeScreenReducerImpl : HomeScreenReducer {
                 onExercises = onExercises,
                 onViewStats = onViewStats,
                 topBarState = topBarState,
-                shopButton = mapShopButton(action)
+                shopButton = mapShopButton(action),
+                upgradeButton = mapUpgradeButton(action)
             )
         }
     }
@@ -46,6 +47,13 @@ class HomeScreenReducerImpl : HomeScreenReducer {
         return IconButtonState.Content(
 	        onClick = action.navigateToShop,
 	        image = ImageState.ShopIcon,
+        )
+    }
+
+    private fun mapUpgradeButton(action: HomeScreenAction.SetContent): ButtonState {
+        return IconButtonState.Content(
+            onClick = action.navigateToUpgrade,
+            image = ImageState.UpgradeIcon
         )
     }
 }

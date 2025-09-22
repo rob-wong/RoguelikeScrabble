@@ -2,6 +2,7 @@ package com.example.gymapprefactor.features.homeScreen.ui
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxScope
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -52,11 +53,7 @@ private fun HomeScreenLayout(
         modifier = modifier
     ) {
         ScreenBackgroundRouter(ScreenBackgroundState.Home)
-        ButtonRouter(state.shopButton, Modifier
-            .padding(top = 10.dp, end = 10.dp)
-            .align(Alignment.TopEnd)
-            .size(40.dp)
-        )
+        HomeScreenButtonColumn(state, Modifier)
         Column(horizontalAlignment = Alignment.CenterHorizontally) {
             ResourceBarRouter(state.resourceBar)
             HomeScreenContent(state, Modifier)
@@ -90,6 +87,21 @@ private fun HomeScreenContent(
 
         ButtonRouter(state.onViewStats)
     }
+}
+
+@Composable
+private fun BoxScope.HomeScreenButtonColumn(
+    state: HomeScreenState.Content,
+    modifier: Modifier = Modifier,
+) {
+   Column(modifier
+       .padding(top = 10.dp, end = 10.dp)
+       .align(Alignment.TopEnd)
+   ) {
+       ButtonRouter(state.shopButton, Modifier.size(40.dp))
+       Spacer(Modifier.height(10.dp))
+       ButtonRouter(state.upgradeButton, Modifier.size(40.dp))
+   }
 }
 
 private fun homeScreenColumnPaddingRouter(): Dp {

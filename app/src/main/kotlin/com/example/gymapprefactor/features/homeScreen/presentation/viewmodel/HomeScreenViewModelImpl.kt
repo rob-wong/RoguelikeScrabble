@@ -35,15 +35,21 @@ class HomeScreenViewModelImpl @Inject constructor(
                 onViewStats = mapOnViewStatsButton(),
                 topBarState = getTopBar(),
                 runesCount = 30, // TODO use a data model
-                navigateToShop = ::navigateToShop
+                navigateToShop = ::navigateToShop,
+                navigateToUpgrade = ::navigateToUpgrade
             ))
         }
     }
 
     private fun navigateToShop() {
         viewModelScope.launch(dispatcherProvider.main) {
-            println("Navigation to shop called")
             navigationReducer.update(NavigationAction.GoTo(NavigationPage.ShopScreen))
+        }
+    }
+
+    private fun navigateToUpgrade() {
+        viewModelScope.launch(dispatcherProvider.main) {
+            navigationReducer.update(NavigationAction.GoTo(NavigationPage.UpgradeScreen))
         }
     }
 

@@ -24,6 +24,12 @@ fun ScreenBackgroundRouter(
 			alignment = Alignment.Center,
 			contentScale = ContentScale.Crop
 		)
+		is ScreenBackgroundState.Upgrade -> ScreenBackgroundContent(
+			painter = painterResource(R.drawable.background_upgrade),
+			modifier = modifier,
+			alignment = Alignment.Center,
+			contentScale = ContentScale.Crop
+		)
 		is ScreenBackgroundState.Home -> ScreenBackgroundContent(
 			painter = painterResource(id = R.drawable.background_home),
 			modifier = modifier

@@ -35,6 +35,10 @@ class HomeScreenProvider : PreviewParameterProvider<HomeScreenState.Content> {
 			shopButton = IconButtonState.Content(
 				onClick = { },
 				image = ImageState.ShopIcon,
+			),
+			upgradeButton = IconButtonState.Content(
+				onClick = { },
+				image = ImageState.UpgradeIcon,
 			)
 		)
 	)
