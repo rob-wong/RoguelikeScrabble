@@ -12,6 +12,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.gymapprefactor.app.util.DevicePreviews
 import com.example.gymapprefactor.common.components.presentation.ImageState
 import com.example.gymapprefactor.common.components.presentation.ResourceBarState
+import com.example.gymapprefactor.common.components.presentation.ResourceState
 import com.example.gymapprefactor.common.components.presentation.ScreenBackgroundState
 import com.example.gymapprefactor.common.components.ui.ResourceBarRouter
 import com.example.gymapprefactor.common.components.ui.ScreenBackgroundRouter
@@ -67,16 +68,11 @@ private fun ShopScreenPreview() {
 	ShopScreenLayout(
 		state = ShopScreenState.Content(
 			resourceBar = ResourceBarState.Content(
-				runeState = ResourceBarState.ResourceState(
-					isDisplayed = true,
+				runeState = ResourceState.Content(
 					amount = "30",
 					icon = ImageState.RuneIcon
 				),
-				glyphState = ResourceBarState.ResourceState(
-					isDisplayed = false,
-					amount = "0",
-					icon = ImageState.None
-				)
+				glyphState = ResourceState.None
 			),
 		)
 	)

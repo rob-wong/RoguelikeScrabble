@@ -22,6 +22,7 @@ import androidx.compose.ui.unit.dp
 import com.example.gymapprefactor.app.util.DeviceUtil
 import com.example.gymapprefactor.common.components.presentation.ImageState
 import com.example.gymapprefactor.common.components.presentation.ResourceBarState
+import com.example.gymapprefactor.common.components.presentation.ResourceState
 import com.example.gymapprefactor.ui.theme.Typography
 
 @Composable
@@ -67,20 +68,30 @@ private fun ResourceBarContent(
 		) {
 			Spacer(Modifier.padding(top = 10.dp))
 			Row(Modifier) {
-				ResourceRouter(state.runeState, Modifier)
+				ResourceStateRouter(state.runeState, Modifier)
 				Spacer(Modifier.padding(start = 20.dp))
-				ResourceRouter(state.glyphState, Modifier)
+				ResourceStateRouter(state.glyphState, Modifier)
 			}
 		}
 	}
 }
 
 @Composable
-private fun ResourceRouter(
-	state: ResourceBarState.ResourceState,
+private fun ResourceStateRouter(
+	state: ResourceState,
 	modifier: Modifier = Modifier
 ) {
-	if (!state.isDisplayed) { return }
+	when(state) {
+		is ResourceState.Content -> ResourceStateContent(state, modifier)
+		is ResourceState.None -> Unit
+	}
+}
+
+@Composable
+private fun ResourceStateContent(
+	state: ResourceState.Content,
+	modifier: Modifier = Modifier
+) {
 	Row(
 		modifier = modifier,
 		verticalAlignment = Alignment.CenterVertically,
@@ -97,6 +108,7 @@ private fun ResourceRouter(
 		)
 	}
 }
+
 @Composable
 private fun resourceBarMaxWidthRouter(): Dp {
 	return when (DeviceUtil.isLandscape) {
@@ -110,13 +122,11 @@ private fun resourceBarMaxWidthRouter(): Dp {
 private fun ResourceBarPreview() {
 	ResourceBarLayout(
 		ResourceBarState.Content(
-			runeState = ResourceBarState.ResourceState(
-				isDisplayed = true,
+			runeState = ResourceState.Content(
 				amount = "40",
 				icon = ImageState.RuneIcon,
 			),
-			glyphState = ResourceBarState.ResourceState(
-				isDisplayed = true,
+			glyphState = ResourceState.Content(
 				amount = "0",
 				icon = ImageState.GlyphIcon,
 			),
