@@ -1,5 +1,7 @@
 package com.example.gymapprefactor.features.shop.presentation.state
 
+import com.example.gymapprefactor.common.components.presentation.ButtonState
+import com.example.gymapprefactor.common.components.presentation.IconButtonState
 import com.example.gymapprefactor.common.components.presentation.ImageState
 import com.example.gymapprefactor.common.components.presentation.ResourceBarState
 import com.example.gymapprefactor.common.components.presentation.ResourceState
@@ -25,7 +27,15 @@ class ShopScreenReducerImpl : ShopScreenReducer {
 					icon = ImageState.RuneIcon
 				),
 				glyphState = ResourceState.None
-			)
+			),
+			backButton = mapBackButton(action)
+		)
+	}
+
+	private fun mapBackButton(action: ShopScreenAction.SetContent): ButtonState {
+		return IconButtonState.Content(
+			onClick = action.onBackPressed,
+			image = ImageState.BackIcon
 		)
 	}
 }

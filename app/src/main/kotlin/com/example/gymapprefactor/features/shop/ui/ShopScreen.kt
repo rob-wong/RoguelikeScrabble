@@ -3,17 +3,22 @@ package com.example.gymapprefactor.features.shop.ui
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.gymapprefactor.app.util.DevicePreviews
+import com.example.gymapprefactor.common.components.presentation.IconButtonState
 import com.example.gymapprefactor.common.components.presentation.ImageState
 import com.example.gymapprefactor.common.components.presentation.ResourceBarState
 import com.example.gymapprefactor.common.components.presentation.ResourceState
 import com.example.gymapprefactor.common.components.presentation.ScreenBackgroundState
+import com.example.gymapprefactor.common.components.ui.ButtonRouter
 import com.example.gymapprefactor.common.components.ui.ResourceBarRouter
 import com.example.gymapprefactor.common.components.ui.ScreenBackgroundRouter
 import com.example.gymapprefactor.features.shop.presentation.models.ShopScreenState
@@ -40,7 +45,11 @@ private fun ShopScreenLayout(
 ) {
 	Box(modifier) {
 		ScreenBackgroundRouter(ScreenBackgroundState.Shop)
-
+		ButtonRouter(state.backButton, Modifier
+			.padding(top = 10.dp, end = 10.dp)
+			.align(Alignment.TopEnd)
+			.size(40.dp)
+		)
 		Column(horizontalAlignment = Alignment.CenterHorizontally) {
 			ResourceBarRouter(
 				state.resourceBar
@@ -74,6 +83,10 @@ private fun ShopScreenPreview() {
 				),
 				glyphState = ResourceState.None
 			),
+			backButton = IconButtonState.Content(
+				onClick = { },
+				image = ImageState.BackIcon
+			)
 		)
 	)
 }
