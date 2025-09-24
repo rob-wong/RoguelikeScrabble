@@ -1,9 +1,11 @@
 package com.example.gymapprefactor.features.homeScreen.ui.preview
 
 import androidx.compose.ui.tooling.preview.PreviewParameterProvider
+import com.example.gymapprefactor.common.components.presentation.IconButtonState
 import com.example.gymapprefactor.common.components.presentation.ImageState
 import com.example.gymapprefactor.common.components.presentation.RectangleButtonState
 import com.example.gymapprefactor.common.components.presentation.ResourceBarState
+import com.example.gymapprefactor.common.components.presentation.ResourceState
 import com.example.gymapprefactor.common.components.presentation.TopBarState
 import com.example.gymapprefactor.features.homeScreen.presentation.models.HomeScreenState
 
@@ -11,16 +13,11 @@ class HomeScreenProvider : PreviewParameterProvider<HomeScreenState.Content> {
 	override val values = sequenceOf(
 		HomeScreenState.Content(
 			resourceBar = ResourceBarState.Content(
-				runeState = ResourceBarState.ResourceState(
-					isDisplayed = true,
+				runeState = ResourceState.Content(
 					amount = "30",
 					icon = ImageState.RuneIcon
 				),
-				glyphState = ResourceBarState.ResourceState(
-					isDisplayed = false,
-					amount = "0",
-					icon = ImageState.None
-				)
+				glyphState = ResourceState.None
 			),
 			onExercises = RectangleButtonState.Content(
 				onClick = { },
@@ -34,7 +31,15 @@ class HomeScreenProvider : PreviewParameterProvider<HomeScreenState.Content> {
 				onClick = { },
 				text = "View Stats"
 			),
-			topBarState = TopBarState.Content(title = "Home Screen", onBack = { })
+			topBarState = TopBarState.Content(title = "Home Screen", onBack = { }),
+			shopButton = IconButtonState.Content(
+				onClick = { },
+				image = ImageState.ShopIcon,
+			),
+			upgradeButton = IconButtonState.Content(
+				onClick = { },
+				image = ImageState.UpgradeIcon,
+			)
 		)
 	)
 }

@@ -27,7 +27,9 @@ fun ImageRouter(
 		} else {
 			painterResource(R.drawable.dialog_background_portrait)
 		}
-
+		BackIcon -> painterResource(R.drawable.icon_back)
+		ShopIcon -> painterResource(R.drawable.icon_shop)
+		UpgradeIcon -> painterResource(R.drawable.icon_upgrade)
 		GlyphIcon -> painterResource(R.drawable.icon_glyph)
 		RuneIcon -> painterResource(R.drawable.icon_rune)
 		None -> return

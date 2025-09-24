@@ -8,6 +8,8 @@ import com.example.gymapprefactor.common.components.presentation.TopBarState
 sealed class HomeScreenState: State {
 
     data class Content (
+        val shopButton: ButtonState,
+        val upgradeButton: ButtonState,
         val resourceBar: ResourceBarState,
         val onExercises: ButtonState,
         val onRoutines: ButtonState,

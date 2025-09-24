@@ -5,7 +5,10 @@ sealed class ImageState {
 	data object SettingsButton : ImageState()
 	data object DialogBackground : ImageState()
 
+	data object BackIcon : ImageState()
 	data object RuneIcon : ImageState()
 	data object GlyphIcon : ImageState()
+	data object ShopIcon : ImageState()
+	data object UpgradeIcon : ImageState()
 	data object None : ImageState()
 }

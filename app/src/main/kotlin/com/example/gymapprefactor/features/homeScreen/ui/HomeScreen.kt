@@ -2,17 +2,20 @@ package com.example.gymapprefactor.features.homeScreen.ui
 
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxScope
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.PreviewParameter
 import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.gymapprefactor.app.util.DevicePreviews
@@ -50,6 +53,7 @@ private fun HomeScreenLayout(
         modifier = modifier
     ) {
         ScreenBackgroundRouter(ScreenBackgroundState.Home)
+        HomeScreenButtonColumn(state, Modifier)
         Column(horizontalAlignment = Alignment.CenterHorizontally) {
             ResourceBarRouter(state.resourceBar)
             HomeScreenContent(state, Modifier)
@@ -58,7 +62,7 @@ private fun HomeScreenLayout(
 }
 
 @Composable
-fun HomeScreenContent(
+private fun HomeScreenContent(
     state: HomeScreenState.Content,
     modifier: Modifier = Modifier,
 ) {
@@ -83,6 +87,21 @@ fun HomeScreenContent(
 
         ButtonRouter(state.onViewStats)
     }
+}
+
+@Composable
+private fun BoxScope.HomeScreenButtonColumn(
+    state: HomeScreenState.Content,
+    modifier: Modifier = Modifier,
+) {
+   Column(modifier
+       .padding(top = 10.dp, end = 10.dp)
+       .align(Alignment.TopEnd)
+   ) {
+       ButtonRouter(state.shopButton, Modifier.size(40.dp))
+       Spacer(Modifier.height(10.dp))
+       ButtonRouter(state.upgradeButton, Modifier.size(40.dp))
+   }
 }
 
 private fun homeScreenColumnPaddingRouter(): Dp {

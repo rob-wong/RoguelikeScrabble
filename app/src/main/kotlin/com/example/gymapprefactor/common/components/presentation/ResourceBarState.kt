@@ -7,10 +7,13 @@ sealed class ResourceBarState {
 	) : ResourceBarState()
 
 	data object None : ResourceBarState()
+}
 
-	data class ResourceState(
-		val isDisplayed: Boolean,
+sealed class ResourceState {
+	data class Content(
 		val amount: String,
 		val icon: ImageState,
-	)
+	) : ResourceState()
+
+	data object None : ResourceState()
 }
