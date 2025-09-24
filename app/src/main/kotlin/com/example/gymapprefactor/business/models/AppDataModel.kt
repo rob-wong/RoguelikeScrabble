@@ -4,13 +4,13 @@ import javax.inject.Singleton
 
 @Singleton
 object AppDataModel {
-    lateinit var letterList: MutableList<Letter>
+    lateinit var user: User
 
     fun initData() {
-        fetchLetters()
+        fetchUser()
     }
 
-    private fun fetchLetters() {
-        letterList = TemporaryDataFill.letterList.toMutableList()
+    private fun fetchUser() {
+        user = TemporaryDataFill.user
     }
 }
