@@ -10,7 +10,7 @@ interface RectangleButtonMapper : Mapper<RectangleButtonMapper.Param, RectangleB
 	)
 }
 
-class RectangleButtonMapperImpl : RectangleButtonMapper{
+class RectangleButtonMapperImpl : RectangleButtonMapper {
 	override fun map(param: RectangleButtonMapper.Param): RectangleButtonState {
 		return RectangleButtonState.Content(
 			onClick = param.onClick,
