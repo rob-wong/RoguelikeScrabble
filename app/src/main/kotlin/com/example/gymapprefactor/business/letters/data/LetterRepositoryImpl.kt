@@ -2,7 +2,6 @@ package com.example.gymapprefactor.business.letters.data
 
 import com.example.gymapprefactor.business.letters.domain.LetterRepository
 import com.example.gymapprefactor.business.interfaces.DataSource
-import com.example.gymapprefactor.business.models.AppDataModel
 import com.example.gymapprefactor.business.models.Letter
 
 class LetterRepositoryImpl(
@@ -15,6 +14,6 @@ class LetterRepositoryImpl(
 
 class LetterDataSource : DataSource {
     fun fetchLetters(): List<Letter> {
-        return AppDataModel.letterList
+        return listOf()
     }
 }

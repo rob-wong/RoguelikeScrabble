@@ -4,5 +4,11 @@ import javax.inject.Singleton
 
 @Singleton
 object TemporaryDataFill {
-    val letterList = listOf<Letter>()
+    val user = DefaultUser(
+	    username = "Username",
+	    runesCount = 100,
+	    decks = listOf(),
+	    unlockedEffects = listOf(),
+	    gameState = NoneGameState()
+    )
 }
