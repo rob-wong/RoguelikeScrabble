@@ -1,4 +1,4 @@
-package com.example.gymapprefactor.business.gameplayLoop
+package com.example.gymapprefactor.business.gameplayLoop.domain
 
 import com.example.gymapprefactor.business.interfaces.Mapper
 import com.example.gymapprefactor.business.models.Letter
