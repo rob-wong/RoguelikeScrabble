@@ -2,7 +2,7 @@ package com.example.gymapprefactor.business.models
 
 interface GameState
 
-class NoneGameState() : GameState
+class NoneGameState : GameState
 
 class ActiveGameState(
 	val activeGameVariables: ActiveGameVariables,
