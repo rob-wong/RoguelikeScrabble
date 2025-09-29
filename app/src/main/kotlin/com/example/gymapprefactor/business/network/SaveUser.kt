@@ -1,37 +1,57 @@
 package com.example.gymapprefactor.business.network
 
 import android.content.Context
+import com.example.gymapprefactor.app.util.dispatcher.DispatcherProvider
+import com.example.gymapprefactor.business.models.ActiveGameState
+import com.example.gymapprefactor.business.models.DefaultUser
+import com.example.gymapprefactor.business.models.GameState
+import com.example.gymapprefactor.business.models.NoneGameState
 import com.example.gymapprefactor.business.models.User
-import com.google.gson.Gson
-import kotlinx.coroutines.Dispatchers
+import com.google.gson.GsonBuilder
+import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.withContext
 import java.io.File
+import javax.inject.Inject
 import javax.inject.Singleton
 
-// If there is a backend developed, this is where the network calls will be
 private const val USER_FILE = "user.json"
 
+// this is a more java-based approach, it could be easily changed to using kotlin's
+// serialization, I'm just more used to dealing with gson
 @Singleton
-object UserStorage {
-	private val gson = Gson()
-	private val mutex = Mutex()
-	private const val FILE_NAME = "user.json"
+class UserStorage @Inject constructor(
+	private val dispatcherProvider: DispatcherProvider,
+	@ApplicationContext private val context: Context,
+){
+	private val gameStateAdapterFactory = RuntimeTypeAdapterFactory
+		.of(GameState::class.java, "type")
+		.registerSubtype(ActiveGameState::class.java, "active")
+		.registerSubtype(NoneGameState::class.java, "none")
+	private val userAdapterFactory = RuntimeTypeAdapterFactory
+		.of(User::class.java, "type")
+		.registerSubtype(DefaultUser::class.java, "default")
 
-	suspend fun saveUser(context: Context, user: User) {
+	private val gson = GsonBuilder()
+		.registerTypeAdapterFactory(userAdapterFactory)
+		.registerTypeAdapterFactory(gameStateAdapterFactory)
+		.create()
+	private val mutex = Mutex()
+
+	suspend fun saveUser(user: User) {
 		mutex.withLock {
-			withContext(Dispatchers.IO) {
-				val file = File(context.filesDir, FILE_NAME)
-				file.writeText(gson.toJson(user))
+			withContext(dispatcherProvider.io) {
+				val file = File(context.filesDir, USER_FILE)
+				file.writeText(gson.toJson(user, User::class.java))
 			}
 		}
 	}
 
-	suspend fun loadUser(context: Context): User? {
+	suspend fun loadUser(): User? {
 		return mutex.withLock {
-			withContext(Dispatchers.IO) {
-				val file = File(context.filesDir, FILE_NAME)
+			withContext(dispatcherProvider.io) {
+				val file = File(context.filesDir, USER_FILE)
 				if (!file.exists()) return@withContext null
 				gson.fromJson(file.readText(), User::class.java)
 			}
