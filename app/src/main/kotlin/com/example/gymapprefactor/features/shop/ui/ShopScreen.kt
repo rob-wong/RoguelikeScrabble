@@ -18,7 +18,7 @@ import com.example.gymapprefactor.common.components.presentation.ImageState
 import com.example.gymapprefactor.common.components.presentation.ResourceBarState
 import com.example.gymapprefactor.common.components.presentation.ResourceState
 import com.example.gymapprefactor.common.components.presentation.ScreenBackgroundState
-import com.example.gymapprefactor.common.components.ui.ButtonRouter
+import com.example.gymapprefactor.common.components.buttons.ui.ButtonRouter
 import com.example.gymapprefactor.common.components.ui.ResourceBarRouter
 import com.example.gymapprefactor.common.components.ui.ScreenBackgroundRouter
 import com.example.gymapprefactor.features.shop.presentation.models.ShopScreenState

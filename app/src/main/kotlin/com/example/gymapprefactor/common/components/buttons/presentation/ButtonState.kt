@@ -1,3 +1,3 @@
-package com.example.gymapprefactor.common.components.presentation
+package com.example.gymapprefactor.common.components.buttons.presentation
 
 interface ButtonState

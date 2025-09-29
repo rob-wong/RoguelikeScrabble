@@ -1,7 +1,7 @@
 package com.example.gymapprefactor.features.upgrade.presentation.models
 
 import com.example.gymapprefactor.business.interfaces.State
-import com.example.gymapprefactor.common.components.presentation.ButtonState
+import com.example.gymapprefactor.common.components.buttons.presentation.ButtonState
 import com.example.gymapprefactor.common.components.presentation.ResourceBarState
 
 sealed class UpgradeScreenState : State {

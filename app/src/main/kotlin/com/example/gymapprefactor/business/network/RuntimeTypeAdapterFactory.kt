@@ -65,8 +65,8 @@ class RuntimeTypeAdapterFactory<T> private constructor(
 	}
 
 	fun registerSubtype(type: Class<out T>, label: String = type.simpleName): RuntimeTypeAdapterFactory<T> {
-		if (labelToSubtype.containsKey(label) || subtypeToLabel.containsKey(type)) {
-			throw IllegalArgumentException("Types and labels must be unique.")
+		require(!labelToSubtype.containsKey(label) && !subtypeToLabel.containsKey(type)) {
+			"Types and labels must be unique."
 		}
 		labelToSubtype[label] = type
 		subtypeToLabel[type] = label

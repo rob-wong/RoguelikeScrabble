@@ -1,6 +1,6 @@
 package com.example.gymapprefactor.features.settings.presentation
 
-import com.example.gymapprefactor.common.components.presentation.ButtonState
+import com.example.gymapprefactor.common.components.buttons.presentation.ButtonState
 
 sealed class SettingsRootState {
 	data class Content(

@@ -1,4 +1,4 @@
-package com.example.gymapprefactor.common.components.ui
+package com.example.gymapprefactor.common.components.buttons.ui
 
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.layout.PaddingValues
@@ -18,7 +18,7 @@ import androidx.compose.ui.unit.dp
 import com.example.gymapprefactor.R
 import com.example.gymapprefactor.app.util.DeviceUtil
 import com.example.gymapprefactor.app.util.SpacerUtil
-import com.example.gymapprefactor.common.components.presentation.RectangleButtonState
+import com.example.gymapprefactor.common.components.buttons.presentation.RectangleButtonState
 import com.example.gymapprefactor.ui.theme.BlackishGray
 import com.example.gymapprefactor.ui.theme.OffWhite
 

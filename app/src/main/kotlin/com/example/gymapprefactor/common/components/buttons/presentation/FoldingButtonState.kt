@@ -1,4 +1,4 @@
-package com.example.gymapprefactor.common.components.presentation
+package com.example.gymapprefactor.common.components.buttons.presentation
 
 sealed class FoldingButtonState : ButtonState {
     data class Content(

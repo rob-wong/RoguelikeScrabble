@@ -2,7 +2,7 @@ package com.example.gymapprefactor.features.homeScreen.presentation.state
 
 import com.example.gymapprefactor.common.components.buttons.presentation.IconButtonState
 import com.example.gymapprefactor.common.components.buttons.presentation.ImageButtonState
-import com.example.gymapprefactor.common.components.presentation.ButtonState
+import com.example.gymapprefactor.common.components.buttons.presentation.ButtonState
 import com.example.gymapprefactor.common.components.presentation.ImageState
 import com.example.gymapprefactor.common.components.presentation.ResourceBarState
 import com.example.gymapprefactor.common.components.presentation.ResourceState

@@ -1,6 +1,5 @@
 package com.example.gymapprefactor.common.components.buttons.presentation
 
-import com.example.gymapprefactor.common.components.presentation.ButtonState
 import com.example.gymapprefactor.common.components.presentation.ImageState
 
 sealed class ImageButtonState : ButtonState {
