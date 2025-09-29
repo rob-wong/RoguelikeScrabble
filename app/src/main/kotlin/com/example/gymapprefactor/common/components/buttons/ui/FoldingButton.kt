@@ -27,8 +27,7 @@ import androidx.compose.ui.unit.dp
 import com.example.gymapprefactor.app.util.DeviceUtil
 import com.example.gymapprefactor.app.util.SpacerUtil
 import com.example.gymapprefactor.common.components.buttons.ui.preview.FoldingButtonProvider
-import com.example.gymapprefactor.common.components.presentation.FoldingButtonState
-import com.example.gymapprefactor.common.components.ui.RectangleButtonRouter
+import com.example.gymapprefactor.common.components.buttons.presentation.FoldingButtonState
 import com.example.gymapprefactor.ui.theme.BlackishGray
 import com.example.gymapprefactor.ui.theme.OffWhite
 

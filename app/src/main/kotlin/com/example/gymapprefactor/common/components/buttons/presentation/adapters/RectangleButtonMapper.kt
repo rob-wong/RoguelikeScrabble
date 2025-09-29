@@ -1,7 +1,7 @@
 package com.example.gymapprefactor.common.components.buttons.presentation.adapters
 
 import com.example.gymapprefactor.business.interfaces.Mapper
-import com.example.gymapprefactor.common.components.presentation.RectangleButtonState
+import com.example.gymapprefactor.common.components.buttons.presentation.RectangleButtonState
 
 interface RectangleButtonMapper : Mapper<RectangleButtonMapper.Param, RectangleButtonState> {
 	data class Param(

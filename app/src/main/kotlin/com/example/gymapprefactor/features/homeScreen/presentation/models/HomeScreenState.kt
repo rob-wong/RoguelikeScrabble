@@ -1,7 +1,7 @@
 package com.example.gymapprefactor.features.homeScreen.presentation.models
 
 import com.example.gymapprefactor.business.interfaces.State
-import com.example.gymapprefactor.common.components.presentation.ButtonState
+import com.example.gymapprefactor.common.components.buttons.presentation.ButtonState
 import com.example.gymapprefactor.common.components.presentation.ResourceBarState
 import com.example.gymapprefactor.common.components.presentation.TopBarState
 

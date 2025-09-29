@@ -4,7 +4,7 @@ import androidx.lifecycle.viewModelScope
 import com.example.gymapprefactor.app.util.dispatcher.DispatcherProvider
 import com.example.gymapprefactor.common.components.presentation.TopBarState
 import com.example.gymapprefactor.common.components.buttons.presentation.adapters.RectangleButtonMapper
-import com.example.gymapprefactor.common.components.presentation.ButtonState
+import com.example.gymapprefactor.common.components.buttons.presentation.ButtonState
 import com.example.gymapprefactor.features.homeScreen.presentation.models.HomeScreenAction
 import com.example.gymapprefactor.features.homeScreen.presentation.state.HomeScreenReducer
 import com.example.gymapprefactor.features.navigation.presentation.models.NavigationAction

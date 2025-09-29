@@ -22,7 +22,7 @@ import com.example.gymapprefactor.app.util.DevicePreviews
 import com.example.gymapprefactor.app.util.DeviceUtil
 import com.example.gymapprefactor.app.util.SpacerUtil
 import com.example.gymapprefactor.common.components.presentation.ScreenBackgroundState
-import com.example.gymapprefactor.common.components.ui.ButtonRouter
+import com.example.gymapprefactor.common.components.buttons.ui.ButtonRouter
 import com.example.gymapprefactor.common.components.ui.ResourceBarRouter
 import com.example.gymapprefactor.common.components.ui.ScreenBackgroundRouter
 import com.example.gymapprefactor.features.homeScreen.presentation.models.HomeScreenState

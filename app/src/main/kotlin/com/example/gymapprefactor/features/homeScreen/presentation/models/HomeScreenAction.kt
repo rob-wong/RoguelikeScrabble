@@ -1,7 +1,7 @@
 package com.example.gymapprefactor.features.homeScreen.presentation.models
 
 import com.example.gymapprefactor.business.interfaces.Action
-import com.example.gymapprefactor.common.components.presentation.ButtonState
+import com.example.gymapprefactor.common.components.buttons.presentation.ButtonState
 import com.example.gymapprefactor.common.components.presentation.TopBarState
 
 sealed class HomeScreenAction: Action {
