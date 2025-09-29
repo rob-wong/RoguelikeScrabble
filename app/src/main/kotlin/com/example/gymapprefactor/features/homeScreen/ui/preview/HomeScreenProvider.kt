@@ -1,7 +1,8 @@
 package com.example.gymapprefactor.features.homeScreen.ui.preview
 
 import androidx.compose.ui.tooling.preview.PreviewParameterProvider
-import com.example.gymapprefactor.common.components.presentation.IconButtonState
+import com.example.gymapprefactor.common.components.buttons.presentation.IconButtonState
+import com.example.gymapprefactor.common.components.buttons.presentation.ImageButtonState
 import com.example.gymapprefactor.common.components.presentation.ImageState
 import com.example.gymapprefactor.common.components.presentation.RectangleButtonState
 import com.example.gymapprefactor.common.components.presentation.ResourceBarState
@@ -39,6 +40,11 @@ class HomeScreenProvider : PreviewParameterProvider<HomeScreenState.Content> {
 			upgradeButton = IconButtonState.Content(
 				onClick = { },
 				image = ImageState.UpgradeIcon,
+			),
+			playButton = ImageButtonState.Content(
+				onClick = { },
+				background = ImageState.RectangularButtonBackground,
+				foreground = ImageState.PlayTextIcon,
 			)
 		)
 	)

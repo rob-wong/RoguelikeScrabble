@@ -6,6 +6,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.example.gymapprefactor.features.game.ui.GameRoot
 import com.example.gymapprefactor.features.homeScreen.ui.HomeScreenRouter
 import com.example.gymapprefactor.features.navigation.presentation.models.NavigationPage.*
 import com.example.gymapprefactor.features.navigation.presentation.models.NavigationState
@@ -49,5 +50,6 @@ fun NavigationPageRouter(
         is HomeScreen -> HomeScreenRouter()
         is ShopScreen -> ShopScreen()
         is UpgradeScreen -> UpgradeScreen()
+        is GameScreen -> GameRoot()
     }
 }

@@ -8,11 +8,13 @@ sealed class HomeScreenAction: Action {
     data class SetContent(
         val navigateToUpgrade: () -> Unit,
         val navigateToShop: () -> Unit,
+        val navigateToGame: () -> Unit,
         val runesCount: Int,
         val onExercises: ButtonState,
         val onRoutines: ButtonState,
         val onViewStats: ButtonState,
         val topBarState: TopBarState,
     ) : HomeScreenAction()
+
     data object None : HomeScreenAction()
 }

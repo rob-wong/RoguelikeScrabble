@@ -10,6 +10,7 @@ sealed class HomeScreenState: State {
     data class Content (
         val shopButton: ButtonState,
         val upgradeButton: ButtonState,
+        val playButton: ButtonState,
         val resourceBar: ResourceBarState,
         val onExercises: ButtonState,
         val onRoutines: ButtonState,

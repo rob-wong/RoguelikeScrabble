@@ -21,12 +21,14 @@ fun ImageRouter(
 ) {
 	val painter = when (state) {
 		ResourceBarBackground -> painterResource(R.drawable.resource_bar)
+		RectangularButtonBackground -> painterResource(R.drawable.background_rectangular_button)
 		SettingsButton -> painterResource(R.drawable.settings_gear)
 		DialogBackground -> if (isLandscape) {
 			painterResource(R.drawable.dialog_background_landscape)
 		} else {
 			painterResource(R.drawable.dialog_background_portrait)
 		}
+		PlayTextIcon -> painterResource(R.drawable.icon_play_text)
 		BackIcon -> painterResource(R.drawable.icon_back)
 		ShopIcon -> painterResource(R.drawable.icon_shop)
 		UpgradeIcon -> painterResource(R.drawable.icon_upgrade)

@@ -1,7 +1,8 @@
 package com.example.gymapprefactor.features.homeScreen.presentation.state
 
+import com.example.gymapprefactor.common.components.buttons.presentation.IconButtonState
+import com.example.gymapprefactor.common.components.buttons.presentation.ImageButtonState
 import com.example.gymapprefactor.common.components.presentation.ButtonState
-import com.example.gymapprefactor.common.components.presentation.IconButtonState
 import com.example.gymapprefactor.common.components.presentation.ImageState
 import com.example.gymapprefactor.common.components.presentation.ResourceBarState
 import com.example.gymapprefactor.common.components.presentation.ResourceState
@@ -28,7 +29,8 @@ class HomeScreenReducerImpl : HomeScreenReducer {
                 onViewStats = onViewStats,
                 topBarState = topBarState,
                 shopButton = mapShopButton(action),
-                upgradeButton = mapUpgradeButton(action)
+                upgradeButton = mapUpgradeButton(action),
+                playButton = mapPlayButton(action)
             )
         }
     }
@@ -54,6 +56,14 @@ class HomeScreenReducerImpl : HomeScreenReducer {
         return IconButtonState.Content(
             onClick = action.navigateToUpgrade,
             image = ImageState.UpgradeIcon
+        )
+    }
+
+    private fun mapPlayButton(action: HomeScreenAction.SetContent): ButtonState {
+        return ImageButtonState.Content(
+	        onClick = action.navigateToGame,
+	        background = ImageState.RectangularButtonBackground,
+	        foreground = ImageState.PlayTextIcon,
         )
     }
 }

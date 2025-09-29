@@ -86,6 +86,8 @@ private fun HomeScreenContent(
         Spacer(modifier = Modifier.height(SpacerUtil.spacer_10))
 
         ButtonRouter(state.onViewStats)
+
+        ButtonRouter(state.playButton)
     }
 }
 

@@ -5,6 +5,8 @@ sealed class ImageState {
 	data object SettingsButton : ImageState()
 	data object DialogBackground : ImageState()
 
+	data object RectangularButtonBackground : ImageState()
+	data object PlayTextIcon : ImageState()
 	data object BackIcon : ImageState()
 	data object RuneIcon : ImageState()
 	data object GlyphIcon : ImageState()

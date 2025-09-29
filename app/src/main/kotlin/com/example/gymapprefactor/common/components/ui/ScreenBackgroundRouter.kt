@@ -34,6 +34,10 @@ fun ScreenBackgroundRouter(
 			painter = painterResource(id = R.drawable.background_home),
 			modifier = modifier
 		)
+		is ScreenBackgroundState.Game -> ScreenBackgroundContent(
+			painter = painterResource(id = R.drawable.background_game),
+			modifier = modifier
+		)
 		is ScreenBackgroundState.None -> Unit
 	}
 }
