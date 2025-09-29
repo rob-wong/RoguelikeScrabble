@@ -1,4 +1,4 @@
-package com.example.gymapprefactor.common.components.presentation.adapters
+package com.example.gymapprefactor.common.components.buttons.presentation.adapters
 
 import com.example.gymapprefactor.business.interfaces.Mapper
 import com.example.gymapprefactor.common.components.presentation.RectangleButtonState

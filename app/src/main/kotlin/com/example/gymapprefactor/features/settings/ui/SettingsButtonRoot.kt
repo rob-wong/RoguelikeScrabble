@@ -8,7 +8,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.example.gymapprefactor.app.util.DevicePreviews
-import com.example.gymapprefactor.common.components.presentation.IconButtonState
+import com.example.gymapprefactor.common.components.buttons.presentation.IconButtonState
 import com.example.gymapprefactor.common.components.presentation.ImageState
 import com.example.gymapprefactor.common.components.ui.ButtonRouter
 import com.example.gymapprefactor.features.settings.presentation.SettingsRootState

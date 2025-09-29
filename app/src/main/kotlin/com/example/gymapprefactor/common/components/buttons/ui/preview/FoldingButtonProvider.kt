@@ -1,4 +1,4 @@
-package com.example.gymapprefactor.common.components.ui.previews
+package com.example.gymapprefactor.common.components.buttons.ui.preview
 
 import androidx.compose.ui.tooling.preview.PreviewParameterProvider
 import com.example.gymapprefactor.common.components.presentation.FoldingButtonState

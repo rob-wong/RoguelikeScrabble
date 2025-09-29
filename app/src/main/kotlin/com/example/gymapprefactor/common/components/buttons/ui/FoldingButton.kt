@@ -1,4 +1,4 @@
-package com.example.gymapprefactor.common.components.ui
+package com.example.gymapprefactor.common.components.buttons.ui
 
 import androidx.compose.animation.animateContentSize
 import androidx.compose.animation.core.animateFloatAsState
@@ -26,8 +26,9 @@ import androidx.compose.ui.tooling.preview.PreviewParameter
 import androidx.compose.ui.unit.dp
 import com.example.gymapprefactor.app.util.DeviceUtil
 import com.example.gymapprefactor.app.util.SpacerUtil
+import com.example.gymapprefactor.common.components.buttons.ui.preview.FoldingButtonProvider
 import com.example.gymapprefactor.common.components.presentation.FoldingButtonState
-import com.example.gymapprefactor.common.components.ui.previews.FoldingButtonProvider
+import com.example.gymapprefactor.common.components.ui.RectangleButtonRouter
 import com.example.gymapprefactor.ui.theme.BlackishGray
 import com.example.gymapprefactor.ui.theme.OffWhite
 
@@ -129,7 +130,7 @@ private fun getFoldRatio(buttonWidthPercentage: Float, numberOfButtons: Double):
 @Preview
 @Composable
 internal fun FoldingButtonPreview(
-    @PreviewParameter(FoldingButtonProvider::class) state: FoldingButtonState.Content,
+	@PreviewParameter(FoldingButtonProvider::class) state: FoldingButtonState.Content,
 ) {
 	FoldingButtonContent(
 		state = state,

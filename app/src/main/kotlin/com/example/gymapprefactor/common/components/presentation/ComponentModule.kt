@@ -1,7 +1,7 @@
 package com.example.gymapprefactor.common.components.presentation
 
-import com.example.gymapprefactor.common.components.presentation.adapters.RectangleButtonMapper
-import com.example.gymapprefactor.common.components.presentation.adapters.RectangleButtonMapperImpl
+import com.example.gymapprefactor.common.components.buttons.presentation.adapters.RectangleButtonMapper
+import com.example.gymapprefactor.common.components.buttons.presentation.adapters.RectangleButtonMapperImpl
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
