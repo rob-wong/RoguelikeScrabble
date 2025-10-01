@@ -39,17 +39,12 @@ class SettingsRootViewModelImpl @Inject constructor(
 
 	private fun openSettingsDialog() {
 		viewModelScope.launch(dispatcherProvider.main) {
-			println("Settings Button Pressed")
 			dialogReducer.update(DialogAction.TriggerDialog(
-				onDismiss = ::onDismissDialog,
-				title = ""
+				onDismiss = { dialogReducer.onDefaultDismiss() },
+				title = "",
+				confirmState = DialogAction.ConfirmState.None,
+				showDismissButton = true,
 			))
-		}
-	}
-
-	private fun onDismissDialog() {
-		viewModelScope.launch(dispatcherProvider.main) {
-			dialogReducer.update(DialogAction.ClearDialogs)
 		}
 	}
 }
