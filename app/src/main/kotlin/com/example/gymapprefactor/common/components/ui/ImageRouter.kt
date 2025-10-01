@@ -13,6 +13,7 @@ import com.example.gymapprefactor.common.components.presentation.ImageState
 import com.example.gymapprefactor.common.components.presentation.ImageState.*
 
 @Composable
+@SuppressWarnings("CyclomaticComplexMethod")
 fun ImageRouter(
 	state: ImageState,
 	modifier: Modifier = Modifier,
