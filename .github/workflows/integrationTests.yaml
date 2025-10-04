@@ -1,6 +1,4 @@
-# This workflow runs your Android Instrumentation tests on a GitHub-hosted emulator
-
-name: Android CI
+name: Android CI (Deep Debug)
 
 on:
   push:
@@ -10,8 +8,6 @@ on:
 
 jobs:
   instrumentation-tests:
-    # We are forced onto ARM, so let's be explicit about it if possible.
-    # We will configure the emulator to work on ARM regardless.
     runs-on: macos-latest
 
     steps:
@@ -27,31 +23,113 @@ jobs:
       - name: Setup Gradle
         uses: gradle/actions/setup-gradle@v3
 
-      # Update the cache key to reflect the arm64 architecture
-      - name: AVD Caching
-        uses: actions/cache@v4
-        id: avd-cache
-        with:
-          path: |
-            ~/.android/avd/*
-            ~/.android/system-images/
-          key: avd-30-arm64-v3 # Changed key to ensure a fresh cache
+      # ====================================================================
+      # ===== SECTION 1: PRE-FLIGHT ENVIRONMENT CHECKS =====================
+      # ====================================================================
 
-      - name: Create and run Emulator
-        uses: reactivecircus/android-emulator-runner@v2
-        with:
-          api-level: 30
-          # ✅ 1. USE AN ARM EMULATOR: We must match the ARM host.
-          target: google_apis
-          arch: arm64-v8a
-          profile: Nexus 6
-          emulator-boot-timeout: 600
-          # ✅ 2. THE CRITICAL FIX: Add '-feature -Vulkan' to the emulator options.
-          # This disables certain hardware features that are unsupported in the CI's ARM environment
-          # and prevents the 'HVF error'.
-          emulator-options: -no-snapshot -no-window -no-boot-anim -feature -Vulkan
-          disable-animations: true
-          script: echo "Emulator is ready."
+      - name: ✅ DEBUG - Check System Resources & Arch
+        run: |
+          echo "--- Machine Architecture ---"
+          uname -a
+          echo "--- CPU & Memory Details ---"
+          sysctl hw
+          echo "--- Disk Space ---"
+          df -h
+
+      - name: ✅ DEBUG - Check for Port Conflicts (Pre-Launch)
+        run: |
+          echo "--- Checking for listeners on emulator ports 5554, 5555 ---"
+          lsof -i :5554-5555 || echo "Ports 5554-5555 are free."
+
+      # ====================================================================
+      # ===== SECTION 2: FORCED CLEAN SDK INSTALL ==========================
+      # ====================================================================
+
+      - name: ✅ DEBUG - Force Clean SDK & System Image Install
+        run: |
+          echo "--- Forcing fresh install of SDK components ---"
+          # We target ARM because the logs consistently show an ARM host.
+          sdkmanager --install "system-images;android-30;google_apis;arm64-v8a" emulator platform-tools --channel=0
+          echo "--- Finished SDK install ---"
+
+      - name: ✅ DEBUG - Verify Emulator Binary Dependencies
+        run: |
+          echo "--- Checking shared library dependencies for emulator binary ---"
+          otool -L $ANDROID_HOME/emulator/qemu/darwin-aarch64/qemu-system-aarch64 || echo "Failed to check libs, path might be wrong."
+          otool -L $ANDROID_HOME/emulator/emulator || echo "Failed to check libs for emulator."
+
+      - name: ✅ DEBUG - Verify SDK Permissions
+        run: |
+          echo "--- Checking permissions for SDK directories (top-level) ---"
+          ls -l $ANDROID_HOME
+          ls -l $ANDROID_HOME/emulator
+          ls -l $ANDROID_HOME/platform-tools
+          ls -l $ANDROID_HOME/system-images/android-30/google_apis/arm64-v8a/
+
+      # ====================================================================
+      # ===== SECTION 3: EMULATOR LAUNCH & MONITORING ======================
+      # ====================================================================
+
+      - name: Launch Emulator and Monitor in Background
+        run: |
+          echo "--- Starting Emulator in background ---"
+          # Start the emulator with nohup to ensure it keeps running & redirect output
+          nohup $ANDROID_HOME/emulator/emulator \
+            -avd test \
+            -port 5554 \
+            -no-snapshot \
+            -no-window \
+            -no-boot-anim \
+            -feature -Vulkan \
+            -verbose \
+            -show-kernel \
+            > emulator-log.txt 2>&1 &
+          
+          # Give it a moment to create a process
+          sleep 5
+          
+          echo "--- Monitoring Emulator Process and Log ---"
+          # Check if the process exists
+          pgrep -fl emulator
+          if [ $? -ne 0 ]; then
+            echo "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"
+            echo "!!! CRITICAL: Emulator process did not start or died immediately. !!!"
+            echo "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"
+            echo "--- Dumping initial emulator log ---"
+            cat emulator-log.txt
+            exit 1
+          fi
+          
+          # Monitor the boot process
+          echo "--- Waiting for emulator to boot (max 10 mins) ---"
+          timeout 600 adb -s emulator-5554 wait-for-device
+          
+          # Capture the result
+          BOOT_RESULT=$?
+          
+          echo "--- Final Emulator Process Status ---"
+          pgrep -fl emulator
+          
+          echo "--- Final ADB Devices Status ---"
+          adb devices
+          
+          echo "--- Dumping full emulator log ---"
+          cat emulator-log.txt
+          
+          if [ $BOOT_RESULT -ne 0 ]; then
+            echo "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"
+            echo "!!! CRITICAL: 'adb wait-for-device' timed out. Emulator is not responsive. !!!"
+            echo "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"
+            exit 1
+          fi
+
+      # This step is now redundant because we do it in the script, but we keep it as a final check
+      - name: Final ADB Check
+        run: adb devices
+
+      # ====================================================================
+      # ===== SECTION 4: TEST EXECUTION ====================================
+      # ====================================================================
 
       - name: Run instrumentation tests
         run: ./gradlew connectedCheck
