@@ -10,7 +10,8 @@ on:
 
 jobs:
   instrumentation-tests:
-    # ✅ 1. USE THE STANDARD INTEL RUNNER: This is the most reliable and available runner.
+    # We are forced onto ARM, so let's be explicit about it if possible.
+    # We will configure the emulator to work on ARM regardless.
     runs-on: macos-latest
 
     steps:
@@ -26,7 +27,7 @@ jobs:
       - name: Setup Gradle
         uses: gradle/actions/setup-gradle@v3
 
-      # Update the cache key to reflect the x86 architecture
+      # Update the cache key to reflect the arm64 architecture
       - name: AVD Caching
         uses: actions/cache@v4
         id: avd-cache
@@ -34,23 +35,23 @@ jobs:
           path: |
             ~/.android/avd/*
             ~/.android/system-images/
-          # ✅ 2. UPDATE THE CACHE KEY to match the x86_64 architecture
-          key: avd-30-x86_64
+          key: avd-30-arm64-v3 # Changed key to ensure a fresh cache
 
       - name: Create and run Emulator
         uses: reactivecircus/android-emulator-runner@v2
         with:
           api-level: 30
+          # ✅ 1. USE AN ARM EMULATOR: We must match the ARM host.
           target: google_apis
-          # ✅ 3. USE AN INTEL (x86_64) EMULATOR to match the Intel runner
-          arch: x86_64
+          arch: arm64-v8a
           profile: Nexus 6
-          # ✅ 4. FIX THE TYPO: Use the correct parameter name
           emulator-boot-timeout: 600
-          emulator-options: -no-window -no-snapshot -no-boot-anim -gpu swiftshader_indirect
-          # ✅ 5. USE THE BUILT-IN 'disable-animations' for reliability
+          # ✅ 2. THE CRITICAL FIX: Add '-feature -Vulkan' to the emulator options.
+          # This disables certain hardware features that are unsupported in the CI's ARM environment
+          # and prevents the 'HVF error'.
+          emulator-options: -no-snapshot -no-window -no-boot-anim -feature -Vulkan
           disable-animations: true
-          script: echo "Emulator is ready. Animations were disabled by the action."
+          script: echo "Emulator is ready."
 
       - name: Run instrumentation tests
         run: ./gradlew connectedCheck
