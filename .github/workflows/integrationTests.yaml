@@ -20,6 +20,10 @@ jobs:
           java-version: '17'
           distribution: 'temurin'
 
+      # ✅ THE FINAL FIX, PART 1: Install the 'timeout' command
+      - name: Install coreutils (for gtimeout)
+        run: brew install coreutils
+
       - name: Set up Android SDK PATH
         run: |
           echo "$ANDROID_SDK_ROOT/cmdline-tools/latest/bin" >> $GITHUB_PATH
@@ -28,16 +32,10 @@ jobs:
         shell: bash
 
       - name: Install SDK components and Create AVD
-        # ✅ THE CORRECT & FINAL FIX:
-        # Use _JAVA_OPTIONS to force the cmdline-tools to use their own bundled JAXB/JAX-WS libraries.
-        # This is the standard way to fix "NoClassDefFoundError" for javax.xml.bind on modern JDKs.
         env:
           _JAVA_OPTIONS: "-XX:+IgnoreUnrecognizedVMOptions --add-modules java.xml.bind,java.xml.ws.annotation"
         run: |
-          echo "--- Installing SDK components with correct JAXB fix ---"
           echo "y" | sdkmanager --install "system-images;android-30;google_apis;arm64-v8a" "emulator" "platform-tools"
-          
-          echo "--- Creating AVD ---"
           echo no | avdmanager create avd --force -n test --package "system-images;android-30;google_apis;arm64-v8a" --abi "google_apis/arm64-v8a"
 
       - name: Launch Emulator and Monitor in Background
@@ -54,7 +52,9 @@ jobs:
           
           sleep 10
           echo "--- Waiting for emulator to boot (max 10 mins) ---"
-          timeout 600 adb wait-for-device
+          
+          # ✅ THE FINAL FIX, PART 2: Use the Homebrew-installed 'gtimeout'
+          gtimeout 600 adb wait-for-device
           BOOT_RESULT=$?
           
           echo "--- Final ADB Devices Status ---"
