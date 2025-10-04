@@ -3,8 +3,12 @@ package com.example.gymapprefactor.business.network
 import android.content.Context
 import com.example.gymapprefactor.app.util.dispatcher.DispatcherProvider
 import com.example.gymapprefactor.business.models.ActiveGameState
+import com.example.gymapprefactor.business.models.Deck
+import com.example.gymapprefactor.business.models.DefaultDeck
+import com.example.gymapprefactor.business.models.DefaultLetter
 import com.example.gymapprefactor.business.models.DefaultUser
 import com.example.gymapprefactor.business.models.GameState
+import com.example.gymapprefactor.business.models.Letter
 import com.example.gymapprefactor.business.models.NoneGameState
 import com.example.gymapprefactor.business.models.User
 import com.google.gson.GsonBuilder
@@ -25,6 +29,13 @@ class UserStorage @Inject constructor(
 	private val dispatcherProvider: DispatcherProvider,
 	@ApplicationContext private val context: Context,
 ){
+	private val deckAdapterFactory = RuntimeTypeAdapterFactory
+		.of(Deck::class.java, "type")
+		.registerSubtype(DefaultDeck::class.java, "default")
+
+	private val letterAdapterFactory = RuntimeTypeAdapterFactory
+		.of(Letter::class.java, "type")
+		.registerSubtype(DefaultLetter::class.java, "default")
 	private val gameStateAdapterFactory = RuntimeTypeAdapterFactory
 		.of(GameState::class.java, "type")
 		.registerSubtype(ActiveGameState::class.java, "active")
@@ -36,6 +47,8 @@ class UserStorage @Inject constructor(
 	private val gson = GsonBuilder()
 		.registerTypeAdapterFactory(userAdapterFactory)
 		.registerTypeAdapterFactory(gameStateAdapterFactory)
+		.registerTypeAdapterFactory(deckAdapterFactory)
+		.registerTypeAdapterFactory(letterAdapterFactory)
 		.create()
 	private val mutex = Mutex()
 
