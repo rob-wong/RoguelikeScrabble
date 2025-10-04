@@ -1,4 +1,4 @@
-name: Android CI (Production)
+name: Android CI (Instrumentation Tests)
 
 on:
   push:
@@ -8,75 +8,86 @@ on:
 
 jobs:
   instrumentation-tests:
-    runs-on: macos-latest # Use the standard, reliable Intel-based runner
+    runs-on: macos-latest
+    timeout-minutes: 30
 
     steps:
-      - name: Check out code
+      - name: 🧾 Check out code
         uses: actions/checkout@v4
 
-      - name: Set up JDK 17
+      - name: ☕ Set up JDK 17
         uses: actions/setup-java@v4
         with:
           java-version: '17'
           distribution: 'temurin'
 
-      - name: Install coreutils (for gtimeout)
+      - name: 🧰 Install coreutils (for gtimeout)
         run: brew install coreutils
 
-      - name: Set up Android SDK PATH
+      - name: 📦 Set up Android SDK PATH
         run: |
           echo "$ANDROID_SDK_ROOT/cmdline-tools/latest/bin" >> $GITHUB_PATH
           echo "$ANDROID_SDK_ROOT/emulator" >> $GITHUB_PATH
           echo "$ANDROID_SDK_ROOT/platform-tools" >> $GITHUB_PATH
         shell: bash
 
-      - name: Install SDK components and Create AVD
+      - name: 🧩 Install SDK components and create AVD
         env:
-          # This fixes the Java 11+ JAXB issue for sdkmanager
           _JAVA_OPTIONS: "-XX:+IgnoreUnrecognizedVMOptions --add-modules java.xml.bind,java.xml.ws.annotation"
         run: |
-          # ✅ THE CRITICAL FIX: Install and use the x86_64 system image
-          echo "y" | sdkmanager --install "system-images;android-30;google_apis;x86_64" "emulator" "platform-tools"
-          # ✅ Create an x86_64 AVD to match the Intel host runner
-          echo no | avdmanager create avd --force -n test --package "system-images;android-30;google_apis;x86_64" --abi "google_apis/x86_64"
+          echo "y" | sdkmanager --install \
+            "system-images;android-30;google_apis;x86_64" \
+            "platforms;android-30" \
+            "emulator" \
+            "platform-tools"
+          echo "no" | avdmanager create avd --force \
+            -n test \
+            --package "system-images;android-30;google_apis;x86_64" \
+            --abi "x86_64"
 
-      - name: Launch Emulator and Monitor in Background
+      - name: 🚀 Launch Emulator and Wait for Boot
+        timeout-minutes: 15
         run: |
-          echo "--- Starting Emulator in background ---"
-          nohup emulator \
-            -avd test \
+          echo "--- Configuring AVD for faster boot ---"
+          echo "hw.cpu.ncore=1" >> ~/.android/avd/test.avd/config.ini
+          echo "hw.ramSize=2048" >> ~/.android/avd/test.avd/config.ini
+
+          echo "--- Starting Emulator ---"
+          nohup emulator -avd test \
             -no-snapshot \
             -no-window \
             -no-boot-anim \
             -no-audio \
-            -gpu auto \
+            -gpu swiftshader_indirect \
             -verbose \
             > emulator-log.txt 2>&1 &
-          
-          sleep 15
-          echo "--- Waiting for emulator to boot (max 10 mins) ---"
-          gtimeout 600 adb wait-for-device
-          BOOT_RESULT=$?
-          
-          echo "--- Final ADB Devices Status ---"
-          adb devices
-          echo "--- Dumping emulator log ---"
-          cat emulator-log.txt
-          
-          if [ $BOOT_RESULT -ne 0 ]; then
-            echo "!!! CRITICAL: 'adb wait-for-device' timed out. Emulator is not responsive. !!!"
+
+          echo "--- Waiting for emulator to boot (max 5 mins) ---"
+          boot_completed=""
+          attempts=0
+          while [ "$boot_completed" != "1" ] && [ $attempts -lt 30 ]; do
+            boot_completed=$(adb shell getprop sys.boot_completed 2>/dev/null | tr -d '\r')
+            sleep 10
+            attempts=$((attempts + 1))
+            echo "Boot check #$attempts: $boot_completed"
+          done
+
+          if [ "$boot_completed" != "1" ]; then
+            echo "❌ Emulator failed to boot after $attempts attempts"
+            cat emulator-log.txt
             exit 1
-          else
-            echo "--- Emulator booted successfully, disabling animations ---"
-            adb shell settings put global window_animation_scale 0.0
-            adb shell settings put global transition_animation_scale 0.0
-            adb shell settings put global animator_duration_scale 0.0
           fi
 
-      - name: Run instrumentation tests
-        run: ./gradlew connectedCheck
+          echo "✅ Emulator booted successfully"
+          adb devices
+          adb shell settings put global window_animation_scale 0
+          adb shell settings put global transition_animation_scale 0
+          adb shell settings put global animator_duration_scale 0
 
-      - name: Upload test reports
+      - name: 🧪 Run Instrumentation Tests
+        run: ./gradlew connectedCheck --stacktrace
+
+      - name: 📊 Upload Test Reports
         if: always()
         uses: actions/upload-artifact@v4
         with:
