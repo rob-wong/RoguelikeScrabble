@@ -10,8 +10,9 @@ on:
 
 jobs:
   instrumentation-tests:
-    # We can use the newer arm64 runners which are often faster
-    runs-on: macos-latest
+    # ✅ THE FINAL FIX: Use a runner with an ARM64 (Apple Silicon) CPU
+    # The 'macos-14' runner is ARM-based. 'macos-latest' is currently Intel.
+    runs-on: macos-14
 
     steps:
       - name: Check out code
@@ -26,7 +27,7 @@ jobs:
       - name: Setup Gradle
         uses: gradle/actions/setup-gradle@v3
 
-      # Update the cache key to reflect the new architecture
+      # The cache key should match the architecture
       - name: AVD Caching
         uses: actions/cache@v4
         id: avd-cache
@@ -34,18 +35,20 @@ jobs:
           path: |
             ~/.android/avd/*
             ~/.android/system-images/
-          key: avd-30-arm64 # ✅ CHANGED cache key
+          key: avd-30-arm64
 
       - name: Create and run Emulator
         uses: reactivecircus/android-emulator-runner@v2
         with:
           api-level: 30
-          # ✅ 1. CHANGE THE TARGET: google_apis_playstore is often more compatible
+          # The target and architecture should match the ARM runner
           target: google_apis_playstore
-          # ✅ 2. CHANGE THE ARCHITECTURE: Match the runner's ARM64 architecture
           arch: arm64-v8a
           profile: Nexus 6
           boot-timeout: 600
+          # We also need to add 'emulator-options' to disable host-side rendering,
+          # which is a common fix for ARM-on-ARM emulation in CI.
+          emulator-options: -no-window -no-snapshot -no-boot-anim -gpu swiftshader_indirect
           script: |
             echo "Disabling animations to stabilize emulator..."
             adb shell settings put global window_animation_scale 0.0
