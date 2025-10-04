@@ -1,4 +1,4 @@
-name: Android CI (Production with Heartbeat Debug)
+name: Android CI (Production)
 
 on:
   push:
@@ -8,7 +8,7 @@ on:
 
 jobs:
   instrumentation-tests:
-    runs-on: macos-latest
+    runs-on: macos-latest # Use the standard, reliable Intel-based runner
 
     steps:
       - name: Check out code
@@ -32,74 +32,39 @@ jobs:
 
       - name: Install SDK components and Create AVD
         env:
+          # This fixes the Java 11+ JAXB issue for sdkmanager
           _JAVA_OPTIONS: "-XX:+IgnoreUnrecognizedVMOptions --add-modules java.xml.bind,java.xml.ws.annotation"
         run: |
-          echo "y" | sdkmanager --install "system-images;android-30;google_apis;arm64-v8a" "emulator" "platform-tools"
-          echo no | avdmanager create avd --force -n test --package "system-images;android-30;google_apis;arm64-v8a" --abi "google_apis/arm64-v8a"
+          # ✅ THE CRITICAL FIX: Install and use the x86_64 system image
+          echo "y" | sdkmanager --install "system-images;android-30;google_apis;x86_64" "emulator" "platform-tools"
+          # ✅ Create an x86_64 AVD to match the Intel host runner
+          echo no | avdmanager create avd --force -n test --package "system-images;android-30;google_apis;x86_64" --abi "google_apis/x86_64"
 
       - name: Launch Emulator and Monitor in Background
         run: |
-          echo "--- Starting Emulator in background with most stable options ---"
-          
-          # Use the most robust set of options for CI environments
+          echo "--- Starting Emulator in background ---"
           nohup emulator \
             -avd test \
             -no-snapshot \
             -no-window \
             -no-boot-anim \
             -no-audio \
-            -camera-back none \
             -gpu auto \
             -verbose \
             > emulator-log.txt 2>&1 &
           
-          # Give it a moment to ensure the process has started
           sleep 15
+          echo "--- Waiting for emulator to boot (max 10 mins) ---"
+          gtimeout 600 adb wait-for-device
+          BOOT_RESULT=$?
           
-          # ✅ THE HEARTBEAT DEBUGGING LOOP ✅
-          # This will give us live updates from inside the boot process.
-          echo "--- Starting Heartbeat Debug Loop (Max 10 minutes) ---"
-          success=false
-          # Loop for 20 attempts, 30 seconds apart (10 minutes total)
-          for i in {1..20}; do
-            echo "--- Heartbeat Tick #$i ---"
-          
-            # 1. Check if emulator process is still alive
-            if ! pgrep -fl emulator; then
-              echo "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"
-              echo "!!! CRITICAL: Emulator process has DIED. Crash detected. !!!"
-              echo "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"
-              success=false
-              break
-            fi
-          
-            # 2. Check the state of adb devices
-            adb devices
-          
-            # 3. Check if the device is fully online ('device' state)
-            # The 'grep -w' ensures we match the whole word 'device'
-            if adb devices | grep -w 'emulator-5554' | grep -w 'device'; then
-              echo "--- Emulator is online! Boot successful. ---"
-              success=true
-              break
-            fi
-          
-            # 4. If not online, dump the tail of the log and wait
-            echo "--- Emulator not yet online. Dumping latest log entries: ---"
-            tail -n 50 emulator-log.txt
-            echo "--- Waiting 30 seconds... ---"
-            sleep 30
-          done
-          
-          # Final check and log dump
-          echo "--- Heartbeat loop finished. Dumping full log. ---"
+          echo "--- Final ADB Devices Status ---"
+          adb devices
+          echo "--- Dumping emulator log ---"
           cat emulator-log.txt
           
-          # Fail the job if the loop did not succeed
-          if [ "$success" = false ]; then
-            echo "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"
-            echo "!!! CRITICAL: Emulator failed to become ready in 10 minutes. !!!"
-            echo "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"
+          if [ $BOOT_RESULT -ne 0 ]; then
+            echo "!!! CRITICAL: 'adb wait-for-device' timed out. Emulator is not responsive. !!!"
             exit 1
           else
             echo "--- Emulator booted successfully, disabling animations ---"
