@@ -1,4 +1,4 @@
-name: Android CI (Deep Debug)
+name: Android CI (Final)
 
 on:
   push:
@@ -20,50 +20,26 @@ jobs:
           java-version: '17'
           distribution: 'temurin'
 
-      - name: Setup Gradle
-        uses: gradle/actions/setup-gradle@v3
-
-      # ====================================================================
-      # ===== SECTION 1: ANDROID SDK PATH SETUP (THE FIX) ==================
-      # ====================================================================
-      - name: ✅ Set up Android SDK PATH
+      - name: Set up Android SDK PATH
         run: |
           echo "Adding Android SDK tools to PATH"
-          # The ANDROID_SDK_ROOT variable is provided by the GitHub runner environment.
-          # We add the required tool directories to the GITHUB_PATH.
           echo "$ANDROID_SDK_ROOT/cmdline-tools/latest/bin" >> $GITHUB_PATH
           echo "$ANDROID_SDK_ROOT/emulator" >> $GITHUB_PATH
           echo "$ANDROID_SDK_ROOT/platform-tools" >> $GITHUB_PATH
-          echo "$ANDROID_SDK_ROOT/tools" >> $GITHUB_PATH
-          echo "$ANDROID_SDK_ROOT/tools/bin" >> $GITHUB_PATH
         shell: bash
 
-      # ====================================================================
-      # ===== SECTION 2: PRE-FLIGHT ENVIRONMENT CHECKS =====================
-      # ====================================================================
-      - name: ✅ DEBUG - Verify Paths and SDK Manager
-        run: |
-          echo "--- Verifying system PATH ---"
-          echo $PATH
-          echo "--- Checking sdkmanager location and version ---"
-          which sdkmanager
-          sdkmanager --version
-
-      - name: ✅ DEBUG - Check System Resources & Arch
-        run: |
-          echo "--- Machine Architecture ---"
-          uname -a
-          echo "--- Disk Space ---"
-          df -h
-
-      # ====================================================================
-      # ===== SECTION 3: EMULATOR LAUNCH & MONITORING ======================
-      # ====================================================================
       - name: Install SDK components and Create AVD
+        # ✅ THE FINAL FIX: Set JAVA_OPTS to include the missing JAXB libraries
+        # This tells the JVM where to find the javax.xml.bind classes that were
+        # removed from modern JDKs.
+        env:
+          JAVA_OPTS: "-Djava.awt.headless=true -XX:+IgnoreUnrecognizedVMOptions --add-modules java.se.ee"
         run: |
-          # Now sdkmanager will be found correctly
+          echo "--- Installing SDK components with JAXB fix ---"
+          # Now sdkmanager will find the required Java classes.
           echo "y" | sdkmanager --install "system-images;android-30;google_apis;arm64-v8a" "emulator" "platform-tools"
-          # Create AVD
+          
+          echo "--- Creating AVD ---"
           echo no | avdmanager create avd --force -n test --package "system-images;android-30;google_apis;arm64-v8a" --abi "google_apis/arm64-v8a"
 
       - name: Launch Emulator and Monitor in Background
@@ -97,9 +73,6 @@ jobs:
             exit 1
           fi
 
-      # ====================================================================
-      # ===== SECTION 4: TEST EXECUTION ====================================
-      # ====================================================================
       - name: Run instrumentation tests
         run: ./gradlew connectedCheck
 
