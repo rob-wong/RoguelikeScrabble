@@ -1,4 +1,4 @@
-name: Android CI (Final)
+name: Android CI (Production)
 
 on:
   push:
@@ -22,21 +22,19 @@ jobs:
 
       - name: Set up Android SDK PATH
         run: |
-          echo "Adding Android SDK tools to PATH"
           echo "$ANDROID_SDK_ROOT/cmdline-tools/latest/bin" >> $GITHUB_PATH
           echo "$ANDROID_SDK_ROOT/emulator" >> $GITHUB_PATH
           echo "$ANDROID_SDK_ROOT/platform-tools" >> $GITHUB_PATH
         shell: bash
 
       - name: Install SDK components and Create AVD
-        # ✅ THE FINAL FIX: Set JAVA_OPTS to include the missing JAXB libraries
-        # This tells the JVM where to find the javax.xml.bind classes that were
-        # removed from modern JDKs.
+        # ✅ THE CORRECT & FINAL FIX:
+        # Use _JAVA_OPTIONS to force the cmdline-tools to use their own bundled JAXB/JAX-WS libraries.
+        # This is the standard way to fix "NoClassDefFoundError" for javax.xml.bind on modern JDKs.
         env:
-          JAVA_OPTS: "-Djava.awt.headless=true -XX:+IgnoreUnrecognizedVMOptions --add-modules java.se.ee"
+          _JAVA_OPTIONS: "-XX:+IgnoreUnrecognizedVMOptions --add-modules java.xml.bind,java.xml.ws.annotation"
         run: |
-          echo "--- Installing SDK components with JAXB fix ---"
-          # Now sdkmanager will find the required Java classes.
+          echo "--- Installing SDK components with correct JAXB fix ---"
           echo "y" | sdkmanager --install "system-images;android-30;google_apis;arm64-v8a" "emulator" "platform-tools"
           
           echo "--- Creating AVD ---"
@@ -54,17 +52,13 @@ jobs:
             -verbose \
             > emulator-log.txt 2>&1 &
           
-          # Give it a moment to create a process
           sleep 10
-          
           echo "--- Waiting for emulator to boot (max 10 mins) ---"
           timeout 600 adb wait-for-device
-          
           BOOT_RESULT=$?
           
           echo "--- Final ADB Devices Status ---"
           adb devices
-          
           echo "--- Dumping emulator log ---"
           cat emulator-log.txt
           
