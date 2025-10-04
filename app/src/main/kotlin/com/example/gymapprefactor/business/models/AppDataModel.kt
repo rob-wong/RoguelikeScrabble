@@ -5,7 +5,6 @@ import com.example.gymapprefactor.business.network.UserStorage
 import kotlinx.coroutines.withContext
 import javax.inject.Inject
 import javax.inject.Singleton
-import android.util.Log
 
 @Singleton
 class AppDataModel @Inject constructor(
@@ -16,26 +15,21 @@ class AppDataModel @Inject constructor(
 
     suspend fun fetchOrCreateUser() {
         withContext(dispatcherProvider.io) {
-            Log.d("UserCreationTest", "Starting fetchOrCreateUser on thread: ${Thread.currentThread().name}")
             val fetchedUser = fetchUser()
 
             if (fetchedUser != null) {
-                Log.d("UserCreationTest", "User found in storage: ${fetchedUser.username}")
                 user = fetchedUser
             } else {
-                Log.d("UserCreationTest", "User NOT found in storage. Calling createDefaultUser().")
                 user = createDefaultUser()
             }
         }
     }
 
     private suspend fun fetchUser(): User? {
-        Log.d("UserCreationTest", "Calling userStorage.loadUser()")
         return userStorage.loadUser()
     }
 
     private suspend fun createDefaultUser(): User {
-        Log.d("UserCreationTest", "Inside createDefaultUser(). Creating 'Username'...")
         val newUser = DefaultUser(
             username = "Username",
             runesCount = 100,
@@ -43,9 +37,7 @@ class AppDataModel @Inject constructor(
             unlockedEffects = listOf(),
             gameState = NoneGameState()
         )
-        Log.d("UserCreationTest", "User object created. Calling userStorage.saveUser().")
         userStorage.saveUser(newUser)
-        Log.d("UserCreationTest", "Finished userStorage.saveUser(). Returning new user.")
         return newUser
     }
 

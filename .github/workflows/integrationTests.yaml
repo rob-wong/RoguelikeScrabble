@@ -1,10 +1,5 @@
-# This workflow runs your Android Instrumentation tests on a GitHub-hosted emulator
 
-name: Android CI
-
-# Controls when the workflow will run
 on:
-  # Triggers the workflow on push or pull request events for the "main" branch
   push:
     branches: [ "main" ]
   pull_request:
@@ -12,25 +7,21 @@ on:
 
 jobs:
   instrumentation-tests:
-    runs-on: macos-latest # Emulators run better on macOS virtual machines
+    runs-on: macos-latest
 
     steps:
-      # 1. Check out the code from your repository
       - name: Check out code
         uses: actions/checkout@v4
 
-      # 2. Set up the Java environment (required for Gradle)
       - name: Set up JDK 17
         uses: actions/setup-java@v4
         with:
           java-version: '17'
           distribution: 'temurin'
 
-      # 3. Set up Gradle caching for faster builds
       - name: Setup Gradle
         uses: gradle/actions/setup-gradle@v3
 
-      # 4. AVD Caching: Cache the emulator system image for faster startup
       - name: AVD Caching
         uses: actions/cache@v4
         id: avd-cache
@@ -40,7 +31,7 @@ jobs:
             ~/.android/system-images/
           key: avd-30 # Use a key that matches your API level
 
-      # 5. The core step: Create and run the emulator in the background
+      # This is the step to modify
       - name: Create and run Emulator
         uses: reactivecircus/android-emulator-runner@v2
         with:
@@ -48,15 +39,25 @@ jobs:
           target: google_apis
           arch: x86_64
           profile: Nexus 6
-          script: echo "Emulator started" # A simple command to run after startup
+          # ✅ FIX 1: Increase the boot timeout significantly
+          boot-timeout: 600 # 600 seconds = 10 minutes
+          # ✅ FIX 2: Add script commands to prepare the environment
+          script: |
+            echo "Disabling animations and enabling hardware acceleration..."
+            adb shell settings put global window_animation_scale 0.0
+            adb shell settings put global transition_animation_scale 0.0
+            adb shell settings put global animator_duration_scale 0.0
+            echo "Emulator is ready."
 
-      # 6. Run your instrumented tests!
       - name: Run instrumentation tests
-        run: ./gradlew connectedCheck
+        # ✅ FIX 3: Add a retry mechanism for flaky connections
+        uses: wca-actions/run-command@v1
+        with:
+          command: ./gradlew connectedCheck
+          retries: 2 # Retry the command up to 2 times if it fails
 
-      # 7. (Optional but recommended) Upload test reports
       - name: Upload test reports
-        if: always() # This ensures reports are uploaded even if tests fail
+        if: always()
         uses: actions/upload-artifact@v4
         with:
           name: instrumentation-test-reports

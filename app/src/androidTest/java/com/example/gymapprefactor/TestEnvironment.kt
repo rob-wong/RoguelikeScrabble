@@ -48,13 +48,10 @@ object TestEnvironment {
 		val deadline = timeSource.markNow() + timeout
 
 		while (deadline.hasNotPassedNow()) {
-			if (condition()) {
-				return // Condition met, exit successfully
-			}
-			kotlinx.coroutines.delay(pollInterval) // Use the coroutine delay
+			if (condition()) { return }
+			kotlinx.coroutines.delay(pollInterval)
 		}
 
-		// If the loop completes without the condition being met
 		throw Throwable("Condition was not met within ${timeout.inWholeSeconds} seconds.")
 	}
 
