@@ -10,9 +10,8 @@ on:
 
 jobs:
   instrumentation-tests:
-    # ✅ THE FINAL FIX: Use a runner with an ARM64 (Apple Silicon) CPU
-    # The 'macos-14' runner is ARM-based. 'macos-latest' is currently Intel.
-    runs-on: macos-14
+    # ✅ 1. USE THE STANDARD INTEL RUNNER: This is the most reliable and available runner.
+    runs-on: macos-latest
 
     steps:
       - name: Check out code
@@ -27,7 +26,7 @@ jobs:
       - name: Setup Gradle
         uses: gradle/actions/setup-gradle@v3
 
-      # The cache key should match the architecture
+      # Update the cache key to reflect the x86 architecture
       - name: AVD Caching
         uses: actions/cache@v4
         id: avd-cache
@@ -35,26 +34,23 @@ jobs:
           path: |
             ~/.android/avd/*
             ~/.android/system-images/
-          key: avd-30-arm64
+          # ✅ 2. UPDATE THE CACHE KEY to match the x86_64 architecture
+          key: avd-30-x86_64
 
       - name: Create and run Emulator
         uses: reactivecircus/android-emulator-runner@v2
         with:
           api-level: 30
-          # The target and architecture should match the ARM runner
-          target: google_apis_playstore
-          arch: arm64-v8a
+          target: google_apis
+          # ✅ 3. USE AN INTEL (x86_64) EMULATOR to match the Intel runner
+          arch: x86_64
           profile: Nexus 6
-          boot-timeout: 600
-          # We also need to add 'emulator-options' to disable host-side rendering,
-          # which is a common fix for ARM-on-ARM emulation in CI.
+          # ✅ 4. FIX THE TYPO: Use the correct parameter name
+          emulator-boot-timeout: 600
           emulator-options: -no-window -no-snapshot -no-boot-anim -gpu swiftshader_indirect
-          script: |
-            echo "Disabling animations to stabilize emulator..."
-            adb shell settings put global window_animation_scale 0.0
-            adb shell settings put global transition_animation_scale 0.0
-            adb shell settings put global animator_duration_scale 0.0
-            echo "Emulator is ready."
+          # ✅ 5. USE THE BUILT-IN 'disable-animations' for reliability
+          disable-animations: true
+          script: echo "Emulator is ready. Animations were disabled by the action."
 
       - name: Run instrumentation tests
         run: ./gradlew connectedCheck
