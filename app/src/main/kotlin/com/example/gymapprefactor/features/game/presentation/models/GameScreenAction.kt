@@ -6,6 +6,7 @@ sealed class GameScreenAction : Action {
 	data class StartPlaying(
 		val glyphCount: Int,
 		val runesCount: Int,
+		val onQuitPressed: () -> Unit,
 	) : GameScreenAction()
 
 	data object None : GameScreenAction()

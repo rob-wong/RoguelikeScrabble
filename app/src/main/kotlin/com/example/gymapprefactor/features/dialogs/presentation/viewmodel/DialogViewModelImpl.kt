@@ -21,6 +21,14 @@ class DialogViewModelImpl @Inject constructor(
 
 	private fun setContent() {
 		viewModelScope.launch(dispatcherProvider.main) {
+			dialogReducer.update(DialogAction.InitializeDismiss(
+				onDismiss = ::dismissDialog
+			))
+		}
+	}
+
+	private fun dismissDialog() {
+		viewModelScope.launch(dispatcherProvider.main) {
 			dialogReducer.update(DialogAction.ClearDialogs)
 		}
 	}

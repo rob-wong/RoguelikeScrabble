@@ -1,22 +1,32 @@
 package com.example.gymapprefactor.features.dialogs.ui
 
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.wrapContentSize
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.gymapprefactor.app.util.DevicePreviews
 import com.example.gymapprefactor.app.util.DeviceUtil
+import com.example.gymapprefactor.common.components.buttons.presentation.IconButtonState
+import com.example.gymapprefactor.common.components.buttons.ui.ButtonRouter
 import com.example.gymapprefactor.common.components.presentation.ImageState
 import com.example.gymapprefactor.common.components.ui.ImageRouter
 import com.example.gymapprefactor.features.dialogs.presentation.models.DialogState
 import com.example.gymapprefactor.features.dialogs.presentation.viewmodel.DialogViewModelImpl
+import com.example.gymapprefactor.ui.theme.Typography
 
 @Composable
 fun DialogRoot(
@@ -34,23 +44,35 @@ fun DialogRoot(
 @Composable
 private fun DialogContent(
 	state: DialogState.Content,
-	modifier: Modifier = Modifier
+	modifier: Modifier = Modifier,
 ) {
 	Dialog(
 		onDismissRequest = state.onDismissRequest,
 	) {
-			Box(
-				modifier = modifier.wrapContentSize()
+		Box(
+			modifier = modifier.wrapContentSize(),
+			contentAlignment = Alignment.TopCenter
+		) {
+			ImageRouter(
+				state = ImageState.DialogBackground,
+				modifier = Modifier
+					.width(dialogWidthRouter()),
+				isLandscape = DeviceUtil.isLandscape,
+				contentScale = ContentScale.FillWidth
+			)
+			Column(
+				modifier = Modifier.padding(100.dp)
 			) {
-				ImageRouter(
-					state = ImageState.DialogBackground,
-					modifier = Modifier
-						.width(dialogWidthRouter()),
-					isLandscape = DeviceUtil.isLandscape,
-					contentScale = ContentScale.FillWidth
+				Text(
+					text = state.title,
+					style = Typography.bodyMedium,
+					modifier = Modifier.fillMaxWidth(),
+					textAlign = TextAlign.Center
 				)
+				ButtonRouter(state.confirmState, Modifier.fillMaxWidth())
+				ButtonRouter(state.dismissState, Modifier.fillMaxWidth())
 			}
-
+		}
 	}
 }
 
@@ -67,5 +89,17 @@ private fun dialogWidthRouter(): Dp {
 @Composable
 @DevicePreviews
 private fun DialogPreview() {
-	DialogContent(DialogState.Content({ }, ""))
+	DialogContent(
+		DialogState.Content(
+			{ },
+			"DIALOG TITLE",
+			IconButtonState.Content(
+				onClick = { },
+				image = ImageState.ConfirmIcon
+			),
+			dismissState = IconButtonState.Content(
+				onClick = { },
+				image = ImageState.DismissIcon
+			),
+		))
 }
