@@ -24,113 +24,82 @@ jobs:
         uses: gradle/actions/setup-gradle@v3
 
       # ====================================================================
-      # ===== SECTION 1: PRE-FLIGHT ENVIRONMENT CHECKS =====================
+      # ===== SECTION 1: ANDROID SDK PATH SETUP (THE FIX) ==================
       # ====================================================================
+      - name: ✅ Set up Android SDK PATH
+        run: |
+          echo "Adding Android SDK tools to PATH"
+          # The ANDROID_SDK_ROOT variable is provided by the GitHub runner environment.
+          # We add the required tool directories to the GITHUB_PATH.
+          echo "$ANDROID_SDK_ROOT/cmdline-tools/latest/bin" >> $GITHUB_PATH
+          echo "$ANDROID_SDK_ROOT/emulator" >> $GITHUB_PATH
+          echo "$ANDROID_SDK_ROOT/platform-tools" >> $GITHUB_PATH
+          echo "$ANDROID_SDK_ROOT/tools" >> $GITHUB_PATH
+          echo "$ANDROID_SDK_ROOT/tools/bin" >> $GITHUB_PATH
+        shell: bash
+
+      # ====================================================================
+      # ===== SECTION 2: PRE-FLIGHT ENVIRONMENT CHECKS =====================
+      # ====================================================================
+      - name: ✅ DEBUG - Verify Paths and SDK Manager
+        run: |
+          echo "--- Verifying system PATH ---"
+          echo $PATH
+          echo "--- Checking sdkmanager location and version ---"
+          which sdkmanager
+          sdkmanager --version
 
       - name: ✅ DEBUG - Check System Resources & Arch
         run: |
           echo "--- Machine Architecture ---"
           uname -a
-          echo "--- CPU & Memory Details ---"
-          sysctl hw
           echo "--- Disk Space ---"
           df -h
-
-      - name: ✅ DEBUG - Check for Port Conflicts (Pre-Launch)
-        run: |
-          echo "--- Checking for listeners on emulator ports 5554, 5555 ---"
-          lsof -i :5554-5555 || echo "Ports 5554-5555 are free."
-
-      # ====================================================================
-      # ===== SECTION 2: FORCED CLEAN SDK INSTALL ==========================
-      # ====================================================================
-
-      - name: ✅ DEBUG - Force Clean SDK & System Image Install
-        run: |
-          echo "--- Forcing fresh install of SDK components ---"
-          # We target ARM because the logs consistently show an ARM host.
-          sdkmanager --install "system-images;android-30;google_apis;arm64-v8a" emulator platform-tools --channel=0
-          echo "--- Finished SDK install ---"
-
-      - name: ✅ DEBUG - Verify Emulator Binary Dependencies
-        run: |
-          echo "--- Checking shared library dependencies for emulator binary ---"
-          otool -L $ANDROID_HOME/emulator/qemu/darwin-aarch64/qemu-system-aarch64 || echo "Failed to check libs, path might be wrong."
-          otool -L $ANDROID_HOME/emulator/emulator || echo "Failed to check libs for emulator."
-
-      - name: ✅ DEBUG - Verify SDK Permissions
-        run: |
-          echo "--- Checking permissions for SDK directories (top-level) ---"
-          ls -l $ANDROID_HOME
-          ls -l $ANDROID_HOME/emulator
-          ls -l $ANDROID_HOME/platform-tools
-          ls -l $ANDROID_HOME/system-images/android-30/google_apis/arm64-v8a/
 
       # ====================================================================
       # ===== SECTION 3: EMULATOR LAUNCH & MONITORING ======================
       # ====================================================================
+      - name: Install SDK components and Create AVD
+        run: |
+          # Now sdkmanager will be found correctly
+          echo "y" | sdkmanager --install "system-images;android-30;google_apis;arm64-v8a" "emulator" "platform-tools"
+          # Create AVD
+          echo no | avdmanager create avd --force -n test --package "system-images;android-30;google_apis;arm64-v8a" --abi "google_apis/arm64-v8a"
 
       - name: Launch Emulator and Monitor in Background
         run: |
           echo "--- Starting Emulator in background ---"
-          # Start the emulator with nohup to ensure it keeps running & redirect output
-          nohup $ANDROID_HOME/emulator/emulator \
+          nohup emulator \
             -avd test \
-            -port 5554 \
             -no-snapshot \
             -no-window \
             -no-boot-anim \
             -feature -Vulkan \
             -verbose \
-            -show-kernel \
             > emulator-log.txt 2>&1 &
           
           # Give it a moment to create a process
-          sleep 5
+          sleep 10
           
-          echo "--- Monitoring Emulator Process and Log ---"
-          # Check if the process exists
-          pgrep -fl emulator
-          if [ $? -ne 0 ]; then
-            echo "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"
-            echo "!!! CRITICAL: Emulator process did not start or died immediately. !!!"
-            echo "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"
-            echo "--- Dumping initial emulator log ---"
-            cat emulator-log.txt
-            exit 1
-          fi
-          
-          # Monitor the boot process
           echo "--- Waiting for emulator to boot (max 10 mins) ---"
-          timeout 600 adb -s emulator-5554 wait-for-device
+          timeout 600 adb wait-for-device
           
-          # Capture the result
           BOOT_RESULT=$?
-          
-          echo "--- Final Emulator Process Status ---"
-          pgrep -fl emulator
           
           echo "--- Final ADB Devices Status ---"
           adb devices
           
-          echo "--- Dumping full emulator log ---"
+          echo "--- Dumping emulator log ---"
           cat emulator-log.txt
           
           if [ $BOOT_RESULT -ne 0 ]; then
-            echo "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"
             echo "!!! CRITICAL: 'adb wait-for-device' timed out. Emulator is not responsive. !!!"
-            echo "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"
             exit 1
           fi
-
-      # This step is now redundant because we do it in the script, but we keep it as a final check
-      - name: Final ADB Check
-        run: adb devices
 
       # ====================================================================
       # ===== SECTION 4: TEST EXECUTION ====================================
       # ====================================================================
-
       - name: Run instrumentation tests
         run: ./gradlew connectedCheck
 
