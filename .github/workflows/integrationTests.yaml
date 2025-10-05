@@ -46,6 +46,9 @@ jobs:
           disable-animations: true
           boot-timeout: 1200
           script: |
+            echo "--- Setting gradlew permissions ---"
+            chmod +x ./gradlew
+            
             echo "--- Devices ---"
             adb devices
             adb wait-for-device
