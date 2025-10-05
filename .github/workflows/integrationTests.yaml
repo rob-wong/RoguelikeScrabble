@@ -78,53 +78,20 @@ jobs:
           echo "--- Emulator config ---"
           cat ~/.android/avd/test.avd/config.ini
 
-      - name: 🚀 Launch Emulator (max-debug)
+      - name: 🚀 Launch Android Emulator (headless, software mode)
         run: |
-          echo "Killing stray adb..."
-          pkill -9 adb || true
-          adb kill-server || true
-          sleep 3
+          echo "Creating AVD..."
+          echo "no" | avdmanager create avd -n test -k "system-images;android-30;google_apis;arm64-v8a" --force || true
+          echo "AVD created!"
 
-          echo "--- Starting emulator ---"
-          nohup emulator -avd test \
-            -no-snapshot -no-audio -no-window \
-            -no-boot-anim -gpu swiftshader_indirect \
-            -no-metrics -verbose > emulator-log.txt 2>&1 &
+          echo "Starting emulator..."
+          $ANDROID_SDK_ROOT/emulator/emulator -avd test -no-window -no-snapshot -gpu swiftshader_indirect -accel off -noaudio -no-boot-anim &
 
-          echo "Waiting for emulator to connect to ADB..."
-          n=0
-          until adb get-state >/dev/null 2>&1; do
-            n=$((n+1))
-            echo "[$n] Checking ADB state..."
-            adb start-server || true
-            sleep 5
-            if [ $n -gt 30 ]; then
-              echo "❌ ADB failed to connect after 150s."
-              cat emulator-log.txt || true
-              exit 1
-            fi
-          done
-
-          echo "✅ ADB connected!"
-          echo "Waiting for sys.boot_completed..."
-          for i in $(seq 1 60); do
-            boot_completed=$(adb shell getprop sys.boot_completed 2>/dev/null | tr -d '\r')
-            echo "Boot status ($i): $boot_completed"
-            [ "$boot_completed" = "1" ] && break
-            sleep 10
-          done
-
-          if [ "$boot_completed" != "1" ]; then
-            echo "❌ Emulator failed to boot."
-            cat emulator-log.txt || true
-            adb logcat -d > logcat.txt || true
-            exit 1
-          fi
-
+          echo "Waiting for emulator to boot..."
+          adb wait-for-device
+          adb shell 'while [[ -z $(getprop sys.boot_completed) ]]; do sleep 1; done;'
           echo "✅ Emulator booted successfully!"
-          adb shell settings put global window_animation_scale 0
-          adb shell settings put global transition_animation_scale 0
-          adb shell settings put global animator_duration_scale 0
+      
 
       - name: 🧪 Run Instrumentation Tests
         run: ./gradlew connectedCheck --stacktrace
