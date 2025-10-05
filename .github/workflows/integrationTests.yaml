@@ -32,6 +32,9 @@ jobs:
       - name: ⚙️ Setup Android SDK
         uses: android-actions/setup-android@v3
 
+      - name: 🔍 List available system images
+        run: sdkmanager --list | grep "system-images;"
+
       - name: 🧪 Run Instrumentation Tests
         id: instrumentation
         continue-on-error: true
@@ -39,7 +42,7 @@ jobs:
         with:
           api-level: 35
           target: google_apis
-          arch: x86
+          arch: x86_64
           profile: Nexus 4
           avd-name: test-avd
           emulator-options: "-no-window -no-audio -no-snapshot -no-boot-anim -gpu swiftshader_indirect"
