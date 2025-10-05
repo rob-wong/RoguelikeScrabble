@@ -38,17 +38,10 @@ jobs:
           rm commandlinetools.zip
           mv cmdline-tools latest
 
-          # Append to GitHub’s PATH file (for later steps)
           echo "$ANDROID_SDK_ROOT/cmdline-tools/latest/bin" >> $GITHUB_PATH
           echo "$ANDROID_SDK_ROOT/emulator" >> $GITHUB_PATH
           echo "$ANDROID_SDK_ROOT/platform-tools" >> $GITHUB_PATH
-
-          # Also export for this step immediately
           export PATH="$ANDROID_SDK_ROOT/cmdline-tools/latest/bin:$ANDROID_SDK_ROOT/emulator:$ANDROID_SDK_ROOT/platform-tools:$PATH"
-
-          echo "--- PATH setup complete ---"
-          which sdkmanager || echo "sdkmanager NOT FOUND"
-          sdkmanager --version || true
 
           echo "--- Accepting licenses ---"
           yes | sdkmanager --licenses || true
@@ -58,10 +51,9 @@ jobs:
           sdkmanager "platform-tools" "emulator" "platforms;android-30" "system-images;android-30;google_apis;arm64-v8a"
 
           echo "--- Verifying installation ---"
-          ls -R "$ANDROID_SDK_ROOT/system-images/android-30" || echo "System images missing!"
-          ls "$ANDROID_SDK_ROOT/emulator" || echo "Emulator binaries missing!"
-          echo "✅ Android SDK setup completed successfully"
-      
+          ls "$ANDROID_SDK_ROOT/emulator" || echo "⚠️ Emulator binaries missing!"
+          ls -R "$ANDROID_SDK_ROOT/system-images/android-30" || echo "⚠️ System image missing!"
+          echo "✅ Android SDK setup completed"
 
       - name: 🧼 Kill all existing ADB daemons
         run: |
@@ -69,29 +61,74 @@ jobs:
           pkill -9 adb || true
           adb kill-server || true
           sleep 2
-          echo "--- ADB versions found ---"
-          which -a adb || true
+          which -a adb || echo "⚠️ adb not found"
+          adb version || true
 
-      - name: 📱 Create and start AVD
+      - name: 📱 Create AVD (with hardware acceleration disabled)
         run: |
-          echo no | avdmanager create avd --force -n test --package "system-images;android-30;google_apis;arm64-v8a" --abi arm64-v8a
-          echo "--- Emulator config ---"
-          cat ~/.android/avd/test.avd/config.ini
+          echo "--- Creating AVD ---"
+          echo "no" | avdmanager create avd -n test --package "system-images;android-30;google_apis;arm64-v8a" --force || true
+          AVD_DIR="$HOME/.android/avd/test.avd"
+          if [ -f "$AVD_DIR/config.ini" ]; then
+            echo "✅ Found AVD config, patching it..."
+            sed -i '' 's/^hw\.gpu=.*/hw.gpu=off/' "$AVD_DIR/config.ini" || true
+            sed -i '' 's/^hw\.accel=.*/hw.accel=no/' "$AVD_DIR/config.ini" || true
+            echo "hw.gpu=off" >> "$AVD_DIR/config.ini"
+            echo "hw.accel=no" >> "$AVD_DIR/config.ini"
+            echo "hw.cpu.ncore=2" >> "$AVD_DIR/config.ini"
+            echo "hw.ramSize=2048" >> "$AVD_DIR/config.ini"
+          else
+            echo "⚠️ No AVD config found at $AVD_DIR"
+          fi
+          echo "--- Dumping AVD config ---"
+          cat "$AVD_DIR/config.ini" || echo "⚠️ config.ini missing"
 
-      - name: 🚀 Launch Android Emulator (headless, software mode)
+      - name: 🚀 Launch Android Emulator (full diagnostic mode)
         run: |
-          echo "Creating AVD..."
-          echo "no" | avdmanager create avd -n test -k "system-images;android-30;google_apis;arm64-v8a" --force || true
-          echo "AVD created!"
+          echo "--- Starting emulator in pure software mode ---"
+          nohup $ANDROID_SDK_ROOT/emulator/emulator \
+            -avd test \
+            -no-window \
+            -no-audio \
+            -no-snapshot \
+            -gpu off \
+            -accel off \
+            -no-boot-anim \
+            -no-metrics \
+            -no-metrics-collection \
+            -verbose \
+            > emulator-log.txt 2>&1 &
 
-          echo "Starting emulator..."
-          $ANDROID_SDK_ROOT/emulator/emulator -avd test -no-window -no-snapshot -gpu swiftshader_indirect -accel off -noaudio -no-boot-anim &
+          echo "Waiting for ADB device..."
+          gtimeout 600 adb wait-for-device || {
+            echo "❌ Emulator failed to appear via adb within 10 minutes"
+            cat emulator-log.txt
+            exit 1
+          }
 
-          echo "Waiting for emulator to boot..."
-          adb wait-for-device
-          adb shell 'while [[ -z $(getprop sys.boot_completed) ]]; do sleep 1; done;'
+          echo "Checking boot progress..."
+          boot_completed=""
+          n=0
+          until [ "$boot_completed" = "1" ] || [ $n -ge 60 ]; do
+            sleep 10
+            boot_completed=$(adb shell getprop sys.boot_completed 2>/dev/null | tr -d '\r')
+            echo "Boot status: $boot_completed"
+            n=$((n+1))
+          done
+
+          if [ "$boot_completed" != "1" ]; then
+            echo "❌ Emulator failed to boot fully within 10 minutes."
+            echo "--- emulator-log.txt ---"
+            cat emulator-log.txt || echo "⚠️ No emulator log found"
+            exit 1
+          fi
+
           echo "✅ Emulator booted successfully!"
-      
+          adb devices
+          adb shell getprop ro.build.fingerprint || true
+          adb shell settings put global window_animation_scale 0
+          adb shell settings put global transition_animation_scale 0
+          adb shell settings put global animator_duration_scale 0
 
       - name: 🧪 Run Instrumentation Tests
         run: ./gradlew connectedCheck --stacktrace
