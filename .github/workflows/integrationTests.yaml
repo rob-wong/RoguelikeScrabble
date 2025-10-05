@@ -23,24 +23,19 @@ jobs:
       - name: 🧰 Install dependencies
         run: brew install coreutils
 
-      # ✅ THE CRITICAL FIX: Combined SDK setup and installation into a SINGLE step
-      # This ensures the PATH is updated correctly before sdkmanager is called.
       - name: ⚙️ Set up Android SDK & Install Components
         env:
-          # This fixes the Java 11+ JAXB error for sdkmanager
           _JAVA_OPTIONS: "-XX:+IgnoreUnrecognizedVMOptions --add-modules java.xml.bind,java.xml.ws.annotation"
         run: |
-          # --- Part 1: Set up the PATH ---
+          # Part 1: Set up the PATH
           echo "--- Setting up Android SDK paths ---"
-          # Manually export the PATH for the current script block
           export ANDROID_HOME="$ANDROID_SDK_ROOT"
           export PATH="$ANDROID_SDK_ROOT/cmdline-tools/latest/bin:$ANDROID_SDK_ROOT/emulator:$ANDROID_SDK_ROOT/platform-tools:$PATH"
-          # Also add to GITHUB_PATH for subsequent steps
           echo "$ANDROID_SDK_ROOT/cmdline-tools/latest/bin" >> $GITHUB_PATH
           echo "$ANDROID_SDK_ROOT/emulator" >> $GITHUB_PATH
           echo "$ANDROID_SDK_ROOT/platform-tools" >> $GITHUB_PATH
 
-          # --- Part 2: Download and install the tools ---
+          # Part 2: Download and install the tools
           echo "--- Downloading cmdline-tools ---"
           export CMDLINE_TOOLS_URL="https://dl.google.com/android/repository/commandlinetools-mac-10406996_latest.zip"
           mkdir -p "$ANDROID_SDK_ROOT/cmdline-tools"
@@ -49,10 +44,9 @@ jobs:
           mv "$ANDROID_SDK_ROOT/cmdline-tools/cmdline-tools" "$ANDROID_SDK_ROOT/cmdline-tools/latest"
           rm "$ANDROID_SDK_ROOT/cmdline-tools/tools.zip"
 
-          # --- Part 3: Use the tools (which are now in the PATH) ---
+          # Part 3: Use the tools
           echo "--- Accepting licenses ---"
           yes | sdkmanager --licenses
-
           echo "--- Installing Intel (x86_64) emulator components ---"
           sdkmanager --update
           sdkmanager "platform-tools" "emulator" "platforms;android-30" "system-images;android-30;google_apis;x86_64"
@@ -62,15 +56,17 @@ jobs:
           echo "--- Creating x86_64 AVD ---"
           echo "no" | avdmanager create avd -n test --package "system-images;android-30;google_apis;x86_64" --force
 
+          # ✅ Patch the AVD config for maximum CI stability
           echo "--- Patching AVD config for CI ---"
           echo "hw.cpu.ncore=2" >> ~/.android/avd/test.avd/config.ini
-          echo "hw.ramSize=2048" >> ~/.android/avd/test.avd/config.ini
+          echo "hw.ramSize=2048MB" >> ~/.android/avd/test.avd/config.ini
           echo "hw.gpu.enabled=yes" >> ~/.android/avd/test.avd/config.ini
-          echo "hw.gpu.mode=auto" >> ~/.android/avd/test.avd/config.ini
+          # ✅ Use a known-stable software renderer instead of 'auto'
+          echo "hw.gpu.mode=swiftshader_indirect" >> ~/.android/avd/test.avd/config.ini
 
       - name: 🚀 Launch Android Emulator
         run: |
-          echo "--- Starting emulator with hardware acceleration ---"
+          echo "--- Starting emulator ---"
           nohup emulator \
             -avd test \
             -no-window \
@@ -79,9 +75,10 @@ jobs:
             -no-boot-anim \
             -verbose > emulator-log.txt 2>&1 &
           
-          sleep 15
+          sleep 20 # Give the emulator a bit more time to initialize before polling
           
           echo "--- Waiting up to 10 minutes for emulator to boot... ---"
+          # Use gtimeout for a clean exit after 10 minutes
           gtimeout 600 bash -c '
             while [ "$(adb shell getprop sys.boot_completed 2>/dev/null)" != "1" ]; do
               echo "[$(date +"%H:%M:%S")] Boot status: `adb shell getprop sys.boot_completed 2>/dev/null`"
