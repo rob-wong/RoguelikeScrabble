@@ -46,25 +46,17 @@ jobs:
           disable-animations: true
           boot-timeout: 1200
           script: |
-            bash -c '
-              echo "--- Devices ---"
-              adb devices
-              adb wait-for-device
-              echo "--- Boot prop ---"
-              adb shell getprop sys.boot_completed || true
+            echo "--- Devices ---"
+            adb devices
+            adb wait-for-device
+            echo "--- Boot prop ---"
+            adb shell getprop sys.boot_completed || true
 
-              echo "--- Starting tests ---"
-              for i in 1 2 3; do
-                ./gradlew connectedDebugAndroidTest --stacktrace && break
-                echo "⚠️ Test run failed, retrying in 30s ($i/3)..."
-                sleep 30
-              done
+            echo "--- Starting tests ---"
+            i=0; while [ $i -lt 3 ]; do ./gradlew connectedDebugAndroidTest --stacktrace && break; echo "⚠️ Test run failed, retrying..."; sleep 30; i=$((i+1)); done
 
-              echo "--- Pulling test results ---"
-              ls -R app/build/reports/androidTests || true
-            '
-      
-      
+            echo "--- Pulling test results ---"
+            ls -R app/build/reports/androidTests || true
 
       - name: 🧾 Capture Emulator Logs on Failure
         if: failure()
