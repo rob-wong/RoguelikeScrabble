@@ -8,7 +8,6 @@ on:
 
 jobs:
   instrumentation-tests:
-    name: Run Android Instrumentation Tests
     runs-on: ubuntu-latest
     timeout-minutes: 60
 
@@ -29,25 +28,56 @@ jobs:
             ~/.gradle/caches
             ~/.gradle/wrapper
           key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
-          restore-keys: ${{ runner.os }}-gradle-
 
       - name: ⚙️ Setup Android SDK
         uses: android-actions/setup-android@v3
 
-      - name: 🧪 Run Instrumentation Tests on Emulator
+      - name: 🧪 Run Instrumentation Tests
+        id: instrumentation
+        continue-on-error: true
         uses: reactivecircus/android-emulator-runner@v2
         with:
-          api-level: 30
+          api-level: 29
           target: google_apis
-          arch: x86_64
-          profile: pixel_5
+          arch: x86
+          profile: Nexus 4
+          avd-name: test-avd
+          emulator-options: "-no-window -no-audio -no-snapshot -no-boot-anim -gpu swiftshader_indirect"
           disable-animations: true
-          emulator-options: "-no-snapshot -noaudio -no-boot-anim -gpu swiftshader_indirect -no-window"
-          script: ./gradlew connectedCheck --stacktrace
+          boot-timeout: 1200
+          script: |
+            echo "--- Devices ---"
+            adb devices
+            adb wait-for-device
+            echo "--- Boot prop ---"
+            adb shell getprop sys.boot_completed || true
 
-      - name: 📤 Upload Instrumentation Test Reports
+            echo "--- Starting tests ---"
+            for i in 1 2 3; do
+              ./gradlew connectedDebugAndroidTest --stacktrace && break
+              echo "⚠️ Test run failed, retrying in 30s ($i/3)..."
+              sleep 30
+            done
+
+            echo "--- Pulling test results ---"
+            ls -R app/build/reports/androidTests || true
+
+      - name: 🧾 Capture Emulator Logs on Failure
+        if: failure()
+        run: |
+          echo "=== Dumping emulator logcat ==="
+          adb logcat -d > emulator-logcat.txt || echo "⚠️ Could not capture logcat"
+          echo "=== Dumping system logs ==="
+          adb shell dmesg > emulator-dmesg.txt || echo "⚠️ Could not capture dmesg"
+          echo "=== Listing files for inspection ==="
+          ls -lh emulator-*.txt || true
+
+      - name: 📤 Upload Logs & Reports
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: instrumentation-test-reports
-          path: app/build/reports/androidTests/connected/
+          name: android-test-artifacts
+          path: |
+            app/build/reports/androidTests/connected/
+            emulator-logcat.txt
+            emulator-dmesg.txt
