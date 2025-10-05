@@ -8,7 +8,6 @@ on:
 
 jobs:
   android-tests:
-    # Use Ubuntu, which is a reliable x86_64 environment
     runs-on: ubuntu-latest
 
     steps:
@@ -24,26 +23,17 @@ jobs:
       - name: 🧪 Run tests on Headless Emulator
         uses: reactivecircus/android-emulator-runner@v2
         with:
-          # --- Configuration aligned for MAXIMUM stability ---
-
-          # 1. API Level: 30 is a very stable choice for CI.
           api-level: 30
 
-          # 2. Target: ✅ USE THE HEADLESS IMAGE. This is the key fix.
-          # aosp_atd is specifically for Automated Test Devices in CI.
+          # aosp_atd is a headless image, good for android CI tests
           target: aosp_atd
 
-          # 3. Architecture: MUST be x86_64 to match the ubuntu-latest runner
           arch: x86_64
 
-          # 4. Emulator Options: Critical for headless CI environments.
-          #    -gpu swiftshader_indirect: A reliable software renderer that prevents service crashes.
           emulator-options: -no-window -no-snapshot -no-boot-anim -no-audio -gpu swiftshader_indirect
 
-          # 5. Let the action handle animations.
           disable-animations: true
 
-          # 6. Gradle Command: Make the wrapper executable (defensive) and run the tests.
           script: |
             chmod +x ./gradlew
             ./gradlew connectedCheck --stacktrace
