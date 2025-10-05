@@ -83,52 +83,71 @@ jobs:
           echo "--- Dumping AVD config ---"
           cat "$AVD_DIR/config.ini" || echo "⚠️ config.ini missing"
 
-      - name: 🚀 Launch Android Emulator (full diagnostic mode)
+      - name: 🚀 Launch Android Emulator (software mode, debug enabled)
         run: |
-          echo "--- Starting emulator in pure software mode ---"
+          echo "=== Emulator Launch Step ==="
+          echo "PATH: $PATH"
+          echo "ANDROID_SDK_ROOT: $ANDROID_SDK_ROOT"
+
+          echo "--- Checking emulator binary ---"
+          which emulator || echo "❌ Emulator binary not found in PATH!"
+          emulator -version || echo "❌ Could not get emulator version"
+          ls -lh "$ANDROID_SDK_ROOT/emulator" || echo "❌ Emulator directory missing!"
+
+          echo "--- Checking system images ---"
+          ls -lh "$ANDROID_SDK_ROOT/system-images/android-30/google_apis/arm64-v8a" || echo "❌ System image not found!"
+
+          echo "--- Checking AVD configuration ---"
+          cat ~/.android/avd/test.avd/config.ini || echo "⚠️ No AVD config found!"
+
+          echo "--- Starting emulator in software mode ---"
           nohup $ANDROID_SDK_ROOT/emulator/emulator \
             -avd test \
             -no-window \
-            -no-audio \
             -no-snapshot \
-            -gpu off \
-            -accel off \
+            -noaudio \
             -no-boot-anim \
-            -no-metrics \
-            -no-metrics-collection \
-            -verbose \
-            > emulator-log.txt 2>&1 &
+            -gpu swiftshader_indirect \
+            -accel off \
+            -verbose > emulator-log.txt 2>&1 &
 
-          echo "Waiting for ADB device..."
-          gtimeout 600 adb wait-for-device || {
-            echo "❌ Emulator failed to appear via adb within 10 minutes"
-            cat emulator-log.txt
-            exit 1
-          }
+          EMU_PID=$!
+          echo "Emulator PID: $EMU_PID"
+          sleep 5
 
-          echo "Checking boot progress..."
+          echo "--- Listing running emulator processes ---"
+          ps aux | grep emulator || true
+
+          echo "--- Checking adb devices (initial) ---"
+          adb devices || echo "⚠️ ADB not connected yet"
+
+          echo "Waiting up to 10 minutes for emulator to boot..."
           boot_completed=""
           n=0
           until [ "$boot_completed" = "1" ] || [ $n -ge 60 ]; do
             sleep 10
             boot_completed=$(adb shell getprop sys.boot_completed 2>/dev/null | tr -d '\r')
-            echo "Boot status: $boot_completed"
+            echo "[$(date +"%H:%M:%S")] Boot status: $boot_completed"
+            adb devices
             n=$((n+1))
           done
 
+          echo "--- Final ADB check ---"
+          adb devices || true
+
           if [ "$boot_completed" != "1" ]; then
-            echo "❌ Emulator failed to boot fully within 10 minutes."
-            echo "--- emulator-log.txt ---"
-            cat emulator-log.txt || echo "⚠️ No emulator log found"
+            echo "❌ Emulator failed to boot within 10 minutes."
+            echo "=== EMULATOR LOG DUMP ==="
+            cat emulator-log.txt || echo "No emulator log found."
             exit 1
           fi
 
           echo "✅ Emulator booted successfully!"
-          adb devices
-          adb shell getprop ro.build.fingerprint || true
+          adb shell input keyevent 82
           adb shell settings put global window_animation_scale 0
           adb shell settings put global transition_animation_scale 0
           adb shell settings put global animator_duration_scale 0
+      
 
       - name: 🧪 Run Instrumentation Tests
         run: ./gradlew connectedCheck --stacktrace
