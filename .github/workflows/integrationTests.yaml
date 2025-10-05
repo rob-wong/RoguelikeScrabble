@@ -37,7 +37,9 @@ jobs:
           target: default
           arch: x86_64
           profile: Nexus 5
-          script: ./gradlew connectedDebugAndroidTest --stacktrace
           disable-linux-hw-accel: true
           force-avd-creation: true
           emulator-options: -no-window -no-audio -no-boot-anim -no-snapshot -gpu off
+          script: |
+            chmod +x ./gradlew
+            ./gradlew connectedDebugAndroidTest --stacktrace
