@@ -8,51 +8,46 @@ on:
 
 jobs:
   android-tests:
+    # Use Ubuntu, which is a reliable x86_64 environment
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout
+      - name: 🧩 Checkout
         uses: actions/checkout@v4
 
-      - name: Set up JDK 17
+      - name: ☕ Set up JDK 17
         uses: actions/setup-java@v4
         with:
           distribution: 'temurin'
           java-version: '17'
 
-      - name: Setup Android SDK
-        uses: android-actions/setup-android@v3
+      # The android-emulator-runner action handles SDK installation automatically.
+      # Manual setup is not needed and can cause conflicts.
 
-      - name: Accept licenses
-        run: yes | sdkmanager --licenses
-
-      - name: Install SDK packages
-        run: |
-          sdkmanager --install "platforms;android-34" "system-images;android-34;google_apis_playstore;arm64-v8a"
-
-      - name: 🧪 Run Instrumentation Tests
+      - name: 🧪 Run tests on Emulator
         uses: reactivecircus/android-emulator-runner@v2
         with:
-          api-level: 30
-          target: google_apis
-          arch: x86_64
-          profile: Nexus 4
-          avd-name: test
-          emulator-options: -no-snapshot -no-window -gpu off -noaudio
-          disable-animations: true
-          boot-timeout: 1800
-          script: |
-            echo "--- Checking devices ---"
-            adb devices
-            adb wait-for-device
-            
-            echo "--- Boot prop ---"
-            adb shell getprop ro.build.version.sdk
-            
-            echo "--- Starting tests ---"
-            chmod +x ./gradlew
-            ./gradlew connectedDebugAndroidTest --stacktrace && break
+          # --- Configuration aligned for stability ---
 
-            echo "--- Pulling test results ---"
-            ls -R app/build/reports/androidTests || true
-      
+          # 1. API Level: Consistent API level. 30 is a very stable choice.
+          api-level: 30
+
+          # 2. Target: Use a headless image for CI. 'aosp_atd' is best, 'google_apis' is good.
+          target: google_apis
+
+          # 3. Architecture: MUST be x86_64 to match the ubuntu-latest runner
+          arch: x86_64
+
+          # 4. Emulator Options: Critical for headless CI environments
+          #    -gpu swiftshader_indirect: A reliable software renderer.
+          #    -no-snapshot: Prevents loading from a potentially corrupt state.
+          emulator-options: -no-window -no-snapshot -no-boot-anim -no-audio -gpu swiftshader_indirect
+
+          # 5. Let the action handle animations. `disable-animations` is more reliable than manual adb commands.
+          disable-animations: true
+
+          # 6. Gradle Command: This is the command to run *after* the emulator is fully booted and stable.
+          script: |
+            chmod +x ./gradlew
+            ./gradlew connectedCheck --stacktrace
+
