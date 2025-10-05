@@ -1,4 +1,4 @@
-name: Android CI (Production)
+name: Android Instrumentation Tests
 
 on:
   push:
@@ -8,111 +8,44 @@ on:
 
 jobs:
   instrumentation-tests:
-    runs-on: macos-latest
+    name: Run Android Instrumentation Tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
 
     steps:
       - name: 🧩 Checkout
         uses: actions/checkout@v4
 
-      - name: ☕ Set up JDK 17
+      - name: ☕ Setup JDK 17
         uses: actions/setup-java@v4
         with:
-          java-version: '17'
-          distribution: 'temurin'
+          distribution: temurin
+          java-version: 17
 
-      - name: 🧰 Install dependencies
-        run: brew install coreutils
-
-      # ✅ Enable AVD Caching
-      - name: Cache AVD
+      - name: 💾 Cache Gradle
         uses: actions/cache@v4
-        id: avd-cache
         with:
-          path: ~/.android/avd/*
-          key: ${{ runner.os }}-avd-30-aosp-atd
+          path: |
+            ~/.gradle/caches
+            ~/.gradle/wrapper
+          key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle*', '**/gradle-wrapper.properties') }}
+          restore-keys: ${{ runner.os }}-gradle-
 
-      - name: ⚙️ Set up Android SDK & Install Components
-        env:
-          _JAVA_OPTIONS: "-XX:+IgnoreUnrecognizedVMOptions --add-modules java.xml.bind,java.xml.ws.annotation"
-        run: |
-          # Part 1: Set up the PATH
-          echo "--- Setting up Android SDK paths ---"
-          export ANDROID_HOME="$ANDROID_SDK_ROOT"
-          export PATH="$ANDROID_SDK_ROOT/cmdline-tools/latest/bin:$ANDROID_SDK_ROOT/emulator:$ANDROID_SDK_ROOT/platform-tools:$PATH"
-          echo "$ANDROID_SDK_ROOT/cmdline-tools/latest/bin" >> $GITHUB_PATH
-          echo "$ANDROID_SDK_ROOT/emulator" >> $GITHUB_PATH
-          echo "$ANDROID_SDK_ROOT/platform-tools" >> $GITHUB_PATH
+      - name: ⚙️ Setup Android SDK
+        uses: android-actions/setup-android@v3
 
-          # Part 2: Download and install the tools
-          echo "--- Downloading cmdline-tools ---"
-          export CMDLINE_TOOLS_URL="https://dl.google.com/android/repository/commandlinetools-mac-10406996_latest.zip"
-          mkdir -p "$ANDROID_SDK_ROOT/cmdline-tools"
-          curl -sSL -o "$ANDROID_SDK_ROOT/cmdline-tools/tools.zip" "$CMDLINE_TOOLS_URL"
-          unzip -q "$ANDROID_SDK_ROOT/cmdline-tools/tools.zip" -d "$ANDROID_SDK_ROOT/cmdline-tools"
-          mv "$ANDROID_SDK_ROOT/cmdline-tools/cmdline-tools" "$ANDROID_SDK_ROOT/cmdline-tools/latest"
-          rm "$ANDROID_SDK_ROOT/cmdline-tools/tools.zip"
+      - name: 🧪 Run Instrumentation Tests on Emulator
+        uses: reactivecircus/android-emulator-runner@v2
+        with:
+          api-level: 30
+          target: google_apis
+          arch: x86_64
+          profile: pixel_5
+          disable-animations: true
+          emulator-options: "-no-snapshot -noaudio -no-boot-anim -gpu swiftshader_indirect -no-window"
+          script: ./gradlew connectedCheck --stacktrace
 
-          # Part 3: Use the tools
-          echo "--- Accepting licenses ---"
-          yes | sdkmanager --licenses
-          echo "--- Installing HEADLESS (aosp_atd) emulator components ---"
-          sdkmanager --update
-          # ✅ THE CRITICAL CHANGE: Use the headless system image
-          sdkmanager "platform-tools" "emulator" "platforms;android-30" "system-images;android-30;aosp_atd;x86_64"
-
-      - name: 📱 Create AVD
-        # Only create the AVD if the cache was not restored
-        if: steps.avd-cache.outputs.cache-hit != 'true'
-        run: |
-          echo "--- Creating AVD (cache miss) ---"
-          # ✅ Use the headless 'aosp_atd' package
-          echo "no" | avdmanager create avd -n test --package "system-images;android-30;aosp_atd;x86_64" --force
-          echo "--- Patching AVD config for CI ---"
-          echo "hw.cpu.ncore=2" >> ~/.android/avd/test.avd/config.ini
-          echo "hw.ramSize=2048MB" >> ~/.android/avd/test.avd/config.ini
-          echo "hw.gpu.enabled=yes" >> ~/.android/avd/test.avd/config.ini
-          echo "hw.gpu.mode=swiftshader_indirect" >> ~/.android/avd/test.avd/config.ini
-
-      - name: 🚀 Launch Android Emulator
-        run: |
-          echo "--- Starting emulator in pure software mode ---"
-          # ✅ THE FINAL CHANGE: Add -accel off to prevent HAXM attempts
-          nohup emulator \
-            -avd test \
-            -no-window \
-            -no-snapshot \
-            -noaudio \
-            -no-boot-anim \
-            -accel off \
-            -verbose > emulator-log.txt 2>&1 &
-          
-          sleep 20
-          
-          echo "--- Waiting up to 10 minutes for emulator to boot... ---"
-          gtimeout 600 bash -c '
-            while [ "$(adb shell getprop sys.boot_completed 2>/dev/null)" != "1" ]; do
-              echo "[$(date +"%H:%M:%S")] Boot status: `adb shell getprop sys.boot_completed 2>/dev/null`"
-              sleep 10
-            done
-          '
-          
-          boot_completed=$(adb shell getprop sys.boot_completed 2>/dev/null | tr -d '\r')
-          if [ "$boot_completed" != "1" ]; then
-            echo "❌ Emulator failed to boot within 10 minutes."
-            echo "=== EMULATOR LOG DUMP ==="
-            cat emulator-log.txt || echo "No emulator log found."
-            exit 1
-          fi
-
-          echo "✅ Emulator booted successfully!"
-          adb shell settings put global window_animation_scale 0
-          adb shell settings put global transition_animation_scale 0
-          adb shell settings put global animator_duration_scale 0
-
-      - name: 🧪 Run Instrumentation Tests
-        run: ./gradlew connectedCheck --stacktrace
-
-      - name: 📤 Upload Reports
+      - name: 📤 Upload Instrumentation Test Reports
         if: always()
         uses: actions/upload-artifact@v4
         with:
