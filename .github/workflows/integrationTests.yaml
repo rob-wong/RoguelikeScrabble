@@ -21,18 +21,27 @@ jobs:
           distribution: 'temurin'
 
       - name: 🧰 Install dependencies
-        run: |
-          brew install coreutils || true
-          mkdir -p ~/.android
-          touch ~/.android/repositories.cfg
+        run: brew install coreutils
 
-      - name: ⚙️ Set up Android SDK
-        # This ENV var fixes the JAXB error in modern JDKs for sdkmanager
+      # ✅ THE CRITICAL FIX: Combined SDK setup and installation into a SINGLE step
+      # This ensures the PATH is updated correctly before sdkmanager is called.
+      - name: ⚙️ Set up Android SDK & Install Components
         env:
+          # This fixes the Java 11+ JAXB error for sdkmanager
           _JAVA_OPTIONS: "-XX:+IgnoreUnrecognizedVMOptions --add-modules java.xml.bind,java.xml.ws.annotation"
         run: |
-          echo "--- Preparing Android SDK ---"
-          # Using a known stable version of cmdline-tools
+          # --- Part 1: Set up the PATH ---
+          echo "--- Setting up Android SDK paths ---"
+          # Manually export the PATH for the current script block
+          export ANDROID_HOME="$ANDROID_SDK_ROOT"
+          export PATH="$ANDROID_SDK_ROOT/cmdline-tools/latest/bin:$ANDROID_SDK_ROOT/emulator:$ANDROID_SDK_ROOT/platform-tools:$PATH"
+          # Also add to GITHUB_PATH for subsequent steps
+          echo "$ANDROID_SDK_ROOT/cmdline-tools/latest/bin" >> $GITHUB_PATH
+          echo "$ANDROID_SDK_ROOT/emulator" >> $GITHUB_PATH
+          echo "$ANDROID_SDK_ROOT/platform-tools" >> $GITHUB_PATH
+
+          # --- Part 2: Download and install the tools ---
+          echo "--- Downloading cmdline-tools ---"
           export CMDLINE_TOOLS_URL="https://dl.google.com/android/repository/commandlinetools-mac-10406996_latest.zip"
           mkdir -p "$ANDROID_SDK_ROOT/cmdline-tools"
           curl -sSL -o "$ANDROID_SDK_ROOT/cmdline-tools/tools.zip" "$CMDLINE_TOOLS_URL"
@@ -40,26 +49,19 @@ jobs:
           mv "$ANDROID_SDK_ROOT/cmdline-tools/cmdline-tools" "$ANDROID_SDK_ROOT/cmdline-tools/latest"
           rm "$ANDROID_SDK_ROOT/cmdline-tools/tools.zip"
 
-          # Add SDK tools to path for all subsequent steps
-          echo "$ANDROID_SDK_ROOT/cmdline-tools/latest/bin" >> $GITHUB_PATH
-          echo "$ANDROID_SDK_ROOT/emulator" >> $GITHUB_PATH
-          echo "$ANDROID_SDK_ROOT/platform-tools" >> $GITHUB_PATH
-
+          # --- Part 3: Use the tools (which are now in the PATH) ---
           echo "--- Accepting licenses ---"
           yes | sdkmanager --licenses
 
-          # ✅ THE CRITICAL CHANGE: Switched from 'arm64-v8a' to 'x86_64' to match the Intel runner
           echo "--- Installing Intel (x86_64) emulator components ---"
           sdkmanager --update
           sdkmanager "platform-tools" "emulator" "platforms;android-30" "system-images;android-30;google_apis;x86_64"
 
       - name: 📱 Create Intel AVD
         run: |
-          # ✅ Use the x86_64 package to create the AVD
           echo "--- Creating x86_64 AVD ---"
           echo "no" | avdmanager create avd -n test --package "system-images;android-30;google_apis;x86_64" --force
 
-          # Patch the AVD config for stability in CI
           echo "--- Patching AVD config for CI ---"
           echo "hw.cpu.ncore=2" >> ~/.android/avd/test.avd/config.ini
           echo "hw.ramSize=2048" >> ~/.android/avd/test.avd/config.ini
@@ -69,8 +71,7 @@ jobs:
       - name: 🚀 Launch Android Emulator
         run: |
           echo "--- Starting emulator with hardware acceleration ---"
-          # Hardware acceleration will now work because the architectures match
-          nohup $ANDROID_SDK_ROOT/emulator/emulator \
+          nohup emulator \
             -avd test \
             -no-window \
             -no-snapshot \
@@ -81,18 +82,13 @@ jobs:
           sleep 15
           
           echo "--- Waiting up to 10 minutes for emulator to boot... ---"
-          boot_completed=""
-          n=0
-          # Use gtimeout for a clean exit after 10 minutes
           gtimeout 600 bash -c '
             while [ "$(adb shell getprop sys.boot_completed 2>/dev/null)" != "1" ]; do
               echo "[$(date +"%H:%M:%S")] Boot status: `adb shell getprop sys.boot_completed 2>/dev/null`"
-              adb devices
               sleep 10
             done
           '
           
-          # Final check
           boot_completed=$(adb shell getprop sys.boot_completed 2>/dev/null | tr -d '\r')
           if [ "$boot_completed" != "1" ]; then
             echo "❌ Emulator failed to boot within 10 minutes."
