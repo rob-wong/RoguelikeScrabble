@@ -21,33 +21,29 @@ jobs:
           distribution: 'temurin'
           java-version: '17'
 
-      # The android-emulator-runner action handles SDK installation automatically.
-      # Manual setup is not needed and can cause conflicts.
-
-      - name: 🧪 Run tests on Emulator
+      - name: 🧪 Run tests on Headless Emulator
         uses: reactivecircus/android-emulator-runner@v2
         with:
-          # --- Configuration aligned for stability ---
+          # --- Configuration aligned for MAXIMUM stability ---
 
-          # 1. API Level: Consistent API level. 30 is a very stable choice.
+          # 1. API Level: 30 is a very stable choice for CI.
           api-level: 30
 
-          # 2. Target: Use a headless image for CI. 'aosp_atd' is best, 'google_apis' is good.
-          target: google_apis
+          # 2. Target: ✅ USE THE HEADLESS IMAGE. This is the key fix.
+          # aosp_atd is specifically for Automated Test Devices in CI.
+          target: aosp_atd
 
           # 3. Architecture: MUST be x86_64 to match the ubuntu-latest runner
           arch: x86_64
 
-          # 4. Emulator Options: Critical for headless CI environments
-          #    -gpu swiftshader_indirect: A reliable software renderer.
-          #    -no-snapshot: Prevents loading from a potentially corrupt state.
+          # 4. Emulator Options: Critical for headless CI environments.
+          #    -gpu swiftshader_indirect: A reliable software renderer that prevents service crashes.
           emulator-options: -no-window -no-snapshot -no-boot-anim -no-audio -gpu swiftshader_indirect
 
-          # 5. Let the action handle animations. `disable-animations` is more reliable than manual adb commands.
+          # 5. Let the action handle animations.
           disable-animations: true
 
-          # 6. Gradle Command: This is the command to run *after* the emulator is fully booted and stable.
+          # 6. Gradle Command: Make the wrapper executable (defensive) and run the tests.
           script: |
             chmod +x ./gradlew
             ./gradlew connectedCheck --stacktrace
-
