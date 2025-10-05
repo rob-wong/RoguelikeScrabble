@@ -8,7 +8,7 @@ on:
 
 jobs:
   instrumentation-tests:
-    runs-on: macos-latest # This is an Intel runner, so we must use an Intel emulator.
+    runs-on: macos-latest
 
     steps:
       - name: 🧩 Checkout
@@ -22,6 +22,14 @@ jobs:
 
       - name: 🧰 Install dependencies
         run: brew install coreutils
+
+      # ✅ Enable AVD Caching
+      - name: Cache AVD
+        uses: actions/cache@v4
+        id: avd-cache
+        with:
+          path: ~/.android/avd/*
+          key: ${{ runner.os }}-avd-30-aosp-atd
 
       - name: ⚙️ Set up Android SDK & Install Components
         env:
@@ -47,38 +55,40 @@ jobs:
           # Part 3: Use the tools
           echo "--- Accepting licenses ---"
           yes | sdkmanager --licenses
-          echo "--- Installing Intel (x86_64) emulator components ---"
+          echo "--- Installing HEADLESS (aosp_atd) emulator components ---"
           sdkmanager --update
-          sdkmanager "platform-tools" "emulator" "platforms;android-30" "system-images;android-30;google_apis;x86_64"
+          # ✅ THE CRITICAL CHANGE: Use the headless system image
+          sdkmanager "platform-tools" "emulator" "platforms;android-30" "system-images;android-30;aosp_atd;x86_64"
 
-      - name: 📱 Create Intel AVD
+      - name: 📱 Create AVD
+        # Only create the AVD if the cache was not restored
+        if: steps.avd-cache.outputs.cache-hit != 'true'
         run: |
-          echo "--- Creating x86_64 AVD ---"
-          echo "no" | avdmanager create avd -n test --package "system-images;android-30;google_apis;x86_64" --force
-
-          # ✅ Patch the AVD config for maximum CI stability
+          echo "--- Creating AVD (cache miss) ---"
+          # ✅ Use the headless 'aosp_atd' package
+          echo "no" | avdmanager create avd -n test --package "system-images;android-30;aosp_atd;x86_64" --force
           echo "--- Patching AVD config for CI ---"
           echo "hw.cpu.ncore=2" >> ~/.android/avd/test.avd/config.ini
           echo "hw.ramSize=2048MB" >> ~/.android/avd/test.avd/config.ini
           echo "hw.gpu.enabled=yes" >> ~/.android/avd/test.avd/config.ini
-          # ✅ Use a known-stable software renderer instead of 'auto'
           echo "hw.gpu.mode=swiftshader_indirect" >> ~/.android/avd/test.avd/config.ini
 
       - name: 🚀 Launch Android Emulator
         run: |
-          echo "--- Starting emulator ---"
+          echo "--- Starting emulator in pure software mode ---"
+          # ✅ THE FINAL CHANGE: Add -accel off to prevent HAXM attempts
           nohup emulator \
             -avd test \
             -no-window \
             -no-snapshot \
             -noaudio \
             -no-boot-anim \
+            -accel off \
             -verbose > emulator-log.txt 2>&1 &
           
-          sleep 20 # Give the emulator a bit more time to initialize before polling
+          sleep 20
           
           echo "--- Waiting up to 10 minutes for emulator to boot... ---"
-          # Use gtimeout for a clean exit after 10 minutes
           gtimeout 600 bash -c '
             while [ "$(adb shell getprop sys.boot_completed 2>/dev/null)" != "1" ]; do
               echo "[$(date +"%H:%M:%S")] Boot status: `adb shell getprop sys.boot_completed 2>/dev/null`"
