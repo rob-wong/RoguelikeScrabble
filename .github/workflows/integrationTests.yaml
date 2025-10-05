@@ -8,7 +8,7 @@ on:
 
 jobs:
   instrumentation-tests:
-    runs-on: macos-latest
+    runs-on: macos-latest # This is an Intel runner, so we must use an Intel emulator.
 
     steps:
       - name: 🧩 Checkout
@@ -27,114 +27,73 @@ jobs:
           touch ~/.android/repositories.cfg
 
       - name: ⚙️ Set up Android SDK
+        # This ENV var fixes the JAXB error in modern JDKs for sdkmanager
+        env:
+          _JAVA_OPTIONS: "-XX:+IgnoreUnrecognizedVMOptions --add-modules java.xml.bind,java.xml.ws.annotation"
         run: |
           echo "--- Preparing Android SDK ---"
+          # Using a known stable version of cmdline-tools
+          export CMDLINE_TOOLS_URL="https://dl.google.com/android/repository/commandlinetools-mac-10406996_latest.zip"
           mkdir -p "$ANDROID_SDK_ROOT/cmdline-tools"
-          cd "$ANDROID_SDK_ROOT/cmdline-tools"
+          curl -sSL -o "$ANDROID_SDK_ROOT/cmdline-tools/tools.zip" "$CMDLINE_TOOLS_URL"
+          unzip -q "$ANDROID_SDK_ROOT/cmdline-tools/tools.zip" -d "$ANDROID_SDK_ROOT/cmdline-tools"
+          mv "$ANDROID_SDK_ROOT/cmdline-tools/cmdline-tools" "$ANDROID_SDK_ROOT/cmdline-tools/latest"
+          rm "$ANDROID_SDK_ROOT/cmdline-tools/tools.zip"
 
-          echo "--- Downloading cmdline-tools ---"
-          curl -sSL -o commandlinetools.zip https://dl.google.com/android/repository/commandlinetools-mac-10406996_latest.zip
-          unzip -q commandlinetools.zip
-          rm commandlinetools.zip
-          mv cmdline-tools latest
-
+          # Add SDK tools to path for all subsequent steps
           echo "$ANDROID_SDK_ROOT/cmdline-tools/latest/bin" >> $GITHUB_PATH
           echo "$ANDROID_SDK_ROOT/emulator" >> $GITHUB_PATH
           echo "$ANDROID_SDK_ROOT/platform-tools" >> $GITHUB_PATH
-          export PATH="$ANDROID_SDK_ROOT/cmdline-tools/latest/bin:$ANDROID_SDK_ROOT/emulator:$ANDROID_SDK_ROOT/platform-tools:$PATH"
 
           echo "--- Accepting licenses ---"
-          yes | sdkmanager --licenses || true
+          yes | sdkmanager --licenses
 
-          echo "--- Installing core SDK components ---"
+          # ✅ THE CRITICAL CHANGE: Switched from 'arm64-v8a' to 'x86_64' to match the Intel runner
+          echo "--- Installing Intel (x86_64) emulator components ---"
           sdkmanager --update
-          sdkmanager "platform-tools" "emulator" "platforms;android-30" "system-images;android-30;google_apis;arm64-v8a"
+          sdkmanager "platform-tools" "emulator" "platforms;android-30" "system-images;android-30;google_apis;x86_64"
 
-          echo "--- Verifying installation ---"
-          ls "$ANDROID_SDK_ROOT/emulator" || echo "⚠️ Emulator binaries missing!"
-          ls -R "$ANDROID_SDK_ROOT/system-images/android-30" || echo "⚠️ System image missing!"
-          echo "✅ Android SDK setup completed"
-
-      - name: 🧼 Kill all existing ADB daemons
+      - name: 📱 Create Intel AVD
         run: |
-          echo "Killing any existing adb processes..."
-          pkill -9 adb || true
-          adb kill-server || true
-          sleep 2
-          which -a adb || echo "⚠️ adb not found"
-          adb version || true
+          # ✅ Use the x86_64 package to create the AVD
+          echo "--- Creating x86_64 AVD ---"
+          echo "no" | avdmanager create avd -n test --package "system-images;android-30;google_apis;x86_64" --force
 
-      - name: 📱 Create AVD (with hardware acceleration disabled)
+          # Patch the AVD config for stability in CI
+          echo "--- Patching AVD config for CI ---"
+          echo "hw.cpu.ncore=2" >> ~/.android/avd/test.avd/config.ini
+          echo "hw.ramSize=2048" >> ~/.android/avd/test.avd/config.ini
+          echo "hw.gpu.enabled=yes" >> ~/.android/avd/test.avd/config.ini
+          echo "hw.gpu.mode=auto" >> ~/.android/avd/test.avd/config.ini
+
+      - name: 🚀 Launch Android Emulator
         run: |
-          echo "--- Creating AVD ---"
-          echo "no" | avdmanager create avd -n test --package "system-images;android-30;google_apis;arm64-v8a" --force || true
-          AVD_DIR="$HOME/.android/avd/test.avd"
-          if [ -f "$AVD_DIR/config.ini" ]; then
-            echo "✅ Found AVD config, patching it..."
-            sed -i '' 's/^hw\.gpu=.*/hw.gpu=off/' "$AVD_DIR/config.ini" || true
-            sed -i '' 's/^hw\.accel=.*/hw.accel=no/' "$AVD_DIR/config.ini" || true
-            echo "hw.gpu=off" >> "$AVD_DIR/config.ini"
-            echo "hw.accel=no" >> "$AVD_DIR/config.ini"
-            echo "hw.cpu.ncore=2" >> "$AVD_DIR/config.ini"
-            echo "hw.ramSize=2048" >> "$AVD_DIR/config.ini"
-          else
-            echo "⚠️ No AVD config found at $AVD_DIR"
-          fi
-          echo "--- Dumping AVD config ---"
-          cat "$AVD_DIR/config.ini" || echo "⚠️ config.ini missing"
-
-      - name: 🚀 Launch Android Emulator (software mode, debug enabled)
-        run: |
-          echo "=== Emulator Launch Step ==="
-          echo "PATH: $PATH"
-          echo "ANDROID_SDK_ROOT: $ANDROID_SDK_ROOT"
-
-          echo "--- Checking emulator binary ---"
-          which emulator || echo "❌ Emulator binary not found in PATH!"
-          emulator -version || echo "❌ Could not get emulator version"
-          ls -lh "$ANDROID_SDK_ROOT/emulator" || echo "❌ Emulator directory missing!"
-
-          echo "--- Checking system images ---"
-          ls -lh "$ANDROID_SDK_ROOT/system-images/android-30/google_apis/arm64-v8a" || echo "❌ System image not found!"
-
-          echo "--- Checking AVD configuration ---"
-          cat ~/.android/avd/test.avd/config.ini || echo "⚠️ No AVD config found!"
-
-          echo "--- Starting emulator in software mode ---"
+          echo "--- Starting emulator with hardware acceleration ---"
+          # Hardware acceleration will now work because the architectures match
           nohup $ANDROID_SDK_ROOT/emulator/emulator \
             -avd test \
             -no-window \
             -no-snapshot \
             -noaudio \
             -no-boot-anim \
-            -gpu swiftshader_indirect \
-            -accel off \
             -verbose > emulator-log.txt 2>&1 &
-
-          EMU_PID=$!
-          echo "Emulator PID: $EMU_PID"
-          sleep 5
-
-          echo "--- Listing running emulator processes ---"
-          ps aux | grep emulator || true
-
-          echo "--- Checking adb devices (initial) ---"
-          adb devices || echo "⚠️ ADB not connected yet"
-
-          echo "Waiting up to 10 minutes for emulator to boot..."
+          
+          sleep 15
+          
+          echo "--- Waiting up to 10 minutes for emulator to boot... ---"
           boot_completed=""
           n=0
-          until [ "$boot_completed" = "1" ] || [ $n -ge 60 ]; do
-            sleep 10
-            boot_completed=$(adb shell getprop sys.boot_completed 2>/dev/null | tr -d '\r')
-            echo "[$(date +"%H:%M:%S")] Boot status: $boot_completed"
-            adb devices
-            n=$((n+1))
-          done
-
-          echo "--- Final ADB check ---"
-          adb devices || true
-
+          # Use gtimeout for a clean exit after 10 minutes
+          gtimeout 600 bash -c '
+            while [ "$(adb shell getprop sys.boot_completed 2>/dev/null)" != "1" ]; do
+              echo "[$(date +"%H:%M:%S")] Boot status: `adb shell getprop sys.boot_completed 2>/dev/null`"
+              adb devices
+              sleep 10
+            done
+          '
+          
+          # Final check
+          boot_completed=$(adb shell getprop sys.boot_completed 2>/dev/null | tr -d '\r')
           if [ "$boot_completed" != "1" ]; then
             echo "❌ Emulator failed to boot within 10 minutes."
             echo "=== EMULATOR LOG DUMP ==="
@@ -143,11 +102,9 @@ jobs:
           fi
 
           echo "✅ Emulator booted successfully!"
-          adb shell input keyevent 82
           adb shell settings put global window_animation_scale 0
           adb shell settings put global transition_animation_scale 0
           adb shell settings put global animator_duration_scale 0
-      
 
       - name: 🧪 Run Instrumentation Tests
         run: ./gradlew connectedCheck --stacktrace
