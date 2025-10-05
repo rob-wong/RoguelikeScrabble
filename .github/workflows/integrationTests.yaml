@@ -28,21 +28,41 @@ jobs:
 
       - name: ⚙️ Set up Android SDK
         run: |
+          echo "--- Preparing Android SDK ---"
           mkdir -p "$ANDROID_SDK_ROOT/cmdline-tools"
           cd "$ANDROID_SDK_ROOT/cmdline-tools"
-          # ✅ Download latest command line tools
-          curl -o commandlinetools.zip https://dl.google.com/android/repository/commandlinetools-mac-10406996_latest.zip
+
+          echo "--- Downloading cmdline-tools ---"
+          curl -sSL -o commandlinetools.zip https://dl.google.com/android/repository/commandlinetools-mac-10406996_latest.zip
           unzip -q commandlinetools.zip
           rm commandlinetools.zip
           mv cmdline-tools latest
+
           echo "$ANDROID_SDK_ROOT/cmdline-tools/latest/bin" >> $GITHUB_PATH
           echo "$ANDROID_SDK_ROOT/emulator" >> $GITHUB_PATH
           echo "$ANDROID_SDK_ROOT/platform-tools" >> $GITHUB_PATH
-          source $GITHUB_PATH || true
 
+          echo "--- PATH setup complete ---"
+          export PATH="$ANDROID_SDK_ROOT/cmdline-tools/latest/bin:$ANDROID_SDK_ROOT/emulator:$ANDROID_SDK_ROOT/platform-tools:$PATH"
+
+          echo "✅ PATH: $PATH"
+          echo "✅ Checking sdkmanager version:"
+          which sdkmanager || echo "sdkmanager NOT FOUND"
+          sdkmanager --version || true
+
+          echo "--- Accepting licenses ---"
           yes | sdkmanager --licenses || true
+
+          echo "--- Installing core SDK components ---"
           sdkmanager --update
-          sdkmanager "platform-tools" "emulator" "system-images;android-30;google_apis;arm64-v8a" "platforms;android-30"
+          sdkmanager "platform-tools" "emulator" "platforms;android-30" "system-images;android-30;google_apis;arm64-v8a"
+
+          echo "--- Verifying install ---"
+          ls -R "$ANDROID_SDK_ROOT/system-images/android-30" || echo "System images missing!"
+          ls "$ANDROID_SDK_ROOT/emulator" || echo "Emulator binaries missing!"
+
+          echo "✅ Android SDK setup completed successfully"
+      
       
 
       - name: 🧼 Kill all existing ADB daemons
