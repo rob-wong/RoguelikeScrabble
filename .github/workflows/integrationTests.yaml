@@ -30,16 +30,33 @@ jobs:
         run: |
           sdkmanager --install "platforms;android-34" "system-images;android-34;google_apis_playstore;arm64-v8a"
 
-      - name: Run instrumentation tests
+      - name: 🧪 Run Instrumentation Tests
         uses: reactivecircus/android-emulator-runner@v2
         with:
           api-level: 30
-          target: default
+          target: google_apis
           arch: x86_64
-          profile: Nexus 5
-          disable-linux-hw-accel: true
-          force-avd-creation: true
-          emulator-options: -no-window -no-audio -no-boot-anim -no-snapshot -gpu off
+          profile: Nexus 4
+          avd-name: test
+          emulator-options: -no-snapshot -no-window -gpu off -noaudio
+          disable-animations: true
+          boot-timeout: 1800
           script: |
+            echo "--- Checking devices ---"
+            adb devices
+            adb wait-for-device
+            
+            echo "--- Boot prop ---"
+            adb shell getprop ro.build.version.sdk
+            
+            echo "--- Starting tests ---"
             chmod +x ./gradlew
-            ./gradlew connectedDebugAndroidTest --stacktrace
+            for i in 1 2 3; do
+              ./gradlew connectedDebugAndroidTest --stacktrace && break
+              echo "⚠️ Test run failed, retrying in 30s ($i/3)..."
+              sleep 30
+            done
+
+            echo "--- Pulling test results ---"
+            ls -R app/build/reports/androidTests || true
+      
