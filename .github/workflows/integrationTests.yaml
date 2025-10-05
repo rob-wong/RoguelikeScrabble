@@ -51,11 +51,7 @@ jobs:
             
             echo "--- Starting tests ---"
             chmod +x ./gradlew
-            for i in 1 2 3; do
-              ./gradlew connectedDebugAndroidTest --stacktrace && break
-              echo "⚠️ Test run failed, retrying in 30s ($i/3)..."
-              sleep 30
-            done
+            ./gradlew connectedDebugAndroidTest --stacktrace && break
 
             echo "--- Pulling test results ---"
             ls -R app/build/reports/androidTests || true
