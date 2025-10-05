@@ -1,4 +1,4 @@
-name: Android CI (Instrumentation Tests - Debug)
+name: Android CI (Production)
 
 on:
   push:
@@ -9,281 +9,100 @@ on:
 jobs:
   instrumentation-tests:
     runs-on: macos-latest
-    timeout-minutes: 60
 
     steps:
-      - name: Check out code
+      - name: 🧩 Checkout
         uses: actions/checkout@v4
 
-      - name: Set up JDK 17
+      - name: ☕ Set up JDK 17
         uses: actions/setup-java@v4
         with:
           java-version: '17'
           distribution: 'temurin'
 
-      - name: Install coreutils (for gtimeout)
-        run: brew install coreutils
+      - name: 🧰 Install dependencies
+        run: |
+          brew install coreutils || true
+          mkdir -p ~/.android
+          touch ~/.android/repositories.cfg
 
-      - name: Set up Android SDK PATH
+      - name: ⚙️ Set up Android SDK
         run: |
           echo "$ANDROID_SDK_ROOT/cmdline-tools/latest/bin" >> $GITHUB_PATH
           echo "$ANDROID_SDK_ROOT/emulator" >> $GITHUB_PATH
           echo "$ANDROID_SDK_ROOT/platform-tools" >> $GITHUB_PATH
-        shell: bash
+          sdkmanager --update
+          sdkmanager "platform-tools" "emulator" "system-images;android-30;google_apis;arm64-v8a" "platforms;android-30"
 
-      - name: Detect host architecture and set ABI
-        id: arch
+      - name: 🧼 Kill all existing ADB daemons
         run: |
-          ARCH=$(uname -m)
-          if [ "$ARCH" = "arm64" ] || [ "$ARCH" = "aarch64" ]; then
-            ABI="arm64-v8a"
-          else
-            ABI="x86_64"
-          fi
-          echo "Detected architecture: $ARCH"
-          echo "Using ABI: $ABI"
-          echo "ABI=$ABI" >> $GITHUB_ENV
+          echo "Killing any existing adb processes..."
+          pkill -9 adb || true
+          adb kill-server || true
+          sleep 2
+          echo "--- ADB versions found ---"
+          which -a adb || true
 
-      - name: Install SDK components and Create AVD
-        env:
-          _JAVA_OPTIONS: "-XX:+IgnoreUnrecognizedVMOptions --add-modules java.xml.bind,java.xml.ws.annotation"
+      - name: 📱 Create and start AVD
         run: |
-          set -eux
-          echo "Installing system image for ABI: $ABI"
-          yes | sdkmanager --install "system-images;android-30;google_apis;$ABI" "emulator" "platform-tools"
-          echo "Creating AVD named 'test' (ABI=$ABI)"
-          echo no | avdmanager create avd --force -n test --package "system-images;android-30;google_apis;$ABI" --abi "google_apis/$ABI"
+          echo no | avdmanager create avd --force -n test --package "system-images;android-30;google_apis;arm64-v8a" --abi arm64-v8a
+          echo "--- Emulator config ---"
+          cat ~/.android/avd/test.avd/config.ini
 
-          # Optional optimization for faster startup
-          mkdir -p ~/.android/avd/test.avd
-          echo "hw.gpu.mode=off" >> ~/.android/avd/test.avd/config.ini || true
-          echo "hw.ramSize=2048" >> ~/.android/avd/test.avd/config.ini || true
-          echo "hw.cpu.ncore=1" >> ~/.android/avd/test.avd/config.ini || true
-
-      - name: Launch Emulator and Exhaustive Debug (one-shot forensic)
-        timeout-minutes: 30
+      - name: 🚀 Launch Emulator (max-debug)
         run: |
-          set -euxo pipefail
-          echo "================= EMULATOR DEBUG START ================="
-          date
-          echo "--- Basic host info ---"
-          uname -a || true
-          uname -m || true
-          sw_vers || true
-          echo "--- Java version ---"
-          java -version || true
-          echo "--- PATH ---"
-          echo $PATH
-          echo "--- ANDROID SDK ROOT ---"
-          echo "ANDROID_SDK_ROOT=$ANDROID_SDK_ROOT"
-          ls -la "$ANDROID_SDK_ROOT" || true
-          echo "--- emulator binary ---"
-          ls -la "$ANDROID_SDK_ROOT/emulator" || true
-          file "$ANDROID_SDK_ROOT/emulator/emulator" || true
-          echo "--- emulator version ---"
-          if command -v emulator >/dev/null 2>&1; then emulator -version || true; fi
+          echo "Killing stray adb..."
+          pkill -9 adb || true
+          adb kill-server || true
+          sleep 3
 
-          echo "--- sdkmanager list installed (quick) ---"
-          sdkmanager --list_installed || true
-          echo "--- list available system images (grep system-images) ---"
-          sdkmanager --list | grep "system-images" -A2 || true
+          echo "--- Starting emulator ---"
+          nohup emulator -avd test \
+            -no-snapshot -no-audio -no-window \
+            -no-boot-anim -gpu swiftshader_indirect \
+            -no-metrics -verbose > emulator-log.txt 2>&1 &
 
-          echo "--- avdmanager list avd ---"
-          avdmanager list avd || true
-
-          echo "--- ~/.android directory ---"
-          ls -la ~/.android || true
-          ls -la ~/.android/avd || true
-          if [ -d ~/.android/avd/test.avd ]; then
-            echo "--- test.avd config.ini ---"
-            cat ~/.android/avd/test.avd/config.ini || true
-          fi
-
-          echo "--- Disk and memory ---"
-          df -h || true
-          if command -v free >/dev/null 2>&1; then free -h || true; fi
-          if command -v sysctl >/dev/null 2>&1; then sysctl -n hw.memsize || true; fi
-
-          echo "--- Pre-launch process snapshot (emulator/qemu) ---"
-          ps aux | egrep 'emulator|qemu' || true
-
-          EMULATOR_LOG=emulator-log.txt
-          ADB_POLL_LOGS_DIR=adb-poll-logs
-          mkdir -p "$ADB_POLL_LOGS_DIR"
-
-          # Candidate GPU flags to try (ordered)
-          FLAGS_LIST=(
-            "-gpu swiftshader_indirect -no-window"
-            "-gpu host -no-window"
-            "-gpu off -no-window"
-          )
-
-          # Clean any stale emulator processes
-          pkill -f emulator || true
-          sleep 1 || true
-
-          attempt=0
-          success=0
-          for flags in "${FLAGS_LIST[@]}"; do
-            attempt=$((attempt + 1))
-            echo "------------------------------"
-            echo "Attempt #$attempt using flags: $flags"
-            echo "Clean existing logs"
-            rm -f "$EMULATOR_LOG" "$ADB_POLL_LOGS_DIR"/adb-devices-*.txt || true
-
-            echo "Starting emulator (background) with flags: $flags"
-            nohup emulator -avd test -no-snapshot -no-boot-anim -no-audio $flags -verbose > "$EMULATOR_LOG" 2>&1 &
-            EMU_PID=$!
-            echo "Emulator PID: $EMU_PID"
+          echo "Waiting for emulator to connect to ADB..."
+          n=0
+          until adb get-state >/dev/null 2>&1; do
+            n=$((n+1))
+            echo "[$n] Checking ADB state..."
+            adb start-server || true
             sleep 5
-
-            echo "--- quick ps after start ---"
-            ps -o pid,ppid,cmd -p "$EMU_PID" || ps aux | egrep 'emulator|qemu' || true
-
-            echo "--- tail of emulator log (first 200 lines) ---"
-            sleep 2 || true
-            head -n 200 "$EMULATOR_LOG" || true
-
-            echo "--- monitor adb devices until visible (or timeout 60s) ---"
-            adb wait-for-device & waitpid=$!
-            # poll for devices every 5s up to 2 minutes
-            found_device=0
-            for i in $(seq 1 24); do
-              echo "adb devices (poll #$i):" | tee "$ADB_POLL_LOGS_DIR/adb-devices-$attempt-$i.txt"
-              adb devices | tee -a "$ADB_POLL_LOGS_DIR/adb-devices-$attempt-$i.txt"
-              # Detect emulator id lines like emulator-5554 or device
-              if adb devices | awk 'NR>1 {print $2}' | grep -q 'device'; then
-                echo "Device appears as 'device' state"
-                found_device=1
-                break
-              fi
-              if adb devices | awk 'NR>1 {print $2}' | grep -q 'offline'; then
-                echo "Device appears as 'offline' (adb connectivity issue)"
-              fi
-              sleep 5
-            done
-
-            echo "--- check for full boot (sys.boot_completed) (polling up to 10 min) ---"
-            boot_completed=""
-            n=0
-            while [ "$boot_completed" != "1" ] && [ $n -lt 120 ]; do
-              boot_completed=$(adb shell getprop sys.boot_completed 2>/dev/null | tr -d '\r' || echo "")
-              echo "Boot check #$n => [$boot_completed]"
-              if echo "$boot_completed" | grep -q '1'; then
-                break
-              fi
-              # Also check for fatal patterns in emulator log:
-              if grep -iE "PANIC|FATAL|segfault|Killed|broken|error|cannot" "$EMULATOR_LOG" -n || true; then
-                echo ">>> Found possible fatal pattern in emulator log (see tail) <<<"
-                tail -n 200 "$EMULATOR_LOG" || true
-              fi
-              sleep 5
-              n=$((n+1))
-            done
-
-            echo "--- final status after attempt #$attempt ---"
-            echo "PID: $EMU_PID"
-            ps -p "$EMU_PID" -o pid,etime,cmd || echo "Emulator process not found"
-            echo "last 200 lines of emulator log:"
-            tail -n 200 "$EMULATOR_LOG" || true
-
-            if [ "$boot_completed" = "1" ]; then
-              echo "+++ Emulator booted successfully on attempt #$attempt with flags: $flags +++"
-              success=1
-              break
-            else
-              echo "!!! Attempt #$attempt failed to boot emulator with flags: $flags"
-              echo "Saving logs for attempt #$attempt"
-              cp "$EMULATOR_LOG" "emulator-log-attempt-$attempt.txt" || true
-              pkill -f emulator || true
-              sleep 3
-              echo "Continuing to next flag set..."
+            if [ $n -gt 30 ]; then
+              echo "❌ ADB failed to connect after 150s."
+              cat emulator-log.txt || true
+              exit 1
             fi
           done
 
-          if [ $success -ne 1 ]; then
-            echo "#########################"
-            echo "EMULATOR FAILED ALL ATTEMPTS"
-            echo "Dumping diagnostics..."
+          echo "✅ ADB connected!"
+          echo "Waiting for sys.boot_completed..."
+          for i in $(seq 1 60); do
+            boot_completed=$(adb shell getprop sys.boot_completed 2>/dev/null | tr -d '\r')
+            echo "Boot status ($i): $boot_completed"
+            [ "$boot_completed" = "1" ] && break
+            sleep 10
+          done
 
-            echo "--- emulator binary details ---"
-            if [ -f "$ANDROID_SDK_ROOT/emulator/emulator" ]; then
-              ls -la "$ANDROID_SDK_ROOT/emulator/emulator"
-              if command -v otool >/dev/null 2>&1; then
-                otool -L "$ANDROID_SDK_ROOT/emulator/emulator" || true
-              fi
-            fi
-
-            echo "--- installed system images ---"
-            ls -la "$ANDROID_SDK_ROOT/system-images" || true
-
-            echo "--- AVD list ---"
-            avdmanager list avd || true
-
-            echo "--- ~/.android tree ---"
-            ls -la ~/.android || true
-            ls -la ~/.android/avd || true
-            if [ -d ~/.android/avd/test.avd ]; then
-              echo "--- test.avd contents ---"
-              ls -la ~/.android/avd/test.avd || true
-              echo "--- config.ini ---"
-              cat ~/.android/avd/test.avd/config.ini || true
-            fi
-
-            echo "--- full emulator log (last 1000 lines) ---"
-            tail -n 1000 "$EMULATOR_LOG" || true
-
-            echo "--- adb devices full output ---"
-            adb devices -l || true
-
-            echo "--- last adb logcat (non-blocking) ---"
-            adb logcat -d > adb-logcat-dump.txt || true
-            tail -n 200 adb-logcat-dump.txt || true
-
-            echo "--- ps snapshot ---"
-            ps aux | egrep 'emulator|qemu' || true
-
-            echo "--- disk, mem, kernel messages ---"
-            df -h || true
-            if command -v free >/dev/null 2>&1; then free -h || true; fi
-            if command -v sysctl >/dev/null 2>&1; then sysctl -a 2>/dev/null | egrep 'hw\.mem|hw\.model|hw\.cpu' || true; fi
-
-            echo "Saving all diagnostics to artifacts directory 'emulator-debug-artifacts'"
-            mkdir -p emulator-debug-artifacts || true
-            cp -v "$EMULATOR_LOG" emulator-debug-artifacts/ || true
-            cp -v emulator-log-attempt-*.txt emulator-debug-artifacts/ || true
-            cp -v adb-logcat-dump.txt emulator-debug-artifacts/ || true
-            cp -v "$ADB_POLL_LOGS_DIR"/adb-devices-* emulator-debug-artifacts/ || true
-            ls -la emulator-debug-artifacts || true
-
-            echo "Exiting with failure so you can inspect logs."
+          if [ "$boot_completed" != "1" ]; then
+            echo "❌ Emulator failed to boot."
+            cat emulator-log.txt || true
+            adb logcat -d > logcat.txt || true
             exit 1
           fi
 
-          # If we reach here emulator booted successfully; collect and print some runtime info
-          echo "--- ABOUT TO PRINT RUNTIME DIAGNOSTICS ---"
-          adb devices -l || true
-          echo "--- getprop dump ---"
-          adb shell getprop | sed -n '1,200p' || true
-          echo "--- top processes on device ---"
-          adb shell ps -A | sed -n '1,200p' || true
-          echo "--- dump logcat (brief) ---"
-          adb logcat -d | tail -n 200 || true
+          echo "✅ Emulator booted successfully!"
+          adb shell settings put global window_animation_scale 0
+          adb shell settings put global transition_animation_scale 0
+          adb shell settings put global animator_duration_scale 0
 
-          echo "================= EMULATOR DEBUG END ================="
-        shell: bash
-
-      - name: Run instrumentation tests
+      - name: 🧪 Run Instrumentation Tests
         run: ./gradlew connectedCheck --stacktrace
 
-      - name: Upload debug artifacts & test reports
+      - name: 📤 Upload Reports
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: instrumentation-debug
-          path: |
-            emulator-log.txt
-            emulator-log-attempt-*.txt
-            adb-logcat-dump.txt
-            emulator-debug-artifacts/**
-            app/build/reports/androidTests/connected/
+          name: instrumentation-test-reports
+          path: app/build/reports/androidTests/connected/
