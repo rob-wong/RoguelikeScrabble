@@ -38,6 +38,8 @@ fun ImageRouter(
 		UpgradeIcon -> painterResource(R.drawable.icon_upgrade)
 		GlyphIcon -> painterResource(R.drawable.icon_glyph)
 		RuneIcon -> painterResource(R.drawable.icon_rune)
+
+		DefaultLetterBackground -> painterResource(R.drawable.icon_letter_background_default)
 		None -> return
 	}
 	Image(
