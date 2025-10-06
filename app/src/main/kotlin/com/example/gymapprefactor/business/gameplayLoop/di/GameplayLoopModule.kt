@@ -6,6 +6,7 @@ import com.example.gymapprefactor.business.gameplayLoop.data.GameplayRepositoryI
 import com.example.gymapprefactor.business.gameplayLoop.domain.GameplayRepository
 import com.example.gymapprefactor.business.gameplayLoop.domain.WordValidityMapper
 import com.example.gymapprefactor.business.gameplayLoop.domain.WordValidityMapperImpl
+import com.example.gymapprefactor.business.models.AppDataModel
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -18,13 +19,15 @@ import javax.inject.Singleton
 object GameplayLoopModule {
 
 	@Provides
-	fun provideGameplayDataSource(): GameplayDataSource {
-		return GameplayDataSource()
+	fun provideGameplayDataSource(
+		appDataModel : AppDataModel
+	): GameplayDataSource {
+		return GameplayDataSource(appDataModel)
 	}
 
 	@Provides
 	fun provideGameplayRepository(
-		dataSource: GameplayDataSource
+		dataSource: GameplayDataSource,
 	): GameplayRepository {
 		return GameplayRepositoryImpl(dataSource)
 	}

@@ -4,6 +4,7 @@ import com.example.gymapprefactor.business.gameplayLoop.domain.GameplayRepositor
 import com.example.gymapprefactor.business.interfaces.DataSource
 import com.example.gymapprefactor.business.models.AppDataModel
 import com.example.gymapprefactor.business.models.GameState
+import javax.inject.Inject
 
 class GameplayRepositoryImpl(
 	override val dataSource: GameplayDataSource
@@ -13,8 +14,10 @@ class GameplayRepositoryImpl(
 	}
 }
 
-class GameplayDataSource : DataSource {
+class GameplayDataSource @Inject constructor(
+	private val appDataModel: AppDataModel,
+) : DataSource {
 	fun fetchGameState(): GameState {
-		return AppDataModel.user.gameState
+		return appDataModel.user.gameState
 	}
 }
