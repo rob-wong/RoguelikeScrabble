@@ -25,14 +25,14 @@ class MainActivity : ComponentActivity() {
     @Inject lateinit var startupController: StartupController
 
     @Inject lateinit var appDataModel: AppDataModel
-    @Inject lateinit var tempUserStorage: UserStorage
+    @Inject lateinit var tempUserStorage: UserStorage // testing
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
         lifecycleScope.launch {
             appDataModel.fetchOrCreateUser()
-            startupController.startup().also {
+            startupController.startup().also { // testing
                 println(tempUserStorage.loadUser()?.username)
             }
         }

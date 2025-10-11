@@ -63,7 +63,7 @@ class InstrumentedTests {
 
         activityRule.scenario.onActivity { activity ->
             val model = activity.appDataModel
-            val user = model.user
+            val user = model.getCurrentUser()
 
             Assert.assertNotNull("User should have been created and not be null", user)
             Assert.assertEquals("Username", user.username)

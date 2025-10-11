@@ -11,11 +11,18 @@ class AppDataModel @Inject constructor(
     private val userStorage: UserStorage,
     private val dispatcherProvider: DispatcherProvider,
 ) {
-    lateinit var user: User
+    private lateinit var user: User
+
+    fun getCurrentUser() = user
+
+    suspend fun saveUser(savedUser: User): User {
+        user = userStorage.saveUser(savedUser)
+        return user
+    }
 
     suspend fun fetchOrCreateUser() {
         withContext(dispatcherProvider.io) {
-            val fetchedUser = fetchUser()
+            val fetchedUser = fetchUserFromStorage()
 
             if (fetchedUser != null) {
                 user = fetchedUser
@@ -25,7 +32,7 @@ class AppDataModel @Inject constructor(
         }
     }
 
-    private suspend fun fetchUser(): User? {
+    private suspend fun fetchUserFromStorage(): User? {
         return userStorage.loadUser()
     }
 
@@ -37,8 +44,8 @@ class AppDataModel @Inject constructor(
             unlockedEffects = listOf(),
             gameState = NoneGameState()
         )
-        userStorage.saveUser(newUser)
-        return newUser
+
+        return userStorage.saveUser(newUser)
     }
 
     private fun createDefaultDeck(): Deck {

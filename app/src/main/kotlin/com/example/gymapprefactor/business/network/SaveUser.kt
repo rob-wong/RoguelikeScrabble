@@ -52,13 +52,14 @@ class UserStorage @Inject constructor(
 		.create()
 	private val mutex = Mutex()
 
-	suspend fun saveUser(user: User) {
+	suspend fun saveUser(user: User): User {
 		mutex.withLock {
 			withContext(dispatcherProvider.io) {
 				val file = File(context.filesDir, USER_FILE)
 				file.writeText(gson.toJson(user, User::class.java))
 			}
 		}
+		return user
 	}
 
 	suspend fun loadUser(): User? {

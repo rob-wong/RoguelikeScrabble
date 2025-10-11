@@ -1,8 +1,8 @@
 package com.example.gymapprefactor.business.user.data
 
 import com.example.gymapprefactor.business.interfaces.DataSource
+import com.example.gymapprefactor.business.models.AppDataModel
 import com.example.gymapprefactor.business.models.User
-import com.example.gymapprefactor.business.network.UserStorage
 import com.example.gymapprefactor.business.user.domain.UserRepository
 import javax.inject.Inject
 
@@ -19,13 +19,13 @@ class UserRepositoryImpl(
 }
 
 class UserDataSource @Inject constructor(
-    private val userStorage: UserStorage
+    private val appDataModel: AppDataModel
 ) : DataSource {
-    suspend fun fetchUser(): User? {
-        return userStorage.loadUser()
+    fun fetchUser(): User? {
+        return appDataModel.getCurrentUser()
     }
     
     suspend fun saveUser(user: User) {
-        userStorage.saveUser(user)
+        appDataModel.saveUser(user)
     }
 }
