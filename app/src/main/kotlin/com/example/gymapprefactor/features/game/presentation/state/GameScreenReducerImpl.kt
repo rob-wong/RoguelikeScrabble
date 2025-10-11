@@ -2,7 +2,9 @@ package com.example.gymapprefactor.features.game.presentation.state
 
 import com.example.gymapprefactor.common.components.buttons.presentation.ButtonState
 import com.example.gymapprefactor.common.components.buttons.presentation.IconButtonState
+import com.example.gymapprefactor.common.components.presentation.DeckType
 import com.example.gymapprefactor.common.components.presentation.ImageState
+import com.example.gymapprefactor.common.components.presentation.LetterState
 import com.example.gymapprefactor.common.components.presentation.ResourceBarState
 import com.example.gymapprefactor.common.components.presentation.ResourceState
 import com.example.gymapprefactor.features.game.presentation.models.GameScreenAction
@@ -22,7 +24,14 @@ class GameScreenReducerImpl : GameScreenReducer {
 	private fun mapPlayingState(action: GameScreenAction.StartPlaying) {
 		state.value = GameScreenState.Playing(
 			resourceBar = mapResourceBar(action),
-			quitButton = mapQuitButton(action)
+			quitButton = mapQuitButton(action),
+			letters = action.hand.map {
+				LetterState.Display(
+					type = DeckType.Default,
+					letter = it.letter.toUpperCase(),
+					level = it.level
+				)
+			}
 		)
 	}
 

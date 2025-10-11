@@ -12,9 +12,3 @@ class GetGameStateUseCase(override val repository: GameplayRepository) : UseCase
 class InitializeGameUseCase(override val repository: GameplayRepository) : UseCase {
 	// create a new GameState, save it to the app data model, return it
 }
-
-class EndGameUseCase(override val repository: GameplayRepository): UseCase {
-	// pass a GameState in the invoke parameters,
-	// check if it's active, if so add the runes to the user in appdatamodel
-	// then save a None game state
-}

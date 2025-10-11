@@ -2,6 +2,7 @@ package com.example.gymapprefactor.features.game.ui
 
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -12,8 +13,10 @@ import com.example.gymapprefactor.features.game.presentation.viewmodel.GameViewM
 @Composable
 fun GameRoot(
 	modifier: Modifier = Modifier,
-	viewModel: GameViewModelImpl = hiltViewModel()
+	key: String = remember { "Game_${System.currentTimeMillis()}" },
 ) {
+	val viewModel: GameViewModelImpl = hiltViewModel(key = key)
+
 	val screenState: GameScreenState by viewModel.state.collectAsStateWithLifecycle(
 		None
 	)

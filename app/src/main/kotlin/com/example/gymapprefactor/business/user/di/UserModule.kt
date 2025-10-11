@@ -1,6 +1,6 @@
 package com.example.gymapprefactor.business.user.di
 
-import com.example.gymapprefactor.business.network.UserStorage
+import com.example.gymapprefactor.business.models.AppDataModel
 import com.example.gymapprefactor.business.user.data.UserDataSource
 import com.example.gymapprefactor.business.user.data.UserRepositoryImpl
 import com.example.gymapprefactor.business.user.domain.GetDecksUseCase
@@ -19,9 +19,9 @@ object UserModule {
 
     @Provides
     fun provideUserDataSource(
-        userStorage: UserStorage
+        appDataModel: AppDataModel
     ): UserDataSource {
-        return UserDataSource(userStorage)
+        return UserDataSource(appDataModel)
     }
 
     @Provides

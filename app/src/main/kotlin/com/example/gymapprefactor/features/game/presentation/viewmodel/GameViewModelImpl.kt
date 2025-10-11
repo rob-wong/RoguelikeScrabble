@@ -2,6 +2,8 @@ package com.example.gymapprefactor.features.game.presentation.viewmodel
 
 import androidx.lifecycle.viewModelScope
 import com.example.gymapprefactor.app.util.dispatcher.DispatcherProvider
+import com.example.gymapprefactor.business.gameplayLoop.domain.GameplayBusinessMediator
+import com.example.gymapprefactor.business.models.ActiveGameState
 import com.example.gymapprefactor.features.dialogs.presentation.models.DialogAction
 import com.example.gymapprefactor.features.dialogs.presentation.state.DialogReducer
 import com.example.gymapprefactor.features.game.presentation.models.GameScreenAction
@@ -17,10 +19,13 @@ import javax.inject.Inject
 class GameViewModelImpl @Inject constructor(
 	private val dialogReducer: DialogReducer,
 	private val gameScreenReducer: GameScreenReducer,
+	private val gameplayBusinessMediator: GameplayBusinessMediator,
 	private val navigationReducer: NavigationReducer,
 	private val dispatcherProvider: DispatcherProvider,
 ) : GameViewModel() {
 	override val state = gameScreenReducer.state
+
+	private lateinit var activeGameState: ActiveGameState
 
 	init {
 		startGame()
@@ -28,10 +33,13 @@ class GameViewModelImpl @Inject constructor(
 
 	private fun startGame() {
 		viewModelScope.launch(dispatcherProvider.default) {
+			activeGameState = gameplayBusinessMediator.fetchOrCreateActiveGame()
+
 			gameScreenReducer.update(GameScreenAction.StartPlaying(
 				runesCount = 10,
 				glyphCount = 30,
 				onQuitPressed = ::onQuitPressed,
+				hand = activeGameState.currentRound.hand
 			))
 		}
 	}
@@ -53,7 +61,7 @@ class GameViewModelImpl @Inject constructor(
 
 	private fun quitGame() {
 		viewModelScope.launch(dispatcherProvider.default) {
-			// business layer call to quit game without saving
+			gameplayBusinessMediator.endGame(game = activeGameState, saveProgression = false)
 			navigationReducer.update(NavigationAction.GoTo(NavigationPage.HomeScreen))
 		}
 	}
