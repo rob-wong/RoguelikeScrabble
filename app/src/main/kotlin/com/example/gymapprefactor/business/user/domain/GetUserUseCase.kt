@@ -10,7 +10,7 @@ class GetUserUseCase(override val repository: UserRepository) : UseCase {
         return if (user != null) {
             Result.success(user)
         } else {
-            Result.failure(Throwable())
+            Result.failure(IllegalStateException("User not found in repository"))
         }
     }
 }

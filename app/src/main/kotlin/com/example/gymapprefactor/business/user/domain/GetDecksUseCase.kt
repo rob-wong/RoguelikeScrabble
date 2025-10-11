@@ -10,7 +10,7 @@ class GetDecksUseCase(override val repository: UserRepository) : UseCase {
 		return if (user != null) {
 			Result.success(user.decks)
 		} else {
-			Result.failure(Throwable())
+			Result.failure(IllegalStateException("User not found in repository"))
 		}
 	}
 }
