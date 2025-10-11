@@ -24,6 +24,7 @@ fun ImageRouter(
 		ResourceBarBackground -> painterResource(R.drawable.resource_bar)
 		RectangularButtonBackground -> painterResource(R.drawable.background_rectangular_button)
 		SettingsButton -> painterResource(R.drawable.settings_gear)
+		UpgradeButton -> painterResource(R.drawable.icon_upgrade_button)
 		DialogBackground -> if (isLandscape) {
 			painterResource(R.drawable.dialog_background_landscape)
 		} else {

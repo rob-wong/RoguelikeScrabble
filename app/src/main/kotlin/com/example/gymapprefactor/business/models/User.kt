@@ -16,4 +16,33 @@ class DefaultUser(
 	override val gameState: GameState
 ): User
 
+object NoneUser : User {
+	override val username = ""
+	override val runesCount = 0
+	override val decks = listOf<Deck>()
+	override val unlockedEffects = listOf<Effect>()
+	override val gameState = NoneGameState()
+}
+
+fun User.copy(
+	username: String = this.username,
+	runesCount: Int = this.runesCount,
+	decks: List<Deck> = this.decks,
+	unlockedEffects: List<Effect> = this.unlockedEffects,
+	gameState: GameState = this.gameState
+): User {
+	return when (this) {
+		is DefaultUser -> DefaultUser(
+			username = username,
+			runesCount = runesCount,
+			decks = decks,
+			unlockedEffects = unlockedEffects,
+			gameState = gameState
+		)
+
+		is NoneUser -> this
+		else -> this
+	}
+}
+
 // maybe eventually like PremiumUser or smt for paying users
