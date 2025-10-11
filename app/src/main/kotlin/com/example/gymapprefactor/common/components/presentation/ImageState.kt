@@ -3,6 +3,7 @@ package com.example.gymapprefactor.common.components.presentation
 sealed class ImageState {
 	data object ResourceBarBackground : ImageState()
 	data object SettingsButton : ImageState()
+	data object UpgradeButton : ImageState()
 	data object DialogBackground : ImageState()
 
 	data object RectangularButtonBackground : ImageState()

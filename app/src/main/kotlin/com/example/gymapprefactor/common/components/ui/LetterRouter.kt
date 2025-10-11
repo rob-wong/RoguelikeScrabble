@@ -1,6 +1,7 @@
 package com.example.gymapprefactor.common.components.ui
 
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.size
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -8,6 +9,7 @@ import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.tooling.preview.PreviewParameter
+import androidx.compose.ui.unit.dp
 import com.example.gymapprefactor.common.components.presentation.DeckType
 import com.example.gymapprefactor.common.components.presentation.ImageState
 import com.example.gymapprefactor.common.components.presentation.LetterState
@@ -38,7 +40,7 @@ private fun DisplayLetter(
 		modifier = modifier,
 		contentAlignment = Alignment.Center
 	) {
-		LetterBackgroundRouter(state.type)
+		LetterBackgroundRouter(state.type, Modifier.size(45.dp))
 		LetterContentRouter(state.letter, state.level)
 	}
 }
@@ -64,7 +66,7 @@ private fun LetterContentRouter(
 		textAlign = TextAlign.Center,
 		textStyle = letterFontRouter(level),
 		modifier = modifier,
-		outlineWidth = 20,
+		outlineWidth = 7,
 		useGlow = true,
 	)
 }

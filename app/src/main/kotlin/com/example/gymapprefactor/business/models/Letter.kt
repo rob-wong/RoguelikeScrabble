@@ -11,3 +11,18 @@ class DefaultLetter(
 	override val letter: Char,
 	override val level: Int
 ) : Letter
+fun Letter.copy(
+	id: String = this.id,
+	letter: Char = this.letter,
+	level: Int = this.level
+): Letter {
+	return when (this) {
+		is DefaultLetter -> DefaultLetter(
+			id = id,
+			letter = letter,
+			level = level
+		)
+
+		else -> this
+	}
+}

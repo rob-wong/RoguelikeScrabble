@@ -10,29 +10,29 @@ import com.example.gymapprefactor.R
 val common = TextStyle(
 	fontFamily = FontFamily(Font(R.font.pixel_operator)),
 	color = Color(0xFFFFF8E7), // Off-white
-	fontSize = 300.sp,
+	fontSize = 45.sp,
 )
 
 val uncommon = TextStyle(
 	fontFamily = FontFamily(Font(R.font.pixel_operator)),
 	color = Color(0xFFA9EFA5), // Soft green
-	fontSize = 300.sp,
+	fontSize = 45.sp,
 )
 
 val rare = TextStyle(
 	fontFamily = FontFamily(Font(R.font.pixel_operator)),
 	color = Color(0xFF5CC8FF), // Bright sky blue
-	fontSize = 300.sp,
+	fontSize = 45.sp,
 )
 
 val epic = TextStyle(
 	fontFamily = FontFamily(Font(R.font.pixel_operator)),
 	color = Color(0xFFC36CFF), // Deep violet
-	fontSize = 300.sp,
+	fontSize = 45.sp,
 )
 
 val legendary = TextStyle(
 	fontFamily = FontFamily(Font(R.font.pixel_operator)),
 	color = Color(0xFFFFC857), // Gold-orange
-	fontSize = 300.sp,
+	fontSize = 45.sp,
 )

@@ -28,7 +28,8 @@ class UpgradeScreenReducerImpl : UpgradeScreenReducer {
 				),
 				glyphState = ResourceState.None
 			),
-			backButton = mapBackButton(action)
+			backButton = mapBackButton(action),
+			letters = action.upgradeLetters
 		)
 	}
 
