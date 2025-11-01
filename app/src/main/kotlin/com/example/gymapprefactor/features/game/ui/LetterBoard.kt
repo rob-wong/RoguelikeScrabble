@@ -44,6 +44,7 @@ import kotlin.math.roundToInt
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
+@SuppressWarnings("LongMethod","CyclomaticComplexMethod","SpreadOperator")
 fun LetterBoard(
 	state: GameScreenState.Playing,
 	modifier: Modifier = Modifier
