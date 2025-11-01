@@ -4,11 +4,9 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.lazy.grid.GridCells
-import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
-import androidx.compose.foundation.lazy.grid.itemsIndexed
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -22,35 +20,30 @@ import com.example.gymapprefactor.common.components.presentation.LetterState
 import com.example.gymapprefactor.common.components.presentation.ResourceBarState
 import com.example.gymapprefactor.common.components.presentation.ResourceState
 import com.example.gymapprefactor.common.components.presentation.ScreenBackgroundState
-import com.example.gymapprefactor.common.components.ui.LetterRouter
 import com.example.gymapprefactor.common.components.ui.ResourceBarRouter
 import com.example.gymapprefactor.common.components.ui.ScreenBackgroundRouter
 import com.example.gymapprefactor.features.game.presentation.models.GameScreenState
+import com.example.gymapprefactor.features.game.presentation.models.GameScreenState.DraggableLetter
 
 @Composable
 fun GamePlayScreen(
 	state: GameScreenState.Playing,
-	modifier: Modifier = Modifier
+	modifier: Modifier = Modifier,
 ) {
 	Box(modifier) {
 		ScreenBackgroundRouter(ScreenBackgroundState.Game)
 		Column(horizontalAlignment = Alignment.CenterHorizontally) {
 			ResourceBarRouter(state.resourceBar)
 			Column(Modifier.fillMaxSize()) {
-				Spacer(Modifier.weight(0.5f))
-				LazyVerticalGrid(
-					columns = GridCells.FixedSize(100.dp)
-				) {
-					itemsIndexed(state.letters) { index, item ->
-						LetterRouter(item)
-					}
-				}
+				Spacer(Modifier.height(500.dp))
+				LetterBoard(state)
 			}
 		}
-		ButtonRouter(state.quitButton, Modifier
-			.padding(top = 10.dp, end = 10.dp)
-			.align(Alignment.TopEnd)
-			.size(40.dp)
+		ButtonRouter(
+			state.quitButton, Modifier
+				.padding(top = 10.dp, end = 10.dp)
+				.align(Alignment.TopEnd)
+				.size(40.dp)
 		)
 	}
 }
@@ -72,13 +65,42 @@ private fun GamePlayScreenPreview() {
 			),
 			quitButton = IconButtonState.Content({ }, ImageState.QuitIcon),
 			letters = listOf(
-				LetterState.Display(type = DeckType.Default, letter = 'A', level = 1),
-				LetterState.Display(type = DeckType.Default, letter = 'B', level = 2),
-				LetterState.Display(type = DeckType.Default, letter = 'C', level = 4),
-				LetterState.Display(type = DeckType.Default, letter = 'D', level = 1),
-				LetterState.Display(type = DeckType.Default, letter = 'E', level = 3),
-				LetterState.Display(type = DeckType.Default, letter = 'F', level = 1),
-				LetterState.Display(type = DeckType.Default, letter = 'G', level = 3),
+				DraggableLetter(
+					"",
+					LetterState.Display(type = DeckType.Default, letter = 'A', level = 1)
+				),
+				DraggableLetter(
+					"",
+					LetterState.Display(type = DeckType.Default, letter = 'B', level = 2)
+				),
+				DraggableLetter(
+					"",
+					LetterState.Display(type = DeckType.Default, letter = 'C', level = 1)
+				),
+				DraggableLetter(
+					"",
+					LetterState.Display(type = DeckType.Default, letter = 'D', level = 4)
+				),
+				DraggableLetter(
+					"",
+					LetterState.Display(type = DeckType.Default, letter = 'E', level = 1)
+				),
+				DraggableLetter(
+					"",
+					LetterState.Display(type = DeckType.Default, letter = 'F', level = 1)
+				),
+				DraggableLetter(
+					"",
+					LetterState.Display(type = DeckType.Default, letter = 'G', level = 5)
+				),
+				DraggableLetter(
+					"",
+					LetterState.Display(type = DeckType.Default, letter = 'H', level = 1)
+				),
+				DraggableLetter(
+					"",
+					LetterState.Display(type = DeckType.Default, letter = 'I', level = 1)
+				),
 			)
 		)
 	)

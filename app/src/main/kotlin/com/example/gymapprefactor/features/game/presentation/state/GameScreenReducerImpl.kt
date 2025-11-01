@@ -9,7 +9,9 @@ import com.example.gymapprefactor.common.components.presentation.ResourceBarStat
 import com.example.gymapprefactor.common.components.presentation.ResourceState
 import com.example.gymapprefactor.features.game.presentation.models.GameScreenAction
 import com.example.gymapprefactor.features.game.presentation.models.GameScreenState
+import com.example.gymapprefactor.features.game.presentation.models.GameScreenState.DraggableLetter
 import kotlinx.coroutines.flow.MutableStateFlow
+import java.util.UUID
 
 class GameScreenReducerImpl : GameScreenReducer {
 	override val state = MutableStateFlow<GameScreenState>(GameScreenState.None)
@@ -26,10 +28,14 @@ class GameScreenReducerImpl : GameScreenReducer {
 			resourceBar = mapResourceBar(action),
 			quitButton = mapQuitButton(action),
 			letters = action.hand.map {
-				LetterState.Display(
-					type = DeckType.Default,
-					letter = it.letter.toUpperCase(),
-					level = it.level
+				DraggableLetter(
+					id = UUID.randomUUID().toString(),
+					letterState =
+						LetterState.Display(
+							type = DeckType.Default,
+							letter = it.letter.toUpperCase(),
+							level = it.level
+						)
 				)
 			}
 		)
