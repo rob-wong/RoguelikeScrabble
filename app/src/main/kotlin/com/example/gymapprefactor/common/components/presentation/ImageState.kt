@@ -12,6 +12,7 @@ sealed class ImageState {
 	data object QuitIcon : ImageState()
 	data object ConfirmIcon : ImageState()
 	data object DismissIcon : ImageState()
+	data object DiscardIcon : ImageState()
 	data object RuneIcon : ImageState()
 	data object GlyphIcon : ImageState()
 	data object ShopIcon : ImageState()

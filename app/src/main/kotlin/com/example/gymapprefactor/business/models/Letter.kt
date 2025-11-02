@@ -10,7 +10,12 @@ class DefaultLetter(
 	override val id: String,
 	override val letter: Char,
 	override val level: Int
-) : Letter
+) : Letter {
+	override fun toString(): String {
+		return "DefaultLetter($letter, level=$level)"
+	}
+}
+
 fun Letter.copy(
 	id: String = this.id,
 	letter: Char = this.letter,

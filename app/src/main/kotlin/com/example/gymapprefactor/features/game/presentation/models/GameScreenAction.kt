@@ -9,6 +9,7 @@ sealed class GameScreenAction : Action {
 		val runesCount: Int,
 		val onQuitPressed: () -> Unit,
 		val onWordPlayed: (List<String>) -> Unit,
+		val onDiscardPressed: () -> Unit,
 		val hand: List<Letter>
 	) : GameScreenAction()
 

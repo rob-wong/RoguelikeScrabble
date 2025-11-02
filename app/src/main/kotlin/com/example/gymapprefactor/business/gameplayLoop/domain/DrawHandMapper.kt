@@ -11,7 +11,7 @@ interface DrawHandMapper : Mapper<Param, Output> {
 	data class Param(
 		val deck: Deck,
 		val seed: Long,
-		val handSize: Int,
+		val drawnAmount: Int,
 	)
 	data class Output(
 		val drawn: List<Letter>,
@@ -22,14 +22,14 @@ interface DrawHandMapper : Mapper<Param, Output> {
 class DrawHandMapperImpl : DrawHandMapper {
 	override fun map(param: Param): Output {
 		with (param) {
-			if (deck.letters.isEmpty() || handSize <= 0) {
+			if (deck.letters.isEmpty() || drawnAmount <= 0) {
 				return Output(emptyList(), deck.letters)
 			}
 
 			val random = Random(seed)
 			val shuffled = deck.letters.shuffled(random)
 
-			val drawCount = minOf(handSize, shuffled.size)
+			val drawCount = minOf(drawnAmount, shuffled.size)
 			val drawn = shuffled.take(drawCount)
 			val remaining = shuffled.drop(drawCount)
 

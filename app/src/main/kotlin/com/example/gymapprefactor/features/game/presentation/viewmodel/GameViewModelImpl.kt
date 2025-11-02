@@ -49,6 +49,7 @@ class GameViewModelImpl @Inject constructor(
 			glyphCount = 30,
 			onQuitPressed = ::onQuitPressed,
 			onWordPlayed = ::onWordPlayed,
+			onDiscardPressed = ::onDiscardPressed,
 			hand = activeGameState.currentRound.hand
 		))
 	}
@@ -86,6 +87,13 @@ class GameViewModelImpl @Inject constructor(
 					}
 				)
 			}
+		}
+	}
+
+	private fun onDiscardPressed() {
+		viewModelScope.launch(dispatcherProvider.default) {
+			activeGameState = gameplayBusinessMediator.discardHand(activeGameState)
+			updateGame()
 		}
 	}
 
