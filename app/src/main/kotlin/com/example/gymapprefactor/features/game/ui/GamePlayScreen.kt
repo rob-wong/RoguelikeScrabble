@@ -54,6 +54,7 @@ fun GamePlayScreen(
 	}
 }
 
+@SuppressWarnings("LongMethod")
 @DevicePreviews
 @Composable
 private fun GamePlayScreenPreview() {
