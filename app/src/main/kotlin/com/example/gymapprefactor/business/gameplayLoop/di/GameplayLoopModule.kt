@@ -67,6 +67,7 @@ object GameplayLoopModule {
 		userBusinessMediator: UserBusinessMediator,
 		endGameUseCase: EndGameUseCase,
 		drawHandMapper: DrawHandMapper,
+		wordValidityMapper: WordValidityMapper
 	): GameplayBusinessMediator {
 		return GameplayBusinessMediator(
 			getGameStateUseCase = getGameStateUseCase,
@@ -74,6 +75,7 @@ object GameplayLoopModule {
 			endGameUseCase = endGameUseCase,
 			userBusinessMediator = userBusinessMediator,
 			drawHandMapper = drawHandMapper,
+			wordValidityMapper = wordValidityMapper
 		)
 	}
 

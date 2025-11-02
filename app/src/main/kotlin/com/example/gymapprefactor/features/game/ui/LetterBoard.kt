@@ -1,7 +1,12 @@
 package com.example.gymapprefactor.features.game.ui
 
+import androidx.compose.animation.core.Animatable
+import androidx.compose.animation.core.RepeatMode
+import androidx.compose.animation.core.repeatable
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.detectDragGestures
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -17,6 +22,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateMapOf
@@ -39,6 +45,8 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.zIndex
 import com.example.gymapprefactor.common.components.ui.LetterRouter
 import com.example.gymapprefactor.features.game.presentation.models.GameScreenState
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
 import java.lang.Thread.sleep
 import kotlin.math.roundToInt
 
@@ -47,6 +55,8 @@ import kotlin.math.roundToInt
 @SuppressWarnings("LongMethod","CyclomaticComplexMethod","SpreadOperator")
 fun LetterBoard(
 	state: GameScreenState.Playing,
+	invalidWordTrigger: Boolean,
+	onInvalidWordConsumed: () -> Unit,
 	modifier: Modifier = Modifier
 ) {
 	val tileWidthPx = with(LocalDensity.current) { 48.dp.toPx() }
@@ -68,8 +78,31 @@ fun LetterBoard(
 
 	println("PlayedLetters: ${playedLetters.map { it.id }}")
 
+	val shakeOffset = remember { Animatable(0f) }
+	val shakeMutex = remember { Mutex() }
+
+	LaunchedEffect(invalidWordTrigger) {
+		shakeMutex.withLock {
+			if (invalidWordTrigger) {
+				shakeOffset.snapTo(20f)
+				shakeOffset.animateTo(
+					targetValue = 0f,
+					animationSpec = repeatable(
+						iterations = 4,
+						animation = tween(durationMillis = 50),
+						repeatMode = RepeatMode.Reverse
+					)
+				)
+			}
+		}
+		onInvalidWordConsumed()
+	}
+
 	Box(
 		modifier = modifier
+			.clickable(
+				onClick = { println("shakeOffset: ${shakeOffset.value}, invalidWordTrigger: $invalidWordTrigger") }
+			)
 			.fillMaxSize()
 			.onGloballyPositioned { coords ->
 				rootOffset = coords.boundsInWindow().topLeft
@@ -77,6 +110,7 @@ fun LetterBoard(
 	) {
 		Column(modifier = Modifier.fillMaxSize()) {
 
+			InputButtonRouter(state.playButton, playedLetters, Modifier)
 // Played Area Guide
 			val renderedLetters = buildList {
 				playedLetters.forEachIndexed { index, letter ->
@@ -88,6 +122,7 @@ fun LetterBoard(
 
 			LazyRow(
 				modifier = Modifier
+					.offset { IntOffset(shakeOffset.value.roundToInt(), 0) }
 					.fillMaxWidth()
 					.height(80.dp)
 					.background(Color.LightGray)

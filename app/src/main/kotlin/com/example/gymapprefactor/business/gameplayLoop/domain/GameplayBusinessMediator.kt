@@ -1,10 +1,12 @@
 package com.example.gymapprefactor.business.gameplayLoop.domain
 
+import com.example.gymapprefactor.business.gameplayLoop.domain.models.GameplayExceptions
 import com.example.gymapprefactor.business.models.ActiveGameState
 import com.example.gymapprefactor.business.models.ActiveGameValues
 import com.example.gymapprefactor.business.models.ActiveGameVariables
 import com.example.gymapprefactor.business.models.CurrentRound
 import com.example.gymapprefactor.business.models.GameState
+import com.example.gymapprefactor.business.models.Letter
 import com.example.gymapprefactor.business.models.copy
 import com.example.gymapprefactor.business.user.domain.UserBusinessMediator
 import java.util.UUID
@@ -15,6 +17,7 @@ class GameplayBusinessMediator(
 	private val saveGameStateUseCase: SaveGameStateUseCase,
 	private val endGameUseCase: EndGameUseCase,
 	private val drawHandMapper: DrawHandMapper,
+	private val wordValidityMapper: WordValidityMapper,
 ) {
 	suspend fun fetchOrCreateActiveGame(): ActiveGameState {
 		return getGameState() as? ActiveGameState ?: createActiveGame()
@@ -42,6 +45,21 @@ class GameplayBusinessMediator(
 		)
 
 		saveGameStateUseCase(newGameState).also { return newGameState }
+	}
+
+	fun onWordPlayed(list: List<Letter>, game: ActiveGameState): Result<ActiveGameState> {
+		println("played word: ${list.map { it.letter }}")
+		return if (wordValidityMapper.map(list)) {
+			println("played word: valid")
+			Result.success(game)
+		} else {
+			println("played word: invalid")
+			Result.failure(
+				exception = GameplayExceptions.InvalidWord(
+					word = list.map { it.letter }.joinToString(separator = "")
+				)
+			)
+		}
 	}
 
 	suspend fun endGame(game: ActiveGameState, saveProgression: Boolean) {

@@ -2,6 +2,7 @@ package com.example.gymapprefactor.features.game.presentation.state
 
 import com.example.gymapprefactor.common.components.buttons.presentation.ButtonState
 import com.example.gymapprefactor.common.components.buttons.presentation.IconButtonState
+import com.example.gymapprefactor.features.game.presentation.models.InputButtonState
 import com.example.gymapprefactor.common.components.presentation.DeckType
 import com.example.gymapprefactor.common.components.presentation.ImageState
 import com.example.gymapprefactor.common.components.presentation.LetterState
@@ -11,7 +12,6 @@ import com.example.gymapprefactor.features.game.presentation.models.GameScreenAc
 import com.example.gymapprefactor.features.game.presentation.models.GameScreenState
 import com.example.gymapprefactor.features.game.presentation.models.GameScreenState.DraggableLetter
 import kotlinx.coroutines.flow.MutableStateFlow
-import java.util.UUID
 
 class GameScreenReducerImpl : GameScreenReducer {
 	override val state = MutableStateFlow<GameScreenState>(GameScreenState.None)
@@ -29,7 +29,7 @@ class GameScreenReducerImpl : GameScreenReducer {
 			quitButton = mapQuitButton(action),
 			letters = action.hand.map {
 				DraggableLetter(
-					id = UUID.randomUUID().toString(),
+					id = it.id,
 					letterState =
 						LetterState.Display(
 							type = DeckType.Default,
@@ -37,7 +37,8 @@ class GameScreenReducerImpl : GameScreenReducer {
 							level = it.level
 						)
 				)
-			}
+			},
+			playButton = mapPlayButton(action)
 		)
 	}
 
@@ -58,6 +59,13 @@ class GameScreenReducerImpl : GameScreenReducer {
 		return IconButtonState.Content(
 			onClick = action.onQuitPressed,
 			image = ImageState.QuitIcon,
+		)
+	}
+
+	private fun mapPlayButton(action: GameScreenAction.StartPlaying): InputButtonState {
+		return InputButtonState.InputWordButton(
+			onClick = action.onWordPlayed,
+			image = ImageState.ConfirmIcon,
 		)
 	}
 }

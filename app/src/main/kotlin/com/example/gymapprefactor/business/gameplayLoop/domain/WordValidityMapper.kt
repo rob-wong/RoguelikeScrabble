@@ -4,20 +4,16 @@ import com.example.gymapprefactor.business.interfaces.Mapper
 import com.example.gymapprefactor.business.models.Letter
 import javax.inject.Inject
 
-interface WordValidityMapper : Mapper<WordValidityMapper.Param, Boolean> {
-	data class Param(
-		val letters: List<Letter>
-	)
-}
+interface WordValidityMapper : Mapper<List<Letter>, Boolean>
 
 class WordValidityMapperImpl @Inject constructor(
 	private val validWords: Set<String>
 ) : WordValidityMapper {
 
-	override fun map(param: WordValidityMapper.Param): Boolean {
-		if (param.letters.size == 1) { return false }
+	override fun map(param: List<Letter>): Boolean {
+		if (param.size == 1) { return false }
 
-		val word = mapLettersToWord(param.letters)
+		val word = mapLettersToWord(param)
 		return validWords.contains(word)
 	}
 

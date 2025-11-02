@@ -1,6 +1,5 @@
 package com.example
 
-import com.example.gymapprefactor.business.gameplayLoop.domain.WordValidityMapper
 import com.example.gymapprefactor.business.gameplayLoop.domain.WordValidityMapperImpl
 import com.example.gymapprefactor.business.models.DefaultLetter
 import com.example.gymapprefactor.business.models.Letter
@@ -24,11 +23,7 @@ class WordValidityMapperImplTest {
 		)
 
 		// When
-		val result = sut.map(
-			WordValidityMapper.Param(
-				letters
-			)
-		)
+		val result = sut.map(letters)
 
 		// Then
 		assertTrue(result)
@@ -49,11 +44,7 @@ class WordValidityMapperImplTest {
 		)
 
 		// When
-		val result = sut.map(
-			WordValidityMapper.Param(
-				letters
-			)
-		)
+		val result = sut.map(letters)
 
 		// Then
 		assertFalse(result)
@@ -67,11 +58,7 @@ class WordValidityMapperImplTest {
 		)
 
 		// When
-		val result = sut.map(
-			WordValidityMapper.Param(
-				letters
-			)
-		)
+		val result = sut.map(letters)
 
 		// Then
 		assertFalse(result)

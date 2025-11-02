@@ -12,7 +12,10 @@ import com.example.gymapprefactor.features.navigation.presentation.models.Naviga
 import com.example.gymapprefactor.features.navigation.presentation.models.NavigationPage
 import com.example.gymapprefactor.features.navigation.presentation.state.NavigationReducer
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
 import javax.inject.Inject
 
 @HiltViewModel
@@ -26,22 +29,28 @@ class GameViewModelImpl @Inject constructor(
 	override val state = gameScreenReducer.state
 
 	private lateinit var activeGameState: ActiveGameState
+	val invalidWordEvent = MutableSharedFlow<Unit>()
+	private val mutex = Mutex()
 
 	init {
-		startGame()
+		initGame()
 	}
 
-	private fun startGame() {
+	private fun initGame() {
 		viewModelScope.launch(dispatcherProvider.default) {
 			activeGameState = gameplayBusinessMediator.fetchOrCreateActiveGame()
-
-			gameScreenReducer.update(GameScreenAction.StartPlaying(
-				runesCount = 10,
-				glyphCount = 30,
-				onQuitPressed = ::onQuitPressed,
-				hand = activeGameState.currentRound.hand
-			))
+			updateGame()
 		}
+	}
+
+	private suspend fun updateGame() {
+		gameScreenReducer.update(GameScreenAction.StartPlaying(
+			runesCount = 10,
+			glyphCount = 30,
+			onQuitPressed = ::onQuitPressed,
+			onWordPlayed = ::onWordPlayed,
+			hand = activeGameState.currentRound.hand
+		))
 	}
 
 	private fun onQuitPressed() {
@@ -56,6 +65,27 @@ class GameViewModelImpl @Inject constructor(
 					showDismissButton = true
 				)
 			)
+		}
+	}
+
+	private fun onWordPlayed(letterIds: List<String>) {
+		viewModelScope.launch(dispatcherProvider.default) {
+			mutex.withLock {
+				gameplayBusinessMediator.onWordPlayed(
+					list = letterIds.map { letterId ->
+						activeGameState.currentRound.hand.first { it.id == letterId }
+					},
+					game = activeGameState
+				).fold(
+					onSuccess = {
+						activeGameState = it
+						updateGame()
+					},
+					onFailure = {
+						invalidWordEvent.emit(Unit)
+					}
+				)
+			}
 		}
 	}
 

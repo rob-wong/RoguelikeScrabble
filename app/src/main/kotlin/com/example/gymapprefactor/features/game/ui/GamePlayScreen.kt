@@ -24,10 +24,13 @@ import com.example.gymapprefactor.common.components.ui.ResourceBarRouter
 import com.example.gymapprefactor.common.components.ui.ScreenBackgroundRouter
 import com.example.gymapprefactor.features.game.presentation.models.GameScreenState
 import com.example.gymapprefactor.features.game.presentation.models.GameScreenState.DraggableLetter
+import com.example.gymapprefactor.features.game.presentation.models.InputButtonState
 
 @Composable
 fun GamePlayScreen(
 	state: GameScreenState.Playing,
+	invalidWordTrigger: Boolean,
+	onInvalidWordConsumed: () -> Unit,
 	modifier: Modifier = Modifier,
 ) {
 	Box(modifier) {
@@ -35,8 +38,8 @@ fun GamePlayScreen(
 		Column(horizontalAlignment = Alignment.CenterHorizontally) {
 			ResourceBarRouter(state.resourceBar)
 			Column(Modifier.fillMaxSize()) {
-				Spacer(Modifier.height(500.dp))
-				LetterBoard(state)
+				Spacer(Modifier.height(50.dp))
+				LetterBoard(state, invalidWordTrigger, onInvalidWordConsumed)
 			}
 		}
 		ButtonRouter(
@@ -101,7 +104,13 @@ private fun GamePlayScreenPreview() {
 					"",
 					LetterState.Display(type = DeckType.Default, letter = 'I', level = 1)
 				),
+			),
+			playButton = InputButtonState.InputWordButton(
+				onClick = { _ -> },
+				image = ImageState.ConfirmIcon
 			)
-		)
+		),
+		invalidWordTrigger = false,
+		onInvalidWordConsumed = { },
 	)
 }

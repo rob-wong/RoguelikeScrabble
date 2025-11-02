@@ -10,6 +10,7 @@ sealed class GameScreenState : State {
 	data class Playing(
 		val resourceBar: ResourceBarState,
 		val quitButton: ButtonState,
+		val playButton: InputButtonState,
 		val letters: List<DraggableLetter>,
 	): GameScreenState()
 
@@ -19,12 +20,5 @@ sealed class GameScreenState : State {
 		val id: String,
 		val letterState: LetterState,
 		var offset: Offset = Offset.Zero
-	) {
-		companion object {
-			val Placeholder = DraggableLetter(
-				id = "__placeholder__",
-				letterState = LetterState.None
-			)
-		}
-	}
+	)
 }
