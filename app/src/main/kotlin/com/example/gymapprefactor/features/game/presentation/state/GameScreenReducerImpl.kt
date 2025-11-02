@@ -38,7 +38,8 @@ class GameScreenReducerImpl : GameScreenReducer {
 						)
 				)
 			},
-			playButton = mapPlayButton(action)
+			playButton = mapPlayButton(action),
+			discardButton = mapDiscardButton(action)
 		)
 	}
 
@@ -66,6 +67,13 @@ class GameScreenReducerImpl : GameScreenReducer {
 		return InputButtonState.InputWordButton(
 			onClick = action.onWordPlayed,
 			image = ImageState.ConfirmIcon,
+		)
+	}
+
+	private fun mapDiscardButton(action: GameScreenAction.StartPlaying): ButtonState {
+		return IconButtonState.Content(
+			onClick = action.onDiscardPressed,
+			image = ImageState.DiscardIcon,
 		)
 	}
 }

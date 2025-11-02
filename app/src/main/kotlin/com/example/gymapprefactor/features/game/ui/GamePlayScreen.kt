@@ -8,6 +8,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.key
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
@@ -39,7 +40,9 @@ fun GamePlayScreen(
 			ResourceBarRouter(state.resourceBar)
 			Column(Modifier.fillMaxSize()) {
 				Spacer(Modifier.height(50.dp))
-				LetterBoard(state, invalidWordTrigger, onInvalidWordConsumed)
+				key(state.letters) {
+					LetterBoard(state, invalidWordTrigger, onInvalidWordConsumed)
+				}
 			}
 		}
 		ButtonRouter(
@@ -108,6 +111,10 @@ private fun GamePlayScreenPreview() {
 			playButton = InputButtonState.InputWordButton(
 				onClick = { _ -> },
 				image = ImageState.ConfirmIcon
+			),
+			discardButton = IconButtonState.Content(
+				onClick = { },
+				image = ImageState.DiscardIcon
 			)
 		),
 		invalidWordTrigger = false,

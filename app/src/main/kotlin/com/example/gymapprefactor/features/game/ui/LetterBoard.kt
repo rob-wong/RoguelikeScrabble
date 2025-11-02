@@ -43,6 +43,7 @@ import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.zIndex
+import com.example.gymapprefactor.common.components.buttons.ui.ButtonRouter
 import com.example.gymapprefactor.common.components.ui.LetterRouter
 import com.example.gymapprefactor.features.game.presentation.models.GameScreenState
 import kotlinx.coroutines.sync.Mutex
@@ -110,7 +111,10 @@ fun LetterBoard(
 	) {
 		Column(modifier = Modifier.fillMaxSize()) {
 
-			InputButtonRouter(state.playButton, playedLetters, Modifier)
+			Row {
+				InputButtonRouter(state.playButton, playedLetters, Modifier)
+				ButtonRouter(state.discardButton)
+			}
 // Played Area Guide
 			val renderedLetters = buildList {
 				playedLetters.forEachIndexed { index, letter ->

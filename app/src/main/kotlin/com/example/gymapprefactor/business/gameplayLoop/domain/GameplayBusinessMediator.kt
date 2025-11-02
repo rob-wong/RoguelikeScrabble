@@ -27,39 +27,66 @@ class GameplayBusinessMediator(
 		return getGameStateUseCase()
 	}
 
-	suspend fun drawHand(game: ActiveGameState): ActiveGameState {
-		val (variables, values, round) = game
-		val (deck, seed) = values.deck to values.seed
+	fun drawHand(drawnAmount: Int, game: ActiveGameState): ActiveGameState {
+		val (_, values, round) = game
+		val (_, seed) = values.deck to values.seed
 
 		val result = drawHandMapper.map(
-			DrawHandMapper.Param(deck, seed, variables.handSize)
+			DrawHandMapper.Param(round.mutableDeck, seed, drawnAmount)
 		)
-
 		val newGameState = game.copy(
 			currentRound = round.copy(
-				mutableDeck = deck.copy(
-					letters = deck.letters.filter { result.remaining.contains(it) }
+				mutableDeck = round.mutableDeck.copy(
+					letters = round.mutableDeck.letters.filter { result.remaining.contains(it) }
 				),
-				hand = result.drawn
+				hand = round.hand + result.drawn
 			)
 		)
 
-		saveGameStateUseCase(newGameState).also { return newGameState }
+		return newGameState
 	}
 
-	fun onWordPlayed(list: List<Letter>, game: ActiveGameState): Result<ActiveGameState> {
+	// turn this into a mapper maybe
+	suspend fun onWordPlayed(list: List<Letter>, game: ActiveGameState): Result<ActiveGameState> {
 		println("played word: ${list.map { it.letter }}")
+		val wordAsString = list.map { it.letter }.joinToString(separator = "")
+
 		return if (wordValidityMapper.map(list)) {
-			println("played word: valid")
-			Result.success(game)
+			val newGameState =
+				drawHand(
+					drawnAmount = list.size,
+					game = game.copy(
+						currentRound = game.currentRound.copy(
+							hand = game.currentRound.hand.filterNot { list.contains(it) },
+							round = game.currentRound.round + 1,
+							wordsPlayed = game.currentRound.wordsPlayed + wordAsString,
+							// TODO enemy health in the enemy update
+						)
+					),
+				)
+
+			saveGameStateUseCase(newGameState)
+			Result.success(newGameState)
 		} else {
 			println("played word: invalid")
 			Result.failure(
 				exception = GameplayExceptions.InvalidWord(
-					word = list.map { it.letter }.joinToString(separator = "")
+					word = wordAsString
 				)
 			)
 		}
+	}
+
+	suspend fun discardHand(game: ActiveGameState): ActiveGameState {
+		val newGameState = drawHand(
+			drawnAmount = game.activeGameVariables.handSize,
+			game = game.copy(
+				currentRound = game.currentRound.copy(
+					hand = emptyList()
+				)
+			)
+		)
+		saveGameStateUseCase(newGameState).also { return newGameState }
 	}
 
 	suspend fun endGame(game: ActiveGameState, saveProgression: Boolean) {
@@ -95,7 +122,9 @@ class GameplayBusinessMediator(
 			)
 		)
 
-		return drawHand(game)
+		val initializedGame = drawHand(drawnAmount = game.activeGameVariables.handSize, game)
+
+		saveGameStateUseCase(initializedGame).also { return initializedGame }
 	}
 	
 	private companion object {
@@ -103,6 +132,6 @@ class GameplayBusinessMediator(
 		const val STARTING_LEVEL = 1
 		const val STARTING_ROUND = 1
 		const val STARTING_MAX_ROUNDS = 3
-		const val STARTING_HAND_SIZE = 6
+		const val STARTING_HAND_SIZE = 8
 	}
 }

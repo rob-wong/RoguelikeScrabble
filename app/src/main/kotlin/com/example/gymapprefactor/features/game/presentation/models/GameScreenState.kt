@@ -11,6 +11,7 @@ sealed class GameScreenState : State {
 		val resourceBar: ResourceBarState,
 		val quitButton: ButtonState,
 		val playButton: InputButtonState,
+		val discardButton: ButtonState,
 		val letters: List<DraggableLetter>,
 	): GameScreenState()
 

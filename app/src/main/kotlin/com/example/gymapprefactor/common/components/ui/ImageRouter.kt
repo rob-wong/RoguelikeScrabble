@@ -35,6 +35,7 @@ fun ImageRouter(
 		QuitIcon -> painterResource(R.drawable.icon_quit)
 		ConfirmIcon -> painterResource(R.drawable.icon_confirm)
 		DismissIcon -> painterResource(R.drawable.icon_dismiss)
+		DiscardIcon -> painterResource(R.drawable.icon_discard)
 		ShopIcon -> painterResource(R.drawable.icon_shop)
 		UpgradeIcon -> painterResource(R.drawable.icon_upgrade)
 		GlyphIcon -> painterResource(R.drawable.icon_glyph)
