@@ -2,6 +2,7 @@ package com.example.gymapprefactor.features.game.presentation.state
 
 import com.example.gymapprefactor.common.components.buttons.presentation.ButtonState
 import com.example.gymapprefactor.common.components.buttons.presentation.IconButtonState
+import com.example.gymapprefactor.common.components.presentation.BagState
 import com.example.gymapprefactor.features.game.presentation.models.InputButtonState
 import com.example.gymapprefactor.common.components.presentation.DeckType
 import com.example.gymapprefactor.common.components.presentation.ImageState
@@ -39,7 +40,8 @@ class GameScreenReducerImpl : GameScreenReducer {
 				)
 			},
 			playButton = mapPlayButton(action),
-			discardButton = mapDiscardButton(action)
+			discardButton = mapDiscardButton(action),
+			bag = mapBag(action),
 		)
 	}
 
@@ -74,6 +76,14 @@ class GameScreenReducerImpl : GameScreenReducer {
 		return IconButtonState.Content(
 			onClick = action.onDiscardPressed,
 			image = ImageState.DiscardIcon,
+		)
+	}
+
+	private fun mapBag(action: GameScreenAction.StartPlaying): BagState {
+		return BagState.Content(
+			image = ImageState.BasicBagIcon, // mapper when a bag exists
+			currentLetters = action.currentLettersInDeck,
+			maxLetters = action.maxLettersInDeck
 		)
 	}
 }

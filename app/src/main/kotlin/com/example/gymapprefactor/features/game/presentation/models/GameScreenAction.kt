@@ -10,7 +10,9 @@ sealed class GameScreenAction : Action {
 		val onQuitPressed: () -> Unit,
 		val onWordPlayed: (List<String>) -> Unit,
 		val onDiscardPressed: () -> Unit,
-		val hand: List<Letter>
+		val hand: List<Letter>,
+		val currentLettersInDeck: Int,
+		val maxLettersInDeck: Int,
 	) : GameScreenAction()
 
 	data object None : GameScreenAction()
