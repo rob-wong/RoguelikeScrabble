@@ -50,7 +50,9 @@ class GameViewModelImpl @Inject constructor(
 			onQuitPressed = ::onQuitPressed,
 			onWordPlayed = ::onWordPlayed,
 			onDiscardPressed = ::onDiscardPressed,
-			hand = activeGameState.currentRound.hand
+			hand = activeGameState.currentRound.hand,
+			currentLettersInDeck = activeGameState.currentRound.mutableDeck.size(),
+			maxLettersInDeck = activeGameState.activeGameValues.deck.size(),
 		))
 	}
 

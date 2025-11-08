@@ -44,6 +44,7 @@ import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.zIndex
 import com.example.gymapprefactor.common.components.buttons.ui.ButtonRouter
+import com.example.gymapprefactor.common.components.ui.BagRouter
 import com.example.gymapprefactor.common.components.ui.LetterRouter
 import com.example.gymapprefactor.features.game.presentation.models.GameScreenState
 import kotlinx.coroutines.sync.Mutex
@@ -114,8 +115,9 @@ fun LetterBoard(
 			Row {
 				InputButtonRouter(state.playButton, playedLetters, Modifier)
 				ButtonRouter(state.discardButton)
+				BagRouter(state.bag)
 			}
-// Played Area Guide
+			// Played Area Guide
 			val renderedLetters = buildList {
 				playedLetters.forEachIndexed { index, letter ->
 					if (placeholderIndex == index) add(null) // null = placeholder
@@ -167,7 +169,7 @@ fun LetterBoard(
 
 			Spacer(modifier = Modifier.height(16.dp))
 
-// Holding Area Guide
+			// Holding Area Guide
 			val gridRows = (holdingLetters.size + gridColumns - 1) / gridColumns
 			val gridSlots = List(gridRows * gridColumns) { it }
 

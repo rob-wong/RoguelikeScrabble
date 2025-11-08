@@ -15,6 +15,7 @@ import androidx.compose.ui.unit.dp
 import com.example.gymapprefactor.app.util.DevicePreviews
 import com.example.gymapprefactor.common.components.buttons.presentation.IconButtonState
 import com.example.gymapprefactor.common.components.buttons.ui.ButtonRouter
+import com.example.gymapprefactor.common.components.presentation.BagState
 import com.example.gymapprefactor.common.components.presentation.DeckType
 import com.example.gymapprefactor.common.components.presentation.ImageState
 import com.example.gymapprefactor.common.components.presentation.LetterState
@@ -116,6 +117,11 @@ private fun GamePlayScreenPreview() {
 			discardButton = IconButtonState.Content(
 				onClick = { },
 				image = ImageState.DiscardIcon
+			),
+			bag = BagState.Content(
+				image = ImageState.BasicBagIcon,
+				currentLetters = 10,
+				maxLetters = 20
 			)
 		),
 		invalidWordTrigger = false,

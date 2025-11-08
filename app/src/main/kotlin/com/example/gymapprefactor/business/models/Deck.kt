@@ -5,6 +5,8 @@ interface Deck {
 	val id: String
 	val letters: List<Letter>
 	val name: String
+
+	fun size() = letters.size
 }
 
 class DefaultDeck(

@@ -17,6 +17,7 @@ sealed class ImageState {
 	data object GlyphIcon : ImageState()
 	data object ShopIcon : ImageState()
 	data object UpgradeIcon : ImageState()
+	data object BasicBagIcon : ImageState()
 
 	data object DefaultLetterBackground : ImageState()
 
