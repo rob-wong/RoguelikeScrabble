@@ -47,6 +47,8 @@ import com.example.gymapprefactor.common.components.buttons.ui.ButtonRouter
 import com.example.gymapprefactor.common.components.ui.BagRouter
 import com.example.gymapprefactor.common.components.ui.LetterRouter
 import com.example.gymapprefactor.features.game.presentation.models.GameScreenState
+import com.example.gymapprefactor.features.game.ui.components.DiscardsRemainingRouter
+import com.example.gymapprefactor.features.game.ui.components.RoundsRemainingRouter
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import java.lang.Thread.sleep
@@ -111,11 +113,16 @@ fun LetterBoard(
 			}
 	) {
 		Column(modifier = Modifier.fillMaxSize()) {
-
-			Row {
-				InputButtonRouter(state.playButton, playedLetters, Modifier)
-				ButtonRouter(state.discardButton)
-				BagRouter(state.bag)
+			Column {
+				Row {
+					InputButtonRouter(state.playButton, playedLetters, Modifier)
+					ButtonRouter(state.discardButton)
+					BagRouter(state.bag)
+				}
+				Row {
+					RoundsRemainingRouter(state = state.roundsRemainingState)
+					DiscardsRemainingRouter(state = state.discardsRemainingState)
+				}
 			}
 			// Played Area Guide
 			val renderedLetters = buildList {

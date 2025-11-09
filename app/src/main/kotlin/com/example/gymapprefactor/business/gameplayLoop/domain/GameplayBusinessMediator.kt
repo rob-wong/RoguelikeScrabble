@@ -65,8 +65,7 @@ class GameplayBusinessMediator(
 					),
 				)
 
-			saveGameStateUseCase(newGameState)
-			Result.success(newGameState)
+			Result.success(runGameChecks(newGameState))
 		} else {
 			println("played word: invalid")
 			Result.failure(
@@ -82,6 +81,7 @@ class GameplayBusinessMediator(
 			drawnAmount = game.activeGameVariables.handSize,
 			game = game.copy(
 				currentRound = game.currentRound.copy(
+					discardsUsed = game.currentRound.discardsUsed + 1,
 					hand = emptyList()
 				)
 			)
@@ -91,6 +91,20 @@ class GameplayBusinessMediator(
 
 	suspend fun endGame(game: ActiveGameState, saveProgression: Boolean) {
 		endGameUseCase(game, saveProgression)
+	}
+
+	private suspend fun runGameChecks(game: ActiveGameState): ActiveGameState {
+		val newGame = if (game.currentRound.round == game.activeGameVariables.maxRounds) {
+			game.copy(
+				activeGameVariables = game.activeGameVariables.copy(
+					gameLost = true
+				)
+			)
+		} else {
+			game
+		}
+		saveGameStateUseCase(newGame)
+		return newGame
 	}
 
 	private suspend fun createActiveGame(): ActiveGameState {
@@ -106,7 +120,9 @@ class GameplayBusinessMediator(
 				stage = STARTING_STAGE,
 				level = STARTING_LEVEL,
 				maxRounds = STARTING_MAX_ROUNDS,
+				maxDiscards = STARTING_MAX_DISCARDS,
 				handSize = STARTING_HAND_SIZE,
+				gameLost = false,
 			),
 			activeGameValues = ActiveGameValues(
 				seed = (System.currentTimeMillis() xor UUID.randomUUID().mostSignificantBits),
@@ -115,6 +131,7 @@ class GameplayBusinessMediator(
 			),
 			currentRound = CurrentRound(
 				round = STARTING_ROUND,
+				discardsUsed = STARTING_DISCARDS_USED,
 				enemyHealth = 20,
 				wordsPlayed = listOf(),
 				mutableDeck = gameDeck.copy(),
@@ -124,14 +141,16 @@ class GameplayBusinessMediator(
 
 		val initializedGame = drawHand(drawnAmount = game.activeGameVariables.handSize, game)
 
-		saveGameStateUseCase(initializedGame).also { return initializedGame }
+		return runGameChecks(initializedGame)
 	}
 	
 	private companion object {
 		const val STARTING_STAGE = 1
 		const val STARTING_LEVEL = 1
 		const val STARTING_ROUND = 1
+		const val STARTING_DISCARDS_USED = 0
 		const val STARTING_MAX_ROUNDS = 3
+		const val STARTING_MAX_DISCARDS = 2
 		const val STARTING_HAND_SIZE = 8
 	}
 }

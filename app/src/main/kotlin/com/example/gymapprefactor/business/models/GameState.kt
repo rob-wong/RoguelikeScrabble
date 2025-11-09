@@ -16,7 +16,9 @@ data class ActiveGameVariables(
 	val stage: Int, // could also have a stage model w/a level model w/a round model
 	val level: Int,
 	val maxRounds: Int,
+	val maxDiscards: Int,
 	val handSize: Int,
+	val gameLost: Boolean,
 )
 
 data class ActiveGameValues(
@@ -27,6 +29,7 @@ data class ActiveGameValues(
 
 data class CurrentRound(
 	val round: Int,
+	val discardsUsed : Int,
 	val enemyHealth: Int,
 	val wordsPlayed: List<String>,
 	val mutableDeck: Deck,

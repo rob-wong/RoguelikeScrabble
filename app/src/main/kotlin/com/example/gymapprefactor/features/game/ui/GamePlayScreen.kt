@@ -27,6 +27,8 @@ import com.example.gymapprefactor.common.components.ui.ScreenBackgroundRouter
 import com.example.gymapprefactor.features.game.presentation.models.GameScreenState
 import com.example.gymapprefactor.features.game.presentation.models.GameScreenState.DraggableLetter
 import com.example.gymapprefactor.features.game.presentation.models.InputButtonState
+import com.example.gymapprefactor.features.game.presentation.models.components.DiscardsRemainingState
+import com.example.gymapprefactor.features.game.presentation.models.components.RoundsRemainingState
 
 @Composable
 fun GamePlayScreen(
@@ -122,6 +124,15 @@ private fun GamePlayScreenPreview() {
 				image = ImageState.BasicBagIcon,
 				currentLetters = 10,
 				maxLetters = 20
+			),
+			roundsRemainingState = RoundsRemainingState.Content(
+				image = ImageState.PlaysLeftIcon,
+				currentRound = 5,
+				maxRounds = 10
+			),
+			discardsRemainingState = DiscardsRemainingState.Content(
+				image = ImageState.DiscardsLeftIcon,
+				remaining = 3
 			)
 		),
 		invalidWordTrigger = false,

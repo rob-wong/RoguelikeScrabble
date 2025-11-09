@@ -53,6 +53,9 @@ class GameViewModelImpl @Inject constructor(
 			hand = activeGameState.currentRound.hand,
 			currentLettersInDeck = activeGameState.currentRound.mutableDeck.size(),
 			maxLettersInDeck = activeGameState.activeGameValues.deck.size(),
+			discardsRemaining = activeGameState.activeGameVariables.maxDiscards - activeGameState.currentRound.discardsUsed,
+			currentRound = activeGameState.currentRound.round,
+			maxRounds = activeGameState.activeGameVariables.maxRounds,
 		))
 	}
 
