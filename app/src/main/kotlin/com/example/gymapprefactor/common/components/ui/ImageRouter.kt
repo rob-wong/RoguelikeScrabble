@@ -42,6 +42,8 @@ fun ImageRouter(
 		RuneIcon -> painterResource(R.drawable.icon_rune)
 
 		BasicBagIcon -> painterResource(R.drawable.icon_basic_bag)
+		PlaysLeftIcon -> painterResource(R.drawable.icon_plays_left)
+		DiscardsLeftIcon -> painterResource(R.drawable.icon_discards_left)
 
 		DefaultLetterBackground -> painterResource(R.drawable.icon_letter_background_default)
 		None -> return

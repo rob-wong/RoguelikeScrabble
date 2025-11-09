@@ -12,6 +12,8 @@ import com.example.gymapprefactor.common.components.presentation.ResourceState
 import com.example.gymapprefactor.features.game.presentation.models.GameScreenAction
 import com.example.gymapprefactor.features.game.presentation.models.GameScreenState
 import com.example.gymapprefactor.features.game.presentation.models.GameScreenState.DraggableLetter
+import com.example.gymapprefactor.features.game.presentation.models.components.DiscardsRemainingState
+import com.example.gymapprefactor.features.game.presentation.models.components.RoundsRemainingState
 import kotlinx.coroutines.flow.MutableStateFlow
 
 class GameScreenReducerImpl : GameScreenReducer {
@@ -42,6 +44,8 @@ class GameScreenReducerImpl : GameScreenReducer {
 			playButton = mapPlayButton(action),
 			discardButton = mapDiscardButton(action),
 			bag = mapBag(action),
+			roundsRemainingState = mapRoundsRemaining(action),
+			discardsRemainingState = mapDiscardsRemaining(action),
 		)
 	}
 
@@ -84,6 +88,21 @@ class GameScreenReducerImpl : GameScreenReducer {
 			image = ImageState.BasicBagIcon, // mapper when a bag exists
 			currentLetters = action.currentLettersInDeck,
 			maxLetters = action.maxLettersInDeck
+		)
+	}
+
+	private fun mapRoundsRemaining(action: GameScreenAction.StartPlaying): RoundsRemainingState {
+		return RoundsRemainingState.Content(
+			image = ImageState.PlaysLeftIcon,
+			currentRound = action.currentRound,
+			maxRounds = action.maxRounds
+		)
+	}
+
+	private fun mapDiscardsRemaining(action: GameScreenAction.StartPlaying): DiscardsRemainingState {
+		return DiscardsRemainingState.Content(
+			image = ImageState.DiscardsLeftIcon,
+			remaining = action.discardsRemaining
 		)
 	}
 }

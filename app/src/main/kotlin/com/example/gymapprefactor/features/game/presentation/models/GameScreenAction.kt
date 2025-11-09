@@ -13,6 +13,9 @@ sealed class GameScreenAction : Action {
 		val hand: List<Letter>,
 		val currentLettersInDeck: Int,
 		val maxLettersInDeck: Int,
+		val currentRound: Int,
+		val maxRounds: Int,
+		val discardsRemaining: Int,
 	) : GameScreenAction()
 
 	data object None : GameScreenAction()
