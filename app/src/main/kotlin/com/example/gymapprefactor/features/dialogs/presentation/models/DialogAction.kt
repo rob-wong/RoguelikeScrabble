@@ -7,7 +7,7 @@ sealed class DialogAction : Action {
 	data class InitializeDismiss(
 		val onDismiss: () -> Unit
 	) : DialogAction()
-	data class TriggerDialog(
+	data class TriggerDialog( // could do list of states in ui refinement, game lost icon
 		val onDismiss: () -> Unit,
 		val showDismissButton: Boolean,
 		val title: String,
