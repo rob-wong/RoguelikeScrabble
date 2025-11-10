@@ -6,8 +6,8 @@ import androidx.compose.animation.core.repeatable
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.detectDragGestures
+import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -104,9 +104,9 @@ fun LetterBoard(
 
 	Box(
 		modifier = modifier
-			.clickable(
-				onClick = { println("shakeOffset: ${shakeOffset.value}, invalidWordTrigger: $invalidWordTrigger") }
-			)
+//			.clickable(
+//				onClick = { println("shakeOffset: ${shakeOffset.value}, invalidWordTrigger: $invalidWordTrigger") }
+//			)
 			.fillMaxSize()
 			.onGloballyPositioned { coords ->
 				rootOffset = coords.boundsInWindow().topLeft
@@ -225,6 +225,16 @@ fun LetterBoard(
 			LetterItem(
 				letter = letter,
 				targetOffset = slotOffset,
+				onClick = {
+					println("letter clicked")
+					if (letter in holdingLetters) {
+						holdingLetters.remove(letter)
+						playedLetters.add(letter)
+					} else {
+						holdingLetters.add(letter)
+						playedLetters.remove(letter)
+					}
+				},
 				onDrag = { newOffset ->
 					if (draggingLetterId == letter.id) {
 						val originOffset = slotPositions[letter.id] ?: Offset.Zero
@@ -321,6 +331,7 @@ private fun insertLetterByPosition(
 internal fun LetterItem(
 	letter: GameScreenState.DraggableLetter,
 	targetOffset: Offset,
+	onClick: () -> Unit,
 	onDrag: (Offset) -> Unit,
 	onDrop: (GameScreenState.DraggableLetter, Offset) -> Unit,
 	onDragStateChanged: (String?) -> Unit
@@ -337,6 +348,11 @@ internal fun LetterItem(
 				)
 			}
 			.zIndex(if (isDragging) 1f else 0f)
+			.pointerInput(letter.id) {
+				detectTapGestures {
+					onClick()
+				}
+			}
 			.pointerInput(letter.id) {
 				detectDragGestures(
 					onDragStart = {
