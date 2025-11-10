@@ -94,7 +94,7 @@ class GameplayBusinessMediator(
 	}
 
 	private suspend fun runGameChecks(game: ActiveGameState): ActiveGameState {
-		val newGame = if (game.currentRound.round == game.activeGameVariables.maxRounds) {
+		val newGame = if (game.currentRound.round > game.activeGameVariables.maxRounds) {
 			game.copy(
 				activeGameVariables = game.activeGameVariables.copy(
 					gameLost = true

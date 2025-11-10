@@ -44,19 +44,23 @@ class GameViewModelImpl @Inject constructor(
 	}
 
 	private suspend fun updateGame() {
-		gameScreenReducer.update(GameScreenAction.StartPlaying(
-			runesCount = 10,
-			glyphCount = 30,
-			onQuitPressed = ::onQuitPressed,
-			onWordPlayed = ::onWordPlayed,
-			onDiscardPressed = ::onDiscardPressed,
-			hand = activeGameState.currentRound.hand,
-			currentLettersInDeck = activeGameState.currentRound.mutableDeck.size(),
-			maxLettersInDeck = activeGameState.activeGameValues.deck.size(),
-			discardsRemaining = activeGameState.activeGameVariables.maxDiscards - activeGameState.currentRound.discardsUsed,
-			currentRound = activeGameState.currentRound.round,
-			maxRounds = activeGameState.activeGameVariables.maxRounds,
-		))
+		if (activeGameState.activeGameVariables.gameLost) {
+			triggerGameLostDialog()
+		} else {
+			gameScreenReducer.update(GameScreenAction.StartPlaying(
+				runesCount = 10,
+				glyphCount = 30,
+				onQuitPressed = ::onQuitPressed,
+				onWordPlayed = ::onWordPlayed,
+				onDiscardPressed = ::onDiscardPressed,
+				hand = activeGameState.currentRound.hand,
+				currentLettersInDeck = activeGameState.currentRound.mutableDeck.size(),
+				maxLettersInDeck = activeGameState.activeGameValues.deck.size(),
+				discardsRemaining = activeGameState.activeGameVariables.maxDiscards - activeGameState.currentRound.discardsUsed,
+				currentRound = activeGameState.currentRound.round,
+				maxRounds = activeGameState.activeGameVariables.maxRounds,
+			))
+		}
 	}
 
 	private fun onQuitPressed() {
@@ -106,6 +110,20 @@ class GameViewModelImpl @Inject constructor(
 		viewModelScope.launch(dispatcherProvider.default) {
 			gameplayBusinessMediator.endGame(game = activeGameState, saveProgression = false)
 			navigationReducer.update(NavigationAction.GoTo(NavigationPage.HomeScreen))
+		}
+	}
+
+	private fun triggerGameLostDialog() {
+		viewModelScope.launch(dispatcherProvider.default) {
+			dialogReducer.update(
+				DialogAction.TriggerDialog(
+					onDismiss = { dialogReducer.onDefaultDismiss() },
+					title = "Game Lost",
+					showDismissButton = false,
+					confirmState = DialogAction.ConfirmState.Content(
+						onConfirm = { quitGame() }
+					),
+				))
 		}
 	}
 }

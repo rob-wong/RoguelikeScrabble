@@ -20,6 +20,7 @@ sealed class ImageState {
 	data object BasicBagIcon : ImageState()
 	data object PlaysLeftIcon : ImageState()
 	data object DiscardsLeftIcon : ImageState()
+    data object GameOverText : ImageState()
 
 	data object DefaultLetterBackground : ImageState()
 
