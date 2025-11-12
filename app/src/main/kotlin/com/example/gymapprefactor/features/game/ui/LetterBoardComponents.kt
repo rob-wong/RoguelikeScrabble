@@ -1,3 +1,5 @@
+@file:Suppress("TooManyFunctions")
+
 package com.example.gymapprefactor.features.game.ui
 
 import androidx.compose.animation.core.Animatable
@@ -245,101 +247,10 @@ internal fun LetterOverlays(
 		LetterItem(
 			letter = letter,
 			targetOffset = slotOffset,
-			onClick = {
-				println("letter clicked")
-				if (letter in boardState.holdingLetters) {
-					boardState.holdingLetters.remove(letter)
-					boardState.playedLetters.add(letter)
-				} else {
-					boardState.holdingLetters.add(letter)
-					boardState.playedLetters.remove(letter)
-				}
-			},
-			onDrag = { newOffset ->
-				if (boardState.draggingLetterId == letter.id) {
-					val originOffset = boardState.slotPositions[letter.id] ?: Offset.Zero
-					val newDraggedOffset = originOffset + newOffset
-
-					// Calculate placeholder index
-					val draggedCenterX = newDraggedOffset.x + boardState.tileWidthPx / 2
-
-					val insertIndex = boardState.playedLetters.indexOfFirst { ref ->
-						val centerX = boardState.slotPositions[ref.id]?.x
-							?.plus(boardState.tileWidthPx / 2) ?: Float.MAX_VALUE
-						draggedCenterX < centerX
-					}.let { if (it == -1) boardState.playedLetters.size else it }
-
-					boardState.placeholderIndex = insertIndex
-				}
-			},
-			onDrop = { droppedLetter, dropOffset ->
-				val inPlayed = boardState.playedBounds?.contains(dropOffset) == true
-				val inHolding = boardState.holdingBounds?.contains(dropOffset) == true
-
-				when {
-					inPlayed -> {
-						boardState.holdingLetters.remove(droppedLetter)
-
-						val originalIndex = boardState.playedLetters
-							.indexOfFirst { it.id == droppedLetter.id }
-						val rawIndex = boardState.placeholderIndex ?: boardState.playedLetters.size
-
-						// If the letter was already in the list and its original index was before the placeholder,
-						// subtract 1 to compensate for the shift caused by removal
-						val adjustedIndex = if (originalIndex != -1 && originalIndex < rawIndex) {
-							rawIndex - 1
-						} else {
-							rawIndex
-						}
-
-						boardState.playedLetters.remove(droppedLetter)
-						Thread.sleep(100L)
-						boardState.playedLetters.add(
-							index = adjustedIndex.coerceIn(0, boardState.playedLetters.size),
-							element = droppedLetter)
-						boardState.letterAreaMap[droppedLetter.id] = Area.Played
-					}
-					inHolding -> {
-						boardState.playedLetters.remove(droppedLetter)
-						insertLetterByPosition(
-							droppedLetter,
-							boardState.holdingLetters,
-							boardState.holdingLetters,
-							dropOffset,
-							boardState.slotPositions
-						)
-						boardState.letterAreaMap[droppedLetter.id] = Area.Holding
-					}
-					else -> {
-						val area = boardState.letterAreaMap[letter.id] ?: Area.Holding
-						if (area == Area.Played) {
-							insertLetterByPosition(
-								droppedLetter,
-								boardState.playedLetters,
-								boardState.playedLetters,
-								dropOffset,
-								boardState.slotPositions
-							)
-							boardState.holdingLetters.remove(droppedLetter)
-						} else {
-							insertLetterByPosition(
-								droppedLetter,
-								boardState.holdingLetters,
-								boardState.holdingLetters,
-								dropOffset,
-								boardState.slotPositions
-							)
-							boardState.playedLetters.remove(droppedLetter)
-						}
-					}
-				}
-
-				boardState.draggingLetterId = null
-				boardState.placeholderIndex = null
-			},
-			onDragStateChanged = {
-				boardState.draggingLetterId = it
-			}
+			onClick = { handleLetterClick(letter, boardState) },
+			onDrag = { newOffset -> handleLetterDrag(letter, newOffset, boardState) },
+			onDrop = { droppedLetter, dropOffset -> handleLetterDrop(droppedLetter, dropOffset, letter, boardState) },
+			onDragStateChanged = { boardState.draggingLetterId = it }
 		)
 	}
 
@@ -358,6 +269,131 @@ internal fun LetterOverlays(
 		) {
 			com.example.gymapprefactor.common.components.ui.LetterRouter(letter.letterState)
 		}
+	}
+}
+
+private fun handleLetterClick(
+	letter: GameScreenState.DraggableLetter,
+	boardState: LetterBoardState
+) {
+	println("letter clicked")
+	if (letter in boardState.holdingLetters) {
+		boardState.holdingLetters.remove(letter)
+		boardState.playedLetters.add(letter)
+	} else {
+		boardState.holdingLetters.add(letter)
+		boardState.playedLetters.remove(letter)
+	}
+}
+
+private fun handleLetterDrag(
+	letter: GameScreenState.DraggableLetter,
+	newOffset: Offset,
+	boardState: LetterBoardState
+) {
+	if (boardState.draggingLetterId == letter.id) {
+		val originOffset = boardState.slotPositions[letter.id] ?: Offset.Zero
+		val newDraggedOffset = originOffset + newOffset
+
+		// Calculate placeholder index
+		val draggedCenterX = newDraggedOffset.x + boardState.tileWidthPx / 2
+
+		val insertIndex = boardState.playedLetters.indexOfFirst { ref ->
+			val centerX = boardState.slotPositions[ref.id]?.x
+				?.plus(boardState.tileWidthPx / 2) ?: Float.MAX_VALUE
+			draggedCenterX < centerX
+		}.let { if (it == -1) boardState.playedLetters.size else it }
+
+		boardState.placeholderIndex = insertIndex
+	}
+}
+
+private fun handleLetterDrop(
+	droppedLetter: GameScreenState.DraggableLetter,
+	dropOffset: Offset,
+	letter: GameScreenState.DraggableLetter,
+	boardState: LetterBoardState
+) {
+	val inPlayed = boardState.playedBounds?.contains(dropOffset) == true
+	val inHolding = boardState.holdingBounds?.contains(dropOffset) == true
+
+	when {
+		inPlayed -> handleDropInPlayedArea(droppedLetter, boardState)
+		inHolding -> handleDropInHoldingArea(droppedLetter, dropOffset, boardState)
+		else -> handleDropInOtherArea(droppedLetter, letter, dropOffset, boardState)
+	}
+
+	boardState.draggingLetterId = null
+	boardState.placeholderIndex = null
+}
+
+private fun handleDropInPlayedArea(
+	droppedLetter: GameScreenState.DraggableLetter,
+	boardState: LetterBoardState
+) {
+	boardState.holdingLetters.remove(droppedLetter)
+
+	val originalIndex = boardState.playedLetters.indexOfFirst { it.id == droppedLetter.id }
+	val rawIndex = boardState.placeholderIndex ?: boardState.playedLetters.size
+
+	// If the letter was already in the list and its original index was before the placeholder,
+	// subtract 1 to compensate for the shift caused by removal
+	val adjustedIndex = if (originalIndex != -1 && originalIndex < rawIndex) {
+		rawIndex - 1
+	} else {
+		rawIndex
+	}
+
+	boardState.playedLetters.remove(droppedLetter)
+	Thread.sleep(100L)
+	boardState.playedLetters.add(
+		index = adjustedIndex.coerceIn(0, boardState.playedLetters.size),
+		element = droppedLetter
+	)
+	boardState.letterAreaMap[droppedLetter.id] = Area.Played
+}
+
+private fun handleDropInHoldingArea(
+	droppedLetter: GameScreenState.DraggableLetter,
+	dropOffset: Offset,
+	boardState: LetterBoardState
+) {
+	boardState.playedLetters.remove(droppedLetter)
+	insertLetterByPosition(
+		droppedLetter,
+		boardState.holdingLetters,
+		boardState.holdingLetters,
+		dropOffset,
+		boardState.slotPositions
+	)
+	boardState.letterAreaMap[droppedLetter.id] = Area.Holding
+}
+
+private fun handleDropInOtherArea(
+	droppedLetter: GameScreenState.DraggableLetter,
+	letter: GameScreenState.DraggableLetter,
+	dropOffset: Offset,
+	boardState: LetterBoardState
+) {
+	val area = boardState.letterAreaMap[letter.id] ?: Area.Holding
+	if (area == Area.Played) {
+		insertLetterByPosition(
+			droppedLetter,
+			boardState.playedLetters,
+			boardState.playedLetters,
+			dropOffset,
+			boardState.slotPositions
+		)
+		boardState.holdingLetters.remove(droppedLetter)
+	} else {
+		insertLetterByPosition(
+			droppedLetter,
+			boardState.holdingLetters,
+			boardState.holdingLetters,
+			dropOffset,
+			boardState.slotPositions
+		)
+		boardState.playedLetters.remove(droppedLetter)
 	}
 }
 
