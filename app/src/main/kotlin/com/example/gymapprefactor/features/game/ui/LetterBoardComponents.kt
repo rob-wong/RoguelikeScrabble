@@ -3,6 +3,7 @@
 package com.example.gymapprefactor.features.game.ui
 
 import androidx.compose.animation.core.Animatable
+import androidx.compose.animation.core.AnimationVector1D
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -16,7 +17,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.itemsIndexed
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.compose.ui.Alignment
@@ -27,7 +27,7 @@ import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.layout.boundsInParent
 import androidx.compose.ui.layout.boundsInWindow
 import androidx.compose.ui.layout.onGloballyPositioned
-import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -36,6 +36,8 @@ import com.example.gymapprefactor.common.components.buttons.presentation.ButtonS
 import com.example.gymapprefactor.common.components.buttons.ui.ButtonRouter
 import com.example.gymapprefactor.common.components.presentation.BagState
 import com.example.gymapprefactor.common.components.ui.BagRouter
+import com.example.gymapprefactor.common.components.ui.LetterRouter
+import com.example.gymapprefactor.common.components.ui.OutlinedText
 import com.example.gymapprefactor.common.components.ui.letterFontRouter
 import com.example.gymapprefactor.features.game.presentation.models.GameScreenState
 import com.example.gymapprefactor.features.game.presentation.models.InputButtonState
@@ -100,14 +102,17 @@ internal fun ScoreLane(
 					contentAlignment = Alignment.Center
 				) {
 					if (score != null) {
-						Text(
+						OutlinedText(
 							text = "+$score",
-							fontSize = 18.sp,
-							fontWeight = FontWeight.Bold,
-							style = letterFontRouter(fontLevel),
+							textAlign = TextAlign.Center,
+							textStyle = letterFontRouter(fontLevel).copy(
+								fontSize = 25.sp
+							),
 							modifier = Modifier
 								.offset { IntOffset(shake.roundToInt(), 0) }
-								.graphicsLayer(alpha = alpha)
+								.graphicsLayer(alpha = alpha),
+							outlineWidth = 5,
+							useGlow = false
 						)
 					}
 				}
@@ -118,15 +123,16 @@ internal fun ScoreLane(
 			val totalFontLevel = scoreState.orderedScoredLetters.maxOfOrNull { 
 				scoreState.scoredLetters[it.id]?.level ?: 1 
 			} ?: 1
-			Text(
+			OutlinedText(
 				text = "+$total",
-				fontSize = 22.sp,
-				fontWeight = FontWeight.ExtraBold,
-				style = letterFontRouter(totalFontLevel),
+				textAlign = TextAlign.Center,
+				textStyle = letterFontRouter(totalFontLevel),
 				modifier = Modifier
 					.align(Alignment.Center)
 					.offset { IntOffset(scoreState.totalScoreShake.value.roundToInt(), 0) }
-					.graphicsLayer(alpha = scoreState.totalScoreAlpha.value)
+					.graphicsLayer(alpha = scoreState.totalScoreAlpha.value),
+				outlineWidth = 7,
+				useGlow = false
 			)
 		}
 	}
@@ -136,7 +142,7 @@ internal fun ScoreLane(
 @Composable
 internal fun PlayedArea(
 	boardState: LetterBoardState,
-	shakeOffset: Animatable<Float, androidx.compose.animation.core.AnimationVector1D>,
+	shakeOffset: Animatable<Float, AnimationVector1D>,
 	modifier: Modifier = Modifier
 ) {
 	val renderedLetters = buildList {
@@ -267,7 +273,7 @@ internal fun LetterOverlays(
 				}
 				.zIndex(0.5f)
 		) {
-			com.example.gymapprefactor.common.components.ui.LetterRouter(letter.letterState)
+			LetterRouter(letter.letterState)
 		}
 	}
 }
