@@ -40,7 +40,8 @@ fun GameRoot(
 
 	LaunchedEffect(Unit) {
 		viewModel.scoreEvent.collectLatest { payload ->
-			println("GameRoot: received score payload size=${payload.letterScores.size} ids=${payload.letterScores.map { it.first }}")
+			println("GameRoot: received score payload size=${payload.letterScores.size} " +
+					"ids=${payload.letterScores.map { it.first }}")
 			scoreQueue.add(payload)
 		}
 	}

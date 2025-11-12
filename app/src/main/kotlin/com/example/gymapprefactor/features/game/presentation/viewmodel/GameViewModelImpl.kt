@@ -137,7 +137,13 @@ class GameViewModelImpl @Inject constructor(
 		val isWon = activeGameState.currentRound.enemyHealth <= 0
 		val isLost = activeGameState.currentRound.round > activeGameState.activeGameVariables.maxRounds
 		
-		println("GameViewModelImpl: After score applied - enemyHealth=${activeGameState.currentRound.enemyHealth}, round=${activeGameState.currentRound.round}, maxRounds=${activeGameState.activeGameVariables.maxRounds}, isWon=$isWon, isLost=$isLost")
+		println("GameViewModelImpl: After score applied - " +
+				"enemyHealth=${activeGameState.currentRound.enemyHealth}, " +
+				"round=${activeGameState.currentRound.round}, " +
+				"maxRounds=${activeGameState.activeGameVariables.maxRounds}, " +
+				"isWon=$isWon, " +
+				"isLost=$isLost"
+		)
 		
 		activeGameState = activeGameState.copy(
 			activeGameVariables = activeGameState.activeGameVariables.copy(
