@@ -1,6 +1,7 @@
 package com.example.gymapprefactor.features.game.ui
 
 import androidx.compose.animation.core.Animatable
+import androidx.compose.animation.core.AnimationVector1D
 import androidx.compose.animation.core.RepeatMode
 import androidx.compose.animation.core.repeatable
 import androidx.compose.animation.core.tween
@@ -21,6 +22,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.itemsIndexed
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -35,20 +37,31 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.boundsInParent
 import androidx.compose.ui.layout.boundsInWindow
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.compose.ui.zIndex
+import com.example.gymapprefactor.business.models.Letter
 import com.example.gymapprefactor.common.components.buttons.ui.ButtonRouter
+import com.example.gymapprefactor.common.components.presentation.DeckType
+import com.example.gymapprefactor.common.components.presentation.LetterState
 import com.example.gymapprefactor.common.components.ui.BagRouter
 import com.example.gymapprefactor.common.components.ui.LetterRouter
+import com.example.gymapprefactor.common.components.ui.letterFontRouter
 import com.example.gymapprefactor.features.game.presentation.models.GameScreenState
+import com.example.gymapprefactor.features.game.presentation.viewmodel.ScoreAnimationPayload
 import com.example.gymapprefactor.features.game.ui.components.DiscardsRemainingRouter
 import com.example.gymapprefactor.features.game.ui.components.RoundsRemainingRouter
+import kotlinx.coroutines.coroutineScope
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import java.lang.Thread.sleep
@@ -61,14 +74,25 @@ fun LetterBoard(
 	state: GameScreenState.Playing,
 	invalidWordTrigger: Boolean,
 	onInvalidWordConsumed: () -> Unit,
+	scoreBreakdown: ScoreAnimationPayload?,
+	onScoreAnimationConsumed: () -> Unit,
+	onScoreAnimationComplete: () -> Unit,
 	modifier: Modifier = Modifier
 ) {
 	val tileWidthPx = with(LocalDensity.current) { 48.dp.toPx() }
-	val holdingLetters = remember { mutableStateListOf(*state.letters.toTypedArray()) }
+	val holdingLetters = remember { mutableStateListOf<GameScreenState.DraggableLetter>() }
 	val playedLetters = remember { mutableStateListOf<GameScreenState.DraggableLetter>() }
 
 	val slotPositions = remember { mutableStateMapOf<String, Offset>() }
 	val letterAreaMap = remember { mutableStateMapOf<String, Area>() }
+
+	LaunchedEffect(state.letters) {
+		holdingLetters.clear()
+		holdingLetters.addAll(state.letters.map { it.copy() })
+		playedLetters.clear()
+		letterAreaMap.clear()
+		slotPositions.keys.retainAll(holdingLetters.map { it.id })
+	}
 
 	var placeholderIndex by remember { mutableStateOf<Int?>(null) }
 
@@ -84,6 +108,15 @@ fun LetterBoard(
 
 	val shakeOffset = remember { Animatable(0f) }
 	val shakeMutex = remember { Mutex() }
+	val scoreValueMap = remember { mutableStateMapOf<String, Int>() }
+	val scoreAlphaMap = remember { mutableStateMapOf<String, Animatable<Float, AnimationVector1D>>() }
+	val scoreShakeMap = remember { mutableStateMapOf<String, Animatable<Float, AnimationVector1D>>() }
+	var totalScore by remember { mutableStateOf<Int?>(null) }
+	val totalScoreAlpha = remember { Animatable(0f) }
+	val totalScoreShake = remember { Animatable(0f) }
+	val scoredLetters = remember { mutableStateMapOf<String, Letter>() }
+	val orderedScoredLetters = remember { mutableStateListOf<GameScreenState.DraggableLetter>() }
+	val scoreLetterPositions = remember { mutableStateMapOf<String, Offset>() }
 
 	LaunchedEffect(invalidWordTrigger) {
 		shakeMutex.withLock {
@@ -100,6 +133,107 @@ fun LetterBoard(
 			}
 		}
 		onInvalidWordConsumed()
+	}
+
+	LaunchedEffect(scoreBreakdown) {
+		if (scoreBreakdown == null || scoreBreakdown.letterScores.isEmpty()) {
+			println("LetterBoard: scoreBreakdown empty -> $scoreBreakdown")
+			return@LaunchedEffect
+		}
+
+		println(
+			"LetterBoard: incoming scores=${scoreBreakdown.letterScores.map { it.first to it.second }} " +
+				"holding=${holdingLetters.map { it.id }} played=${playedLetters.map { it.id }}"
+		)
+
+		scoredLetters.clear()
+		scoreLetterPositions.clear()
+		orderedScoredLetters.clear()
+		scoreBreakdown.letters.forEach { letter ->
+			scoredLetters[letter.id] = letter
+			orderedScoredLetters.add(
+				GameScreenState.DraggableLetter(
+					id = letter.id,
+					letterState = LetterState.Display(
+						type = DeckType.Default,
+						letter = letter.letter.uppercaseChar(),
+						level = letter.level
+					)
+				)
+			)
+			scoreLetterPositions[letter.id] = slotPositions[letter.id] ?: Offset.Zero
+		}
+
+		val filteredScores = scoreBreakdown.letterScores.filter { score ->
+			scoredLetters.containsKey(score.first)
+		}
+
+		println("LetterBoard: filteredScores=${filteredScores.map { it.first }}")
+
+		if (filteredScores.isEmpty()) {
+			println("LetterBoard: filteredScores empty, skipping animation")
+			onScoreAnimationConsumed()
+			orderedScoredLetters.clear()
+			scoreLetterPositions.clear()
+			return@LaunchedEffect
+		}
+
+		totalScore = filteredScores.sumOf { it.second }
+		totalScoreAlpha.snapTo(0f)
+		totalScoreShake.snapTo(0f)
+		scoreValueMap.clear()
+
+		for ((letterId, _) in filteredScores) {
+			scoreAlphaMap.getOrPut(letterId) { Animatable(0f) }.snapTo(0f)
+			scoreShakeMap.getOrPut(letterId) { Animatable(0f) }.snapTo(0f)
+		}
+
+		for ((letterId, score) in filteredScores) {
+			scoreValueMap[letterId] = score
+
+			coroutineScope {
+				launch {
+					val shakeAnim = scoreShakeMap.getOrPut(letterId) { Animatable(0f) }
+					shakeAnim.snapTo(0f)
+					repeat(2) {
+						shakeAnim.animateTo(12f, tween(durationMillis = 70))
+						shakeAnim.animateTo(-12f, tween(durationMillis = 70))
+					}
+					shakeAnim.animateTo(0f, tween(durationMillis = 80))
+				}
+				launch {
+					val alphaAnim = scoreAlphaMap.getOrPut(letterId) { Animatable(0f) }
+					alphaAnim.snapTo(0f)
+					alphaAnim.animateTo(1f, tween(durationMillis = 250))
+				}
+			}
+
+			delay(320L)
+		}
+
+		delay(240L)
+
+		for ((letterId, _) in filteredScores) {
+			val alphaAnim = scoreAlphaMap[letterId] ?: continue
+			alphaAnim.animateTo(0f, tween(durationMillis = 180))
+		}
+
+		totalScoreAlpha.snapTo(0f)
+		totalScoreAlpha.animateTo(1f, tween(durationMillis = 280))
+		repeat(2) {
+			totalScoreShake.animateTo(14f, tween(durationMillis = 90))
+			totalScoreShake.animateTo(-14f, tween(durationMillis = 90))
+		}
+		totalScoreShake.animateTo(0f, tween(durationMillis = 90))
+		delay(300L)
+		totalScoreAlpha.animateTo(0f, tween(durationMillis = 200))
+		totalScore = null
+		scoreValueMap.clear()
+		orderedScoredLetters.clear()
+		scoreLetterPositions.clear()
+
+		onScoreAnimationConsumed()
+		onScoreAnimationComplete()
 	}
 
 	Box(
@@ -131,6 +265,63 @@ fun LetterBoard(
 					add(letter)
 				}
 				if (placeholderIndex == playedLetters.size) add(null)
+			}
+
+			Box(
+				modifier = Modifier
+					.fillMaxWidth()
+					.height(60.dp)
+			) {
+				LazyRow(
+					modifier = Modifier
+						.fillMaxWidth()
+						.padding(horizontal = 12.dp),
+					horizontalArrangement = Arrangement.Center,
+					verticalAlignment = Alignment.CenterVertically
+				) {
+					itemsIndexed(
+						items = orderedScoredLetters,
+						key = { index, letter -> letter.id }
+					) { index, letter ->
+						val shake = scoreShakeMap[letter.id]?.value ?: 0f
+						val alpha = scoreAlphaMap[letter.id]?.value ?: 0f
+						val score = scoreValueMap[letter.id]
+						val fontLevel = scoredLetters[letter.id]?.level ?: 1
+
+						Box(
+							modifier = Modifier
+								.size(48.dp)
+								.padding(4.dp),
+							contentAlignment = Alignment.Center
+						) {
+							if (score != null) {
+								Text(
+									text = "+$score",
+									fontSize = 18.sp,
+									fontWeight = FontWeight.Bold,
+									style = letterFontRouter(fontLevel),
+									modifier = Modifier
+										.offset { IntOffset(shake.roundToInt(), 0) }
+										.graphicsLayer(alpha = alpha)
+								)
+							}
+						}
+					}
+				}
+
+				totalScore?.let { total ->
+					val totalFontLevel = orderedScoredLetters.maxOfOrNull { scoredLetters[it.id]?.level ?: 1 } ?: 1
+					Text(
+						text = "+$total",
+						fontSize = 22.sp,
+						fontWeight = FontWeight.ExtraBold,
+						style = letterFontRouter(totalFontLevel),
+						modifier = Modifier
+							.align(Alignment.Center)
+							.offset { IntOffset(totalScoreShake.value.roundToInt(), 0) }
+							.graphicsLayer(alpha = totalScoreAlpha.value)
+					)
+				}
 			}
 
 			LazyRow(
@@ -299,6 +490,22 @@ fun LetterBoard(
 					draggingLetterId = it
 				}
 			)
+		}
+
+		orderedScoredLetters.forEach { letter ->
+			val overlayOffset = scoreLetterPositions[letter.id] ?: return@forEach
+			Box(
+				modifier = Modifier
+					.offset {
+						IntOffset(
+							overlayOffset.x.roundToInt(),
+							overlayOffset.y.roundToInt()
+						)
+					}
+					.zIndex(0.5f)
+			) {
+				LetterRouter(letter.letterState)
+			}
 		}
 	}
 }

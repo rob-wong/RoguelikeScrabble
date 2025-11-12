@@ -18,6 +18,7 @@ class GameplayBusinessMediator(
 	private val endGameUseCase: EndGameUseCase,
 	private val drawHandMapper: DrawHandMapper,
 	private val wordValidityMapper: WordValidityMapper,
+	private val scoreWordMapper: ScoreWordMapper,
 ) {
 	suspend fun fetchOrCreateActiveGame(): ActiveGameState {
 		return getGameState() as? ActiveGameState ?: createActiveGame()
@@ -47,7 +48,7 @@ class GameplayBusinessMediator(
 	}
 
 	// turn this into a mapper maybe
-	suspend fun onWordPlayed(list: List<Letter>, game: ActiveGameState): Result<ActiveGameState> {
+	suspend fun onWordPlayed(list: List<Letter>, game: ActiveGameState): Result<ScoredWordResult> {
 		println("played word: ${list.map { it.letter }}")
 		val wordAsString = list.map { it.letter }.joinToString(separator = "")
 
@@ -65,7 +66,22 @@ class GameplayBusinessMediator(
 					),
 				)
 
-			Result.success(runGameChecks(newGameState))
+			val scoredGame = runGameChecks(newGameState)
+			val scoredLetters = list
+			val letterScores = scoreWordMapper.map(
+				ScoreWordMapper.Param(
+					letters = list,
+					activeGameValues = scoredGame.activeGameValues
+				),
+			)
+
+			Result.success(
+				ScoredWordResult(
+					gameState = scoredGame,
+					letterScores = letterScores,
+					letters = scoredLetters
+				)
+			)
 		} else {
 			println("played word: invalid")
 			Result.failure(
@@ -89,22 +105,19 @@ class GameplayBusinessMediator(
 		saveGameStateUseCase(newGameState).also { return newGameState }
 	}
 
+	suspend fun saveGameState(game: ActiveGameState): ActiveGameState {
+		return saveGameStateUseCase(game) as ActiveGameState
+	}
+
 	suspend fun endGame(game: ActiveGameState, saveProgression: Boolean) {
 		endGameUseCase(game, saveProgression)
 	}
 
 	private suspend fun runGameChecks(game: ActiveGameState): ActiveGameState {
-		val newGame = if (game.currentRound.round > game.activeGameVariables.maxRounds) {
-			game.copy(
-				activeGameVariables = game.activeGameVariables.copy(
-					gameLost = true
-				)
-			)
-		} else {
-			game
-		}
-		saveGameStateUseCase(newGame)
-		return newGame
+		// Note: gameLost is now determined in the view model after score is applied
+		// to allow for win conditions to override loss conditions
+		saveGameStateUseCase(game)
+		return game
 	}
 
 	private suspend fun createActiveGame(): ActiveGameState {
@@ -132,7 +145,7 @@ class GameplayBusinessMediator(
 			currentRound = CurrentRound(
 				round = STARTING_ROUND,
 				discardsUsed = STARTING_DISCARDS_USED,
-				enemyHealth = 20,
+				enemyHealth = 200000,
 				wordsPlayed = listOf(),
 				mutableDeck = gameDeck.copy(),
 				hand = listOf(),
@@ -154,3 +167,9 @@ class GameplayBusinessMediator(
 		const val STARTING_HAND_SIZE = 8
 	}
 }
+
+data class ScoredWordResult(
+	val gameState: ActiveGameState,
+	val letterScores: List<LetterScore>,
+	val letters: List<Letter>
+)
