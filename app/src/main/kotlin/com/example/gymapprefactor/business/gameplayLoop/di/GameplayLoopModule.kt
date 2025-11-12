@@ -3,12 +3,19 @@ package com.example.gymapprefactor.business.gameplayLoop.di
 import android.content.Context
 import com.example.gymapprefactor.business.gameplayLoop.data.GameplayDataSource
 import com.example.gymapprefactor.business.gameplayLoop.data.GameplayRepositoryImpl
+import com.example.gymapprefactor.business.gameplayLoop.domain.ApplyScoreToEnemyUseCase
+import com.example.gymapprefactor.business.gameplayLoop.domain.CheckGameConditionsUseCase
+import com.example.gymapprefactor.business.gameplayLoop.domain.CreateGameUseCase
 import com.example.gymapprefactor.business.gameplayLoop.domain.DrawHandMapper
 import com.example.gymapprefactor.business.gameplayLoop.domain.DrawHandMapperImpl
+import com.example.gymapprefactor.business.gameplayLoop.domain.DrawHandUseCase
 import com.example.gymapprefactor.business.gameplayLoop.domain.EndGameUseCase
+import com.example.gymapprefactor.business.gameplayLoop.domain.GameRules
+import com.example.gymapprefactor.business.gameplayLoop.domain.GameRulesImpl
 import com.example.gymapprefactor.business.gameplayLoop.domain.GameplayBusinessMediator
 import com.example.gymapprefactor.business.gameplayLoop.domain.GameplayRepository
 import com.example.gymapprefactor.business.gameplayLoop.domain.GetGameStateUseCase
+import com.example.gymapprefactor.business.gameplayLoop.domain.PlayWordUseCase
 import com.example.gymapprefactor.business.gameplayLoop.domain.SaveGameStateUseCase
 import com.example.gymapprefactor.business.gameplayLoop.domain.ScoreWordMapper
 import com.example.gymapprefactor.business.gameplayLoop.domain.ScoreWordMapperImpl
@@ -63,27 +70,6 @@ object GameplayLoopModule {
 	}
 
 	@Provides
-	fun provideGameplayBusinessMediator(
-		getGameStateUseCase: GetGameStateUseCase,
-		saveGameStateUseCase: SaveGameStateUseCase,
-		userBusinessMediator: UserBusinessMediator,
-		endGameUseCase: EndGameUseCase,
-		drawHandMapper: DrawHandMapper,
-		wordValidityMapper: WordValidityMapper,
-		scoreWordMapper: ScoreWordMapper
-	): GameplayBusinessMediator {
-		return GameplayBusinessMediator(
-			getGameStateUseCase = getGameStateUseCase,
-			saveGameStateUseCase = saveGameStateUseCase,
-			endGameUseCase = endGameUseCase,
-			userBusinessMediator = userBusinessMediator,
-			drawHandMapper = drawHandMapper,
-			wordValidityMapper = wordValidityMapper,
-			scoreWordMapper = scoreWordMapper
-		)
-	}
-
-	@Provides
 	@Singleton
 	fun provideValidWords(@ApplicationContext context: Context): Set<String> {
 		val input = context.assets.open("words.txt")
@@ -106,5 +92,78 @@ object GameplayLoopModule {
 	@Provides
 	fun provideScoreWordMapper(): ScoreWordMapper {
 		return ScoreWordMapperImpl()
+	}
+
+	@Provides
+	fun provideGameRules(): GameRules {
+		return GameRulesImpl()
+	}
+
+	@Provides
+	fun provideDrawHandUseCase(
+		drawHandMapper: DrawHandMapper
+	): DrawHandUseCase {
+		return DrawHandUseCase(drawHandMapper)
+	}
+
+	@Provides
+	fun providePlayWordUseCase(
+		wordValidityMapper: WordValidityMapper,
+		drawHandUseCase: DrawHandUseCase,
+		scoreWordMapper: ScoreWordMapper,
+		saveGameStateUseCase: SaveGameStateUseCase
+	): PlayWordUseCase {
+		return PlayWordUseCase(
+			wordValidityMapper = wordValidityMapper,
+			drawHandUseCase = drawHandUseCase,
+			scoreWordMapper = scoreWordMapper,
+			saveGameStateUseCase = saveGameStateUseCase
+		)
+	}
+
+	@Provides
+	fun provideCreateGameUseCase(
+		userBusinessMediator: UserBusinessMediator,
+		drawHandUseCase: DrawHandUseCase,
+		saveGameStateUseCase: SaveGameStateUseCase
+	): CreateGameUseCase {
+		return CreateGameUseCase(
+			userBusinessMediator = userBusinessMediator,
+			drawHandUseCase = drawHandUseCase,
+			saveGameStateUseCase = saveGameStateUseCase
+		)
+	}
+
+	@Provides
+	fun provideApplyScoreToEnemyUseCase(
+		gameRules: GameRules
+	): ApplyScoreToEnemyUseCase {
+		return ApplyScoreToEnemyUseCase(gameRules)
+	}
+
+	@Provides
+	fun provideCheckGameConditionsUseCase(
+		gameRules: GameRules
+	): CheckGameConditionsUseCase {
+		return CheckGameConditionsUseCase(gameRules)
+	}
+
+	@Provides
+	fun provideGameplayBusinessMediator(
+		getGameStateUseCase: GetGameStateUseCase,
+		saveGameStateUseCase: SaveGameStateUseCase,
+		endGameUseCase: EndGameUseCase,
+		playWordUseCase: PlayWordUseCase,
+		drawHandUseCase: DrawHandUseCase,
+		createGameUseCase: CreateGameUseCase
+	): GameplayBusinessMediator {
+		return GameplayBusinessMediator(
+			getGameStateUseCase = getGameStateUseCase,
+			saveGameStateUseCase = saveGameStateUseCase,
+			endGameUseCase = endGameUseCase,
+			playWordUseCase = playWordUseCase,
+			drawHandUseCase = drawHandUseCase,
+			createGameUseCase = createGameUseCase
+		)
 	}
 }

@@ -13,6 +13,7 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
 @Composable
+@SuppressWarnings("MaxLineLength")
 internal fun ScoreAnimationHandler(
 	scoreBreakdown: ScoreAnimationPayload?,
 	scoreState: ScoreAnimationState,

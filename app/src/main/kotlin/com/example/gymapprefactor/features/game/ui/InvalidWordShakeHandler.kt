@@ -1,6 +1,7 @@
 package com.example.gymapprefactor.features.game.ui
 
 import androidx.compose.animation.core.Animatable
+import androidx.compose.animation.core.AnimationVector1D
 import androidx.compose.animation.core.RepeatMode
 import androidx.compose.animation.core.repeatable
 import androidx.compose.animation.core.tween
@@ -12,7 +13,7 @@ import kotlinx.coroutines.sync.withLock
 @Composable
 internal fun InvalidWordShakeHandler(
 	invalidWordTrigger: Boolean,
-	shakeOffset: Animatable<Float, androidx.compose.animation.core.AnimationVector1D>,
+	shakeOffset: Animatable<Float, AnimationVector1D>,
 	shakeMutex: Mutex,
 	onInvalidWordConsumed: () -> Unit
 ) {

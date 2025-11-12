@@ -16,6 +16,7 @@ import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
@@ -29,11 +30,15 @@ import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.zIndex
+import com.example.gymapprefactor.common.components.buttons.presentation.ButtonState
 import com.example.gymapprefactor.common.components.buttons.ui.ButtonRouter
+import com.example.gymapprefactor.common.components.presentation.BagState
 import com.example.gymapprefactor.common.components.ui.BagRouter
 import com.example.gymapprefactor.common.components.ui.letterFontRouter
 import com.example.gymapprefactor.features.game.presentation.models.GameScreenState
 import com.example.gymapprefactor.features.game.presentation.models.InputButtonState
+import com.example.gymapprefactor.features.game.presentation.models.components.DiscardsRemainingState
+import com.example.gymapprefactor.features.game.presentation.models.components.RoundsRemainingState
 import com.example.gymapprefactor.features.game.ui.components.DiscardsRemainingRouter
 import com.example.gymapprefactor.features.game.ui.components.RoundsRemainingRouter
 import kotlin.math.roundToInt
@@ -41,11 +46,11 @@ import kotlin.math.roundToInt
 @Composable
 internal fun LetterBoardTopBar(
 	playButton: InputButtonState,
-	discardButton: com.example.gymapprefactor.common.components.buttons.presentation.ButtonState,
-	bag: com.example.gymapprefactor.common.components.presentation.BagState,
-	roundsRemainingState: com.example.gymapprefactor.features.game.presentation.models.components.RoundsRemainingState,
-	discardsRemainingState: com.example.gymapprefactor.features.game.presentation.models.components.DiscardsRemainingState,
-	playedLetters: androidx.compose.runtime.snapshots.SnapshotStateList<GameScreenState.DraggableLetter>
+	discardButton: ButtonState,
+	bag: BagState,
+	roundsRemainingState: RoundsRemainingState,
+	discardsRemainingState: DiscardsRemainingState,
+	playedLetters: SnapshotStateList<GameScreenState.DraggableLetter>
 ) {
 	Column {
 		Row {
@@ -259,7 +264,8 @@ internal fun LetterOverlays(
 					val draggedCenterX = newDraggedOffset.x + boardState.tileWidthPx / 2
 
 					val insertIndex = boardState.playedLetters.indexOfFirst { ref ->
-						val centerX = boardState.slotPositions[ref.id]?.x?.plus(boardState.tileWidthPx / 2) ?: Float.MAX_VALUE
+						val centerX = boardState.slotPositions[ref.id]?.x
+							?.plus(boardState.tileWidthPx / 2) ?: Float.MAX_VALUE
 						draggedCenterX < centerX
 					}.let { if (it == -1) boardState.playedLetters.size else it }
 
@@ -274,7 +280,8 @@ internal fun LetterOverlays(
 					inPlayed -> {
 						boardState.holdingLetters.remove(droppedLetter)
 
-						val originalIndex = boardState.playedLetters.indexOfFirst { it.id == droppedLetter.id }
+						val originalIndex = boardState.playedLetters
+							.indexOfFirst { it.id == droppedLetter.id }
 						val rawIndex = boardState.placeholderIndex ?: boardState.playedLetters.size
 
 						// If the letter was already in the list and its original index was before the placeholder,
@@ -286,22 +293,42 @@ internal fun LetterOverlays(
 						}
 
 						boardState.playedLetters.remove(droppedLetter)
-						java.lang.Thread.sleep(100L)
-						boardState.playedLetters.add(adjustedIndex.coerceIn(0, boardState.playedLetters.size), droppedLetter)
+						Thread.sleep(100L)
+						boardState.playedLetters.add(
+							index = adjustedIndex.coerceIn(0, boardState.playedLetters.size),
+							element = droppedLetter)
 						boardState.letterAreaMap[droppedLetter.id] = Area.Played
 					}
 					inHolding -> {
 						boardState.playedLetters.remove(droppedLetter)
-						insertLetterByPosition(droppedLetter, boardState.holdingLetters, boardState.holdingLetters, dropOffset, boardState.slotPositions)
+						insertLetterByPosition(
+							droppedLetter,
+							boardState.holdingLetters,
+							boardState.holdingLetters,
+							dropOffset,
+							boardState.slotPositions
+						)
 						boardState.letterAreaMap[droppedLetter.id] = Area.Holding
 					}
 					else -> {
 						val area = boardState.letterAreaMap[letter.id] ?: Area.Holding
 						if (area == Area.Played) {
-							insertLetterByPosition(droppedLetter, boardState.playedLetters, boardState.playedLetters, dropOffset, boardState.slotPositions)
+							insertLetterByPosition(
+								droppedLetter,
+								boardState.playedLetters,
+								boardState.playedLetters,
+								dropOffset,
+								boardState.slotPositions
+							)
 							boardState.holdingLetters.remove(droppedLetter)
 						} else {
-							insertLetterByPosition(droppedLetter, boardState.holdingLetters, boardState.holdingLetters, dropOffset, boardState.slotPositions)
+							insertLetterByPosition(
+								droppedLetter,
+								boardState.holdingLetters,
+								boardState.holdingLetters,
+								dropOffset,
+								boardState.slotPositions
+							)
 							boardState.playedLetters.remove(droppedLetter)
 						}
 					}

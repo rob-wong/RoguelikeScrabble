@@ -1,27 +1,19 @@
 package com.example.gymapprefactor.business.gameplayLoop.domain
 
-import com.example.gymapprefactor.business.gameplayLoop.domain.models.GameplayExceptions
 import com.example.gymapprefactor.business.models.ActiveGameState
-import com.example.gymapprefactor.business.models.ActiveGameValues
-import com.example.gymapprefactor.business.models.ActiveGameVariables
-import com.example.gymapprefactor.business.models.CurrentRound
 import com.example.gymapprefactor.business.models.GameState
 import com.example.gymapprefactor.business.models.Letter
-import com.example.gymapprefactor.business.models.copy
-import com.example.gymapprefactor.business.user.domain.UserBusinessMediator
-import java.util.UUID
 
 class GameplayBusinessMediator(
 	private val getGameStateUseCase: GetGameStateUseCase,
-	private val userBusinessMediator: UserBusinessMediator,
 	private val saveGameStateUseCase: SaveGameStateUseCase,
 	private val endGameUseCase: EndGameUseCase,
-	private val drawHandMapper: DrawHandMapper,
-	private val wordValidityMapper: WordValidityMapper,
-	private val scoreWordMapper: ScoreWordMapper,
+	private val playWordUseCase: PlayWordUseCase,
+	private val drawHandUseCase: DrawHandUseCase,
+	private val createGameUseCase: CreateGameUseCase,
 ) {
 	suspend fun fetchOrCreateActiveGame(): ActiveGameState {
-		return getGameState() as? ActiveGameState ?: createActiveGame()
+		return getGameState() as? ActiveGameState ?: createGameUseCase()
 	}
 
 	suspend fun getGameState(): GameState {
@@ -29,71 +21,15 @@ class GameplayBusinessMediator(
 	}
 
 	fun drawHand(drawnAmount: Int, game: ActiveGameState): ActiveGameState {
-		val (_, values, round) = game
-		val (_, seed) = values.deck to values.seed
-
-		val result = drawHandMapper.map(
-			DrawHandMapper.Param(round.mutableDeck, seed, drawnAmount)
-		)
-		val newGameState = game.copy(
-			currentRound = round.copy(
-				mutableDeck = round.mutableDeck.copy(
-					letters = round.mutableDeck.letters.filter { result.remaining.contains(it) }
-				),
-				hand = round.hand + result.drawn
-			)
-		)
-
-		return newGameState
+		return drawHandUseCase(drawnAmount, game)
 	}
 
-	// turn this into a mapper maybe
 	suspend fun onWordPlayed(list: List<Letter>, game: ActiveGameState): Result<ScoredWordResult> {
-		println("played word: ${list.map { it.letter }}")
-		val wordAsString = list.map { it.letter }.joinToString(separator = "")
-
-		return if (wordValidityMapper.map(list)) {
-			val newGameState =
-				drawHand(
-					drawnAmount = list.size,
-					game = game.copy(
-						currentRound = game.currentRound.copy(
-							hand = game.currentRound.hand.filterNot { list.contains(it) },
-							round = game.currentRound.round + 1,
-							wordsPlayed = game.currentRound.wordsPlayed + wordAsString,
-							// TODO enemy health in the enemy update
-						)
-					),
-				)
-
-			val scoredGame = runGameChecks(newGameState)
-			val scoredLetters = list
-			val letterScores = scoreWordMapper.map(
-				ScoreWordMapper.Param(
-					letters = list,
-					activeGameValues = scoredGame.activeGameValues
-				),
-			)
-
-			Result.success(
-				ScoredWordResult(
-					gameState = scoredGame,
-					letterScores = letterScores,
-					letters = scoredLetters
-				)
-			)
-		} else {
-			println("played word: invalid")
-			Result.failure(
-				exception = GameplayExceptions.InvalidWord(
-					word = wordAsString
-				)
-			)
-		}
+		return playWordUseCase(list, game)
 	}
 
 	suspend fun discardHand(game: ActiveGameState): ActiveGameState {
-		val newGameState = drawHand(
+		val newGameState = drawHandUseCase(
 			drawnAmount = game.activeGameVariables.handSize,
 			game = game.copy(
 				currentRound = game.currentRound.copy(
@@ -111,60 +47,6 @@ class GameplayBusinessMediator(
 
 	suspend fun endGame(game: ActiveGameState, saveProgression: Boolean) {
 		endGameUseCase(game, saveProgression)
-	}
-
-	private suspend fun runGameChecks(game: ActiveGameState): ActiveGameState {
-		// Note: gameLost is now determined in the view model after score is applied
-		// to allow for win conditions to override loss conditions
-		saveGameStateUseCase(game)
-		return game
-	}
-
-	private suspend fun createActiveGame(): ActiveGameState {
-		val user = userBusinessMediator.getUser()
-		val gameDeck = user.decks
-			.first() // change with multiple deck support
-			.copy() // during the game, the deck will be changed but not permanently
-
-		val game = ActiveGameState(
-			activeGameVariables = ActiveGameVariables(
-				glyphCount = 0,
-				runesCount = 0,
-				stage = STARTING_STAGE,
-				level = STARTING_LEVEL,
-				maxRounds = STARTING_MAX_ROUNDS,
-				maxDiscards = STARTING_MAX_DISCARDS,
-				handSize = STARTING_HAND_SIZE,
-				gameLost = false,
-			),
-			activeGameValues = ActiveGameValues(
-				seed = (System.currentTimeMillis() xor UUID.randomUUID().mostSignificantBits),
-				deck = gameDeck,
-				effects = mutableListOf(),
-			),
-			currentRound = CurrentRound(
-				round = STARTING_ROUND,
-				discardsUsed = STARTING_DISCARDS_USED,
-				enemyHealth = 200000,
-				wordsPlayed = listOf(),
-				mutableDeck = gameDeck.copy(),
-				hand = listOf(),
-			)
-		)
-
-		val initializedGame = drawHand(drawnAmount = game.activeGameVariables.handSize, game)
-
-		return runGameChecks(initializedGame)
-	}
-	
-	private companion object {
-		const val STARTING_STAGE = 1
-		const val STARTING_LEVEL = 1
-		const val STARTING_ROUND = 1
-		const val STARTING_DISCARDS_USED = 0
-		const val STARTING_MAX_ROUNDS = 3
-		const val STARTING_MAX_DISCARDS = 2
-		const val STARTING_HAND_SIZE = 8
 	}
 }
 
