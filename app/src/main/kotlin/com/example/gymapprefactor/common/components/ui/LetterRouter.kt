@@ -5,7 +5,6 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.tooling.preview.PreviewParameter
@@ -14,11 +13,6 @@ import com.example.gymapprefactor.common.components.presentation.DeckType
 import com.example.gymapprefactor.common.components.presentation.ImageState
 import com.example.gymapprefactor.common.components.presentation.LetterState
 import com.example.gymapprefactor.common.components.ui.previews.LetterProvider
-import com.example.gymapprefactor.ui.theme.common
-import com.example.gymapprefactor.ui.theme.epic
-import com.example.gymapprefactor.ui.theme.legendary
-import com.example.gymapprefactor.ui.theme.rare
-import com.example.gymapprefactor.ui.theme.uncommon
 
 @Composable
 fun LetterRouter(
@@ -71,19 +65,8 @@ private fun LetterContentRouter(
 	)
 }
 
-@Composable
-private fun letterFontRouter(level: Int): TextStyle {
-	return when (level) {
-		1 -> common
-		2 -> uncommon
-		3 -> rare
-		4 -> epic
-		5 -> legendary
-		else -> common
-	}
-}
-@Composable
 @Preview
+@Composable
 private fun LetterPreview(
 	@PreviewParameter(LetterProvider::class) state: LetterState
 ) {

@@ -10,6 +10,8 @@ import com.example.gymapprefactor.business.gameplayLoop.domain.GameplayBusinessM
 import com.example.gymapprefactor.business.gameplayLoop.domain.GameplayRepository
 import com.example.gymapprefactor.business.gameplayLoop.domain.GetGameStateUseCase
 import com.example.gymapprefactor.business.gameplayLoop.domain.SaveGameStateUseCase
+import com.example.gymapprefactor.business.gameplayLoop.domain.ScoreWordMapper
+import com.example.gymapprefactor.business.gameplayLoop.domain.ScoreWordMapperImpl
 import com.example.gymapprefactor.business.gameplayLoop.domain.WordValidityMapper
 import com.example.gymapprefactor.business.gameplayLoop.domain.WordValidityMapperImpl
 import com.example.gymapprefactor.business.models.AppDataModel
@@ -67,7 +69,8 @@ object GameplayLoopModule {
 		userBusinessMediator: UserBusinessMediator,
 		endGameUseCase: EndGameUseCase,
 		drawHandMapper: DrawHandMapper,
-		wordValidityMapper: WordValidityMapper
+		wordValidityMapper: WordValidityMapper,
+		scoreWordMapper: ScoreWordMapper
 	): GameplayBusinessMediator {
 		return GameplayBusinessMediator(
 			getGameStateUseCase = getGameStateUseCase,
@@ -75,7 +78,8 @@ object GameplayLoopModule {
 			endGameUseCase = endGameUseCase,
 			userBusinessMediator = userBusinessMediator,
 			drawHandMapper = drawHandMapper,
-			wordValidityMapper = wordValidityMapper
+			wordValidityMapper = wordValidityMapper,
+			scoreWordMapper = scoreWordMapper
 		)
 	}
 
@@ -97,5 +101,10 @@ object GameplayLoopModule {
 	@Provides
 	fun provideDrawHandMapper(): DrawHandMapper {
 		return DrawHandMapperImpl()
+	}
+
+	@Provides
+	fun provideScoreWordMapper(): ScoreWordMapper {
+		return ScoreWordMapperImpl()
 	}
 }

@@ -8,7 +8,6 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.key
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
@@ -28,6 +27,7 @@ import com.example.gymapprefactor.features.game.presentation.models.GameScreenSt
 import com.example.gymapprefactor.features.game.presentation.models.GameScreenState.DraggableLetter
 import com.example.gymapprefactor.features.game.presentation.models.InputButtonState
 import com.example.gymapprefactor.features.game.presentation.models.components.DiscardsRemainingState
+import com.example.gymapprefactor.features.game.presentation.viewmodel.ScoreAnimationPayload
 import com.example.gymapprefactor.features.game.presentation.models.components.RoundsRemainingState
 
 @Composable
@@ -35,6 +35,9 @@ fun GamePlayScreen(
 	state: GameScreenState.Playing,
 	invalidWordTrigger: Boolean,
 	onInvalidWordConsumed: () -> Unit,
+	scoreBreakdown: ScoreAnimationPayload?,
+	onScoreAnimationConsumed: () -> Unit,
+	onScoreAnimationComplete: () -> Unit,
 	modifier: Modifier = Modifier,
 ) {
 	Box(modifier) {
@@ -43,9 +46,14 @@ fun GamePlayScreen(
 			ResourceBarRouter(state.resourceBar)
 			Column(Modifier.fillMaxSize()) {
 				Spacer(Modifier.height(50.dp))
-				key(state.letters) {
-					LetterBoard(state, invalidWordTrigger, onInvalidWordConsumed)
-				}
+				LetterBoard(
+					state = state,
+					invalidWordTrigger = invalidWordTrigger,
+					onInvalidWordConsumed = onInvalidWordConsumed,
+					scoreBreakdown = scoreBreakdown,
+					onScoreAnimationConsumed = onScoreAnimationConsumed,
+					onScoreAnimationComplete = onScoreAnimationComplete,
+				)
 			}
 		}
 		ButtonRouter(
@@ -137,5 +145,8 @@ private fun GamePlayScreenPreview() {
 		),
 		invalidWordTrigger = false,
 		onInvalidWordConsumed = { },
+		scoreBreakdown = null,
+		onScoreAnimationConsumed = { },
+		onScoreAnimationComplete = { },
 	)
 }
