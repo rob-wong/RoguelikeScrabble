@@ -1,0 +1,336 @@
+package com.example.gymapprefactor.features.game.ui
+
+import androidx.compose.animation.core.Animatable
+import androidx.compose.foundation.ExperimentalFoundationApi
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.offset
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.lazy.LazyRow
+import androidx.compose.foundation.lazy.itemsIndexed
+import androidx.compose.material3.Text
+import androidx.compose.runtime.Composable
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.graphicsLayer
+import androidx.compose.ui.layout.boundsInParent
+import androidx.compose.ui.layout.boundsInWindow
+import androidx.compose.ui.layout.onGloballyPositioned
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.IntOffset
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
+import androidx.compose.ui.zIndex
+import com.example.gymapprefactor.common.components.buttons.ui.ButtonRouter
+import com.example.gymapprefactor.common.components.ui.BagRouter
+import com.example.gymapprefactor.common.components.ui.letterFontRouter
+import com.example.gymapprefactor.features.game.presentation.models.GameScreenState
+import com.example.gymapprefactor.features.game.presentation.models.InputButtonState
+import com.example.gymapprefactor.features.game.ui.components.DiscardsRemainingRouter
+import com.example.gymapprefactor.features.game.ui.components.RoundsRemainingRouter
+import kotlin.math.roundToInt
+
+@Composable
+internal fun LetterBoardTopBar(
+	playButton: InputButtonState,
+	discardButton: com.example.gymapprefactor.common.components.buttons.presentation.ButtonState,
+	bag: com.example.gymapprefactor.common.components.presentation.BagState,
+	roundsRemainingState: com.example.gymapprefactor.features.game.presentation.models.components.RoundsRemainingState,
+	discardsRemainingState: com.example.gymapprefactor.features.game.presentation.models.components.DiscardsRemainingState,
+	playedLetters: androidx.compose.runtime.snapshots.SnapshotStateList<GameScreenState.DraggableLetter>
+) {
+	Column {
+		Row {
+			InputButtonRouter(playButton, playedLetters, Modifier)
+			ButtonRouter(discardButton)
+			BagRouter(bag)
+		}
+		Row {
+			RoundsRemainingRouter(state = roundsRemainingState)
+			DiscardsRemainingRouter(state = discardsRemainingState)
+		}
+	}
+}
+
+@Composable
+internal fun ScoreLane(
+	scoreState: ScoreAnimationState,
+	modifier: Modifier = Modifier
+) {
+	Box(
+		modifier = modifier
+			.fillMaxWidth()
+			.height(60.dp)
+	) {
+		LazyRow(
+			modifier = Modifier
+				.fillMaxWidth()
+				.padding(horizontal = 12.dp),
+			horizontalArrangement = Arrangement.Center,
+			verticalAlignment = Alignment.CenterVertically
+		) {
+			itemsIndexed(
+				items = scoreState.orderedScoredLetters,
+				key = { index, letter -> letter.id }
+			) { index, letter ->
+				val shake = scoreState.scoreShakeMap[letter.id]?.value ?: 0f
+				val alpha = scoreState.scoreAlphaMap[letter.id]?.value ?: 0f
+				val score = scoreState.scoreValueMap[letter.id]
+				val fontLevel = scoreState.scoredLetters[letter.id]?.level ?: 1
+
+				Box(
+					modifier = Modifier
+						.size(48.dp)
+						.padding(4.dp),
+					contentAlignment = Alignment.Center
+				) {
+					if (score != null) {
+						Text(
+							text = "+$score",
+							fontSize = 18.sp,
+							fontWeight = FontWeight.Bold,
+							style = letterFontRouter(fontLevel),
+							modifier = Modifier
+								.offset { IntOffset(shake.roundToInt(), 0) }
+								.graphicsLayer(alpha = alpha)
+						)
+					}
+				}
+			}
+		}
+
+		scoreState.totalScore?.let { total ->
+			val totalFontLevel = scoreState.orderedScoredLetters.maxOfOrNull { 
+				scoreState.scoredLetters[it.id]?.level ?: 1 
+			} ?: 1
+			Text(
+				text = "+$total",
+				fontSize = 22.sp,
+				fontWeight = FontWeight.ExtraBold,
+				style = letterFontRouter(totalFontLevel),
+				modifier = Modifier
+					.align(Alignment.Center)
+					.offset { IntOffset(scoreState.totalScoreShake.value.roundToInt(), 0) }
+					.graphicsLayer(alpha = scoreState.totalScoreAlpha.value)
+			)
+		}
+	}
+}
+
+@OptIn(ExperimentalFoundationApi::class)
+@Composable
+internal fun PlayedArea(
+	boardState: LetterBoardState,
+	shakeOffset: Animatable<Float, androidx.compose.animation.core.AnimationVector1D>,
+	modifier: Modifier = Modifier
+) {
+	val renderedLetters = buildList {
+		boardState.playedLetters.forEachIndexed { index, letter ->
+			if (boardState.placeholderIndex == index) add(null)
+			add(letter)
+		}
+		if (boardState.placeholderIndex == boardState.playedLetters.size) add(null)
+	}
+
+	LazyRow(
+		modifier = modifier
+			.offset { IntOffset(shakeOffset.value.roundToInt(), 0) }
+			.fillMaxWidth()
+			.height(80.dp)
+			.background(Color.LightGray)
+			.onGloballyPositioned { coords ->
+				boardState.playedBounds = coords.boundsInParent()
+				boardState.rowBoundsMap[-1] = coords.boundsInWindow()
+			},
+		horizontalArrangement = Arrangement.Center,
+		verticalAlignment = Alignment.CenterVertically
+	) {
+		itemsIndexed(
+			items = renderedLetters,
+			key = { index, item -> item?.id ?: "placeholder-$index" }
+		) { index, letter ->
+			if (letter == null) {
+				Box(
+					modifier = Modifier
+						.background(Color.Green)
+						.size(48.dp)
+				)
+			} else if (letter.id != boardState.draggingLetterId) {
+				Box(
+					modifier = Modifier
+						.background(Color.Red)
+						.size(48.dp)
+						.onGloballyPositioned { coords ->
+							val topLeftInWindow = coords.boundsInWindow().topLeft
+							val topLeftInRoot = topLeftInWindow - boardState.rootOffset
+							boardState.slotPositions[letter.id] = topLeftInRoot
+							boardState.letterAreaMap[letter.id] = Area.Played
+						}
+				)
+			}
+		}
+	}
+}
+
+@Composable
+internal fun HoldingArea(
+	boardState: LetterBoardState,
+	gridColumns: Int,
+	modifier: Modifier = Modifier
+) {
+	val gridRows = (boardState.holdingLetters.size + gridColumns - 1) / gridColumns
+	val gridSlots = List(gridRows * gridColumns) { it }
+
+	Column(
+		modifier = modifier
+			.fillMaxWidth()
+			.background(Color.Cyan)
+			.onGloballyPositioned { coords ->
+				boardState.holdingBounds = coords.boundsInParent()
+			}
+	) {
+		gridSlots.chunked(gridColumns).forEachIndexed { rowIndex, rowSlots ->
+			Row(
+				modifier = Modifier
+					.fillMaxWidth()
+					.onGloballyPositioned { coords ->
+						boardState.rowBoundsMap[rowIndex] = coords.boundsInWindow()
+					},
+				horizontalArrangement = Arrangement.Center
+			) {
+				rowSlots.forEach { index ->
+					val letter = boardState.holdingLetters.getOrNull(index)
+					Box(
+						modifier = Modifier
+							.size(48.dp)
+							.padding(4.dp)
+							.onGloballyPositioned { coords ->
+								letter?.let {
+									val topLeftInWindow = coords.boundsInWindow().topLeft
+									val topLeftInRoot = topLeftInWindow - boardState.rootOffset
+									boardState.slotPositions[letter.id] = topLeftInRoot
+									boardState.letterAreaMap[it.id] = Area.Holding
+								}
+							}
+					)
+				}
+			}
+		}
+	}
+}
+
+@Composable
+internal fun LetterOverlays(
+	boardState: LetterBoardState,
+	scoreState: ScoreAnimationState,
+	modifier: Modifier = Modifier
+) {
+	// Render all letters at root level
+	(boardState.holdingLetters + boardState.playedLetters).forEach { letter ->
+		val slotOffset = boardState.slotPositions[letter.id] ?: Offset.Zero
+
+		LetterItem(
+			letter = letter,
+			targetOffset = slotOffset,
+			onClick = {
+				println("letter clicked")
+				if (letter in boardState.holdingLetters) {
+					boardState.holdingLetters.remove(letter)
+					boardState.playedLetters.add(letter)
+				} else {
+					boardState.holdingLetters.add(letter)
+					boardState.playedLetters.remove(letter)
+				}
+			},
+			onDrag = { newOffset ->
+				if (boardState.draggingLetterId == letter.id) {
+					val originOffset = boardState.slotPositions[letter.id] ?: Offset.Zero
+					val newDraggedOffset = originOffset + newOffset
+
+					// Calculate placeholder index
+					val draggedCenterX = newDraggedOffset.x + boardState.tileWidthPx / 2
+
+					val insertIndex = boardState.playedLetters.indexOfFirst { ref ->
+						val centerX = boardState.slotPositions[ref.id]?.x?.plus(boardState.tileWidthPx / 2) ?: Float.MAX_VALUE
+						draggedCenterX < centerX
+					}.let { if (it == -1) boardState.playedLetters.size else it }
+
+					boardState.placeholderIndex = insertIndex
+				}
+			},
+			onDrop = { droppedLetter, dropOffset ->
+				val inPlayed = boardState.playedBounds?.contains(dropOffset) == true
+				val inHolding = boardState.holdingBounds?.contains(dropOffset) == true
+
+				when {
+					inPlayed -> {
+						boardState.holdingLetters.remove(droppedLetter)
+
+						val originalIndex = boardState.playedLetters.indexOfFirst { it.id == droppedLetter.id }
+						val rawIndex = boardState.placeholderIndex ?: boardState.playedLetters.size
+
+						// If the letter was already in the list and its original index was before the placeholder,
+						// subtract 1 to compensate for the shift caused by removal
+						val adjustedIndex = if (originalIndex != -1 && originalIndex < rawIndex) {
+							rawIndex - 1
+						} else {
+							rawIndex
+						}
+
+						boardState.playedLetters.remove(droppedLetter)
+						java.lang.Thread.sleep(100L)
+						boardState.playedLetters.add(adjustedIndex.coerceIn(0, boardState.playedLetters.size), droppedLetter)
+						boardState.letterAreaMap[droppedLetter.id] = Area.Played
+					}
+					inHolding -> {
+						boardState.playedLetters.remove(droppedLetter)
+						insertLetterByPosition(droppedLetter, boardState.holdingLetters, boardState.holdingLetters, dropOffset, boardState.slotPositions)
+						boardState.letterAreaMap[droppedLetter.id] = Area.Holding
+					}
+					else -> {
+						val area = boardState.letterAreaMap[letter.id] ?: Area.Holding
+						if (area == Area.Played) {
+							insertLetterByPosition(droppedLetter, boardState.playedLetters, boardState.playedLetters, dropOffset, boardState.slotPositions)
+							boardState.holdingLetters.remove(droppedLetter)
+						} else {
+							insertLetterByPosition(droppedLetter, boardState.holdingLetters, boardState.holdingLetters, dropOffset, boardState.slotPositions)
+							boardState.playedLetters.remove(droppedLetter)
+						}
+					}
+				}
+
+				boardState.draggingLetterId = null
+				boardState.placeholderIndex = null
+			},
+			onDragStateChanged = {
+				boardState.draggingLetterId = it
+			}
+		)
+	}
+
+	// Render scored letter overlays
+	scoreState.orderedScoredLetters.forEach { letter ->
+		val overlayOffset = scoreState.scoreLetterPositions[letter.id] ?: return@forEach
+		Box(
+			modifier = modifier
+				.offset {
+					IntOffset(
+						overlayOffset.x.roundToInt(),
+						overlayOffset.y.roundToInt()
+					)
+				}
+				.zIndex(0.5f)
+		) {
+			com.example.gymapprefactor.common.components.ui.LetterRouter(letter.letterState)
+		}
+	}
+}
+
