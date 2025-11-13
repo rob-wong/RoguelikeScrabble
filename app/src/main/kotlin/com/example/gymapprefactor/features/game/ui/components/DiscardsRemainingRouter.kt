@@ -34,7 +34,7 @@ private fun DiscardsRemainingContent(
 		modifier = modifier,
 		horizontalAlignment = Alignment.CenterHorizontally
 	) {
-		ImageRouter(state.image, Modifier.width(100.dp))
+		ImageRouter(state.image, Modifier.width(70.dp))
 		OutlinedText(
 			text = state.remaining.toString(),
 			textAlign = TextAlign.Center,
@@ -51,7 +51,7 @@ private fun DiscardsRemainingRouterPreview() {
     DiscardsRemainingRouter(
         state = DiscardsRemainingState.Content(
             image = ImageState.DiscardsLeftIcon,
-            remaining = 3
+            remaining = 1000
         )
     )
 }
