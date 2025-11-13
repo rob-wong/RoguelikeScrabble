@@ -186,6 +186,7 @@ internal fun PlayedArea(
 			} else if (letter.id != boardState.draggingLetterId) {
 				Box(
 					modifier = Modifier
+						.animateItem()
 						.size(48.dp)
 						.onGloballyPositioned { coords ->
 							val topLeftInWindow = coords.boundsInWindow().topLeft
@@ -203,6 +204,7 @@ internal fun PlayedArea(
 internal fun HoldingArea(
 	boardState: LetterBoardState,
 	gridColumns: Int,
+	shakeOffset: Animatable<Float, AnimationVector1D>,
 	modifier: Modifier = Modifier
 ) {
 	val gridRows = (boardState.holdingLetters.size + gridColumns - 1) / gridColumns
@@ -210,6 +212,7 @@ internal fun HoldingArea(
 
 	Column(
 		modifier = modifier
+			.offset { IntOffset(shakeOffset.value.roundToInt(), 0) }
 			.fillMaxWidth()
 			.background(Color.Cyan)
 			.onGloballyPositioned { coords ->

@@ -29,12 +29,19 @@ fun GameRoot(
 	)
 
 	val invalidWordTrigger = remember { mutableStateOf(false) }
+	val levelAdvanceShakeTrigger = remember { mutableStateOf(false) }
 	val scoreQueue = remember { mutableStateListOf<ScoreAnimationPayload>() }
 	val coroutineScope = rememberCoroutineScope()
 
 	LaunchedEffect(Unit) {
 		viewModel.invalidWordEvent.collectLatest {
 			invalidWordTrigger.value = true
+		}
+	}
+
+	LaunchedEffect(Unit) {
+		viewModel.levelAdvanceShakeTrigger.collectLatest {
+			levelAdvanceShakeTrigger.value = true
 		}
 	}
 
@@ -47,6 +54,7 @@ fun GameRoot(
 	}
 
 	val invalidWordConsumed: () -> Unit = { invalidWordTrigger.value = false }
+	val levelAdvanceShakeConsumed: () -> Unit = { levelAdvanceShakeTrigger.value = false }
 	val scoreAnimationConsumed: () -> Unit = {
 		if (scoreQueue.isNotEmpty()) {
 			scoreQueue.removeAt(0)
@@ -66,6 +74,8 @@ fun GameRoot(
 				state = state,
 				invalidWordTrigger = invalidWordTrigger.value,
 				onInvalidWordConsumed = invalidWordConsumed,
+				levelAdvanceShakeTrigger = levelAdvanceShakeTrigger.value,
+				onLevelAdvanceShakeConsumed = levelAdvanceShakeConsumed,
 				scoreBreakdown = activeScoreAnimation,
 				onScoreAnimationConsumed = scoreAnimationConsumed,
 				onScoreAnimationComplete = scoreAnimationComplete,

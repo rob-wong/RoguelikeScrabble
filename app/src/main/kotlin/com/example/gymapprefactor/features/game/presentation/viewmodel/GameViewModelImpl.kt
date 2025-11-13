@@ -48,6 +48,7 @@ class GameViewModelImpl @Inject constructor(
 	val invalidWordEvent = MutableSharedFlow<Unit>()
 	val scoreEvent = MutableSharedFlow<ScoreAnimationPayload>()
 	val scoreAnimationComplete = MutableSharedFlow<Unit>()
+	val levelAdvanceShakeTrigger = MutableSharedFlow<Unit>()
 	private val mutex = Mutex()
 
 	init {
@@ -182,6 +183,7 @@ class GameViewModelImpl @Inject constructor(
 			
 			activeGameState = advanceToNextEnemyUseCase(activeGameState)
 			activeGameState = gameplayBusinessMediator.saveGameState(activeGameState)
+			levelAdvanceShakeTrigger.emit(Unit)
 			updateGame()
 		} else {
 			activeGameState = activeGameState.copy(

@@ -2,10 +2,12 @@ package com.example.gymapprefactor.business.gameplayLoop.domain
 
 import com.example.gymapprefactor.business.gameplayLoop.domain.mappers.EnemyCreationMapper
 import com.example.gymapprefactor.business.models.ActiveGameState
+import com.example.gymapprefactor.business.models.copy
 import javax.inject.Inject
 
 class AdvanceToNextEnemyUseCase @Inject constructor(
 	private val enemyCreationMapper: EnemyCreationMapper,
+	private val drawHandUseCase: DrawHandUseCase,
 ) {
 	companion object {
 		private const val LEVELS_PER_STAGE = 4
@@ -43,7 +45,7 @@ class AdvanceToNextEnemyUseCase @Inject constructor(
 		newLevel: Int,
 		newEnemyHealth: Int
 	): ActiveGameState {
-		return game.copy(
+		val gameWithResetDeck = game.copy(
 			activeGameVariables = game.activeGameVariables.copy(
 				stage = newStage,
 				level = newLevel,
@@ -53,7 +55,14 @@ class AdvanceToNextEnemyUseCase @Inject constructor(
 				discardsUsed = 0,
 				enemyHealth = newEnemyHealth,
 				wordsPlayed = emptyList(),
+				mutableDeck = game.activeGameValues.deck.copy(),
+				hand = emptyList(),
 			)
+		)
+		
+		return drawHandUseCase(
+			drawnAmount = game.activeGameVariables.handSize,
+			game = gameWithResetDeck
 		)
 	}
 }
