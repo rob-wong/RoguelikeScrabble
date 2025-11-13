@@ -25,8 +25,10 @@ import com.example.gymapprefactor.features.game.presentation.models.GameScreenSt
 import com.example.gymapprefactor.features.game.presentation.models.GameScreenState.DraggableLetter
 import com.example.gymapprefactor.features.game.presentation.models.InputButtonState
 import com.example.gymapprefactor.features.game.presentation.models.components.DiscardsRemainingState
+import com.example.gymapprefactor.features.game.presentation.models.components.EnemyHealthBarState
 import com.example.gymapprefactor.features.game.presentation.viewmodel.ScoreAnimationPayload
 import com.example.gymapprefactor.features.game.presentation.models.components.RoundsRemainingState
+import com.example.gymapprefactor.features.game.ui.components.EnemyHealthBarRouter
 
 @Composable
 fun GamePlayScreen(
@@ -41,6 +43,7 @@ fun GamePlayScreen(
 	Box(modifier.fillMaxSize()) {
 		Column(horizontalAlignment = Alignment.CenterHorizontally) {
 			ResourceBarRouter(state.resourceBar)
+			EnemyHealthBarRouter(state.enemyHealthBarState)
 			Column(Modifier.fillMaxSize()) {
 				Spacer(Modifier.height(50.dp))
 				LetterBoard(
@@ -138,6 +141,11 @@ private fun GamePlayScreenPreview() {
 			discardsRemainingState = DiscardsRemainingState.Content(
 				image = ImageState.DiscardsLeftIcon,
 				remaining = 3
+			),
+			enemyHealthBarState = EnemyHealthBarState.Content(
+				label = "ENEMY",
+				currentHealth = 15000,
+				maxHealth = 30000
 			)
 		),
 		invalidWordTrigger = false,

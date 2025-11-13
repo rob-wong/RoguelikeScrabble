@@ -10,20 +10,27 @@ data class GameConditionResult(
 )
 
 class CheckGameConditionsUseCase @Inject constructor(
-	private val gameRules: GameRules
+	private val gameRules: GameRules,
+	private val advanceToNextEnemyUseCase: AdvanceToNextEnemyUseCase,
 ) {
 	operator fun invoke(game: ActiveGameState): GameConditionResult {
 		val isWon = gameRules.checkWinCondition(game)
 		val isLost = gameRules.checkLossCondition(game) && !isWon
 
-		return GameConditionResult(
-			isWon = isWon,
-			isLost = isLost,
-			updatedGame = game.copy(
+		val updatedGame = if (isWon) {
+			advanceToNextEnemyUseCase(game)
+		} else {
+			game.copy(
 				activeGameVariables = game.activeGameVariables.copy(
 					gameLost = isLost
 				)
 			)
+		}
+
+		return GameConditionResult(
+			isWon = isWon,
+			isLost = isLost,
+			updatedGame = updatedGame
 		)
 	}
 }

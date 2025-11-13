@@ -16,6 +16,9 @@ sealed class GameScreenAction : Action {
 		val currentRound: Int,
 		val maxRounds: Int,
 		val discardsRemaining: Int,
+		val enemyHealth: Int,
+		val enemyMaxHealth: Int,
+		val enemyLabel: String,
 	) : GameScreenAction()
 
 	data object None : GameScreenAction()

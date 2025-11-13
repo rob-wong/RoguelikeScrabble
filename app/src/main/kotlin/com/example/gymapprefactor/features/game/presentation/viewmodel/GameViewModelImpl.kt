@@ -6,6 +6,7 @@ import com.example.gymapprefactor.business.gameplayLoop.domain.ApplyScoreToEnemy
 import com.example.gymapprefactor.business.gameplayLoop.domain.CheckGameConditionsUseCase
 import com.example.gymapprefactor.business.gameplayLoop.domain.GameplayBusinessMediator
 import com.example.gymapprefactor.business.gameplayLoop.domain.ScoredWordResult
+import com.example.gymapprefactor.business.gameplayLoop.domain.mappers.EnemyCreationMapper
 import com.example.gymapprefactor.business.models.ActiveGameState
 import com.example.gymapprefactor.common.components.presentation.ScreenBackgroundState
 import com.example.gymapprefactor.common.components.presentation.models.BackgroundAction
@@ -36,6 +37,7 @@ class GameViewModelImpl @Inject constructor(
 	private val dispatcherProvider: DispatcherProvider,
 	private val applyScoreToEnemyUseCase: ApplyScoreToEnemyUseCase,
 	private val checkGameConditionsUseCase: CheckGameConditionsUseCase,
+	private val enemyCreationMapper: EnemyCreationMapper,
 ) : GameViewModel() {
 	override val state = gameScreenReducer.state
 
@@ -69,6 +71,14 @@ class GameViewModelImpl @Inject constructor(
 			println("GameViewModelImpl.updateGame: Triggering game lost dialog")
 			triggerGameLostDialog()
 		} else {
+			val enemyMaxHealth = enemyCreationMapper.map(
+				EnemyCreationMapper.Param(
+					stage = activeGameState.activeGameVariables.stage,
+					level = activeGameState.activeGameVariables.level
+				)
+			)
+			val enemyLabel = calculateEnemyLabel(activeGameState.activeGameVariables.level)
+			
 			gameScreenReducer.update(GameScreenAction.StartPlaying(
 				runesCount = 10,
 				glyphCount = 30,
@@ -81,6 +91,9 @@ class GameViewModelImpl @Inject constructor(
 				discardsRemaining = activeGameState.activeGameVariables.maxDiscards - activeGameState.currentRound.discardsUsed,
 				currentRound = activeGameState.currentRound.round,
 				maxRounds = activeGameState.activeGameVariables.maxRounds,
+				enemyHealth = activeGameState.currentRound.enemyHealth,
+				enemyMaxHealth = enemyMaxHealth,
+				enemyLabel = enemyLabel,
 			))
 		}
 	}
@@ -168,6 +181,14 @@ class GameViewModelImpl @Inject constructor(
 		viewModelScope.launch(dispatcherProvider.default) {
 			gameplayBusinessMediator.endGame(game = activeGameState, saveProgression = false)
 			navigationReducer.update(NavigationAction.GoTo(NavigationPage.HomeScreen))
+		}
+	}
+
+	private fun calculateEnemyLabel(level: Int): String {
+		return if (level >= 4) {
+			"BOSS"
+		} else {
+			"ENEMY"
 		}
 	}
 

@@ -7,6 +7,7 @@ import com.example.gymapprefactor.common.components.presentation.BagState
 import com.example.gymapprefactor.common.components.presentation.LetterState
 import com.example.gymapprefactor.common.components.presentation.ResourceBarState
 import com.example.gymapprefactor.features.game.presentation.models.components.DiscardsRemainingState
+import com.example.gymapprefactor.features.game.presentation.models.components.EnemyHealthBarState
 import com.example.gymapprefactor.features.game.presentation.models.components.RoundsRemainingState
 
 sealed class GameScreenState : State {
@@ -19,6 +20,7 @@ sealed class GameScreenState : State {
 		val bag: BagState,
 		val roundsRemainingState: RoundsRemainingState,
 		val discardsRemainingState: DiscardsRemainingState,
+		val enemyHealthBarState: EnemyHealthBarState,
 	): GameScreenState()
 
 	data object None : GameScreenState()
