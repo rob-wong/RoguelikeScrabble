@@ -25,9 +25,7 @@ import com.example.gymapprefactor.common.components.presentation.ImageState
 import com.example.gymapprefactor.common.components.presentation.LetterState
 import com.example.gymapprefactor.common.components.presentation.ResourceBarState
 import com.example.gymapprefactor.common.components.presentation.ResourceState
-import com.example.gymapprefactor.common.components.presentation.ScreenBackgroundState
 import com.example.gymapprefactor.common.components.ui.ResourceBarRouter
-import com.example.gymapprefactor.common.components.ui.ScreenBackgroundRouter
 import com.example.gymapprefactor.features.upgrade.presentation.models.UpgradeLetterState
 import com.example.gymapprefactor.features.upgrade.presentation.models.UpgradeScreenState
 import com.example.gymapprefactor.features.upgrade.presentation.viewmodel.UpgradeScreenViewModelImpl
@@ -51,8 +49,7 @@ private fun UpgradeScreenLayout(
 	state: UpgradeScreenState.Content,
 	modifier: Modifier = Modifier,
 ) {
-	Box(modifier) {
-		ScreenBackgroundRouter(ScreenBackgroundState.Upgrade)
+	Box(modifier.fillMaxSize()) {
 		ButtonRouter(state.backButton, Modifier
 			.padding(top = 10.dp, end = 10.dp)
 			.align(Alignment.TopEnd)

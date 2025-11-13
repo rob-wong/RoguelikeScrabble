@@ -24,10 +24,6 @@ class HomeScreenReducerImpl : HomeScreenReducer {
         state.value = with(action) {
             HomeScreenState.Content(
                 resourceBar = mapResourceBar(action),
-                onRoutines = onRoutines,
-                onExercises = onExercises,
-                onViewStats = onViewStats,
-                topBarState = topBarState,
                 shopButton = mapShopButton(action),
                 upgradeButton = mapUpgradeButton(action),
                 playButton = mapPlayButton(action)

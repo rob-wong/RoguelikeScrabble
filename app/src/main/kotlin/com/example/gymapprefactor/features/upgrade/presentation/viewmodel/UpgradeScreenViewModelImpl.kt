@@ -6,6 +6,9 @@ import com.example.gymapprefactor.business.models.Deck
 import com.example.gymapprefactor.business.models.Letter
 import com.example.gymapprefactor.business.user.domain.UserBusinessMediator
 import com.example.gymapprefactor.common.components.presentation.DeckType
+import com.example.gymapprefactor.common.components.presentation.ScreenBackgroundState
+import com.example.gymapprefactor.common.components.presentation.models.BackgroundAction
+import com.example.gymapprefactor.common.components.presentation.state.BackgroundReducer
 import com.example.gymapprefactor.features.navigation.presentation.models.NavigationAction
 import com.example.gymapprefactor.features.navigation.presentation.state.NavigationReducer
 import com.example.gymapprefactor.features.upgrade.presentation.models.UpgradeLetterState
@@ -22,6 +25,7 @@ class UpgradeScreenViewModelImpl @Inject constructor(
 	private val upgradeLetterStateMapper: UpgradeLetterStateMapper,
 	private val upgradeScreenReducer: UpgradeScreenReducer,
 	private val navigationReducer: NavigationReducer,
+	private val backgroundReducer: BackgroundReducer,
 	private val dispatcherProvider: DispatcherProvider,
 ): UpgradeScreenViewModel() {
 	private lateinit var currentDeck : Deck
@@ -29,7 +33,14 @@ class UpgradeScreenViewModelImpl @Inject constructor(
 	override val state = upgradeScreenReducer.state
 
 	init {
+		setBackground()
 		setContent()
+	}
+
+	private fun setBackground() {
+		viewModelScope.launch(dispatcherProvider.main) {
+			backgroundReducer.update(BackgroundAction.SetBackground(ScreenBackgroundState.Upgrade))
+		}
 	}
 
 	private fun setContent() {

@@ -1,8 +1,9 @@
 package com.example.gymapprefactor.features.navigation.ui
 
 import androidx.activity.compose.BackHandler
-import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Box
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.Modifier
 import androidx.compose.runtime.getValue
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -16,6 +17,7 @@ import com.example.gymapprefactor.features.upgrade.ui.UpgradeScreen
 
 @Composable
 fun NavigationHost(
+    modifier: Modifier = Modifier,
     viewModel: NavigationViewModelImpl = hiltViewModel(),
 ) {
 
@@ -27,18 +29,11 @@ fun NavigationHost(
         NavigationState.None
     )
 
-    when(val state = screenState) {
-        is NavigationState.CurrentPage -> NavigationPage(state)
-        is NavigationState.None -> Unit
-    }
-}
-
-@Composable
-fun NavigationPage(
-    state: NavigationState.CurrentPage
-) {
-    Column {
-        NavigationPageRouter(state = state)
+    Box(modifier = modifier) {
+        when(val state = screenState) {
+            is NavigationState.CurrentPage -> NavigationPageRouter(state)
+            is NavigationState.None -> Unit
+        }
     }
 }
 

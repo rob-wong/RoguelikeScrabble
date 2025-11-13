@@ -17,10 +17,8 @@ import com.example.gymapprefactor.common.components.buttons.presentation.IconBut
 import com.example.gymapprefactor.common.components.presentation.ImageState
 import com.example.gymapprefactor.common.components.presentation.ResourceBarState
 import com.example.gymapprefactor.common.components.presentation.ResourceState
-import com.example.gymapprefactor.common.components.presentation.ScreenBackgroundState
 import com.example.gymapprefactor.common.components.buttons.ui.ButtonRouter
 import com.example.gymapprefactor.common.components.ui.ResourceBarRouter
-import com.example.gymapprefactor.common.components.ui.ScreenBackgroundRouter
 import com.example.gymapprefactor.features.shop.presentation.models.ShopScreenState
 import com.example.gymapprefactor.features.shop.presentation.models.ShopScreenState.None
 import com.example.gymapprefactor.features.shop.presentation.viewmodel.ShopScreenViewModelImpl
@@ -43,8 +41,7 @@ private fun ShopScreenLayout(
 	state: ShopScreenState.Content,
 	modifier: Modifier = Modifier,
 ) {
-	Box(modifier) {
-		ScreenBackgroundRouter(ScreenBackgroundState.Shop)
+	Box(modifier.fillMaxSize()) {
 		ButtonRouter(state.backButton, Modifier
 			.padding(top = 10.dp, end = 10.dp)
 			.align(Alignment.TopEnd)
