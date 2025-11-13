@@ -21,10 +21,8 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.gymapprefactor.app.util.DevicePreviews
 import com.example.gymapprefactor.app.util.DeviceUtil
 import com.example.gymapprefactor.app.util.SpacerUtil
-import com.example.gymapprefactor.common.components.presentation.ScreenBackgroundState
 import com.example.gymapprefactor.common.components.buttons.ui.ButtonRouter
 import com.example.gymapprefactor.common.components.ui.ResourceBarRouter
-import com.example.gymapprefactor.common.components.ui.ScreenBackgroundRouter
 import com.example.gymapprefactor.features.homeScreen.presentation.models.HomeScreenState
 import com.example.gymapprefactor.features.homeScreen.presentation.viewmodel.HomeScreenViewModelImpl
 import com.example.gymapprefactor.features.homeScreen.ui.preview.HomeScreenProvider
@@ -50,9 +48,8 @@ private fun HomeScreenLayout(
     modifier: Modifier = Modifier,
 ) {
     Box(
-        modifier = modifier
+        modifier = modifier.fillMaxSize()
     ) {
-        ScreenBackgroundRouter(ScreenBackgroundState.Home)
         HomeScreenButtonColumn(state, Modifier)
         Column(horizontalAlignment = Alignment.CenterHorizontally) {
             ResourceBarRouter(state.resourceBar)
@@ -73,20 +70,6 @@ private fun HomeScreenContent(
         verticalArrangement = Arrangement.Center,
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
-        ButtonRouter(state.onRoutines, Modifier)
-
-        Spacer(modifier = Modifier.height(SpacerUtil.spacer_10))
-
-        //FoldingButtonTest()
-
-        //Spacer(modifier = Modifier.height(SpacerUtil.spacer_10))
-
-        ButtonRouter(state.onExercises)
-
-        Spacer(modifier = Modifier.height(SpacerUtil.spacer_10))
-
-        ButtonRouter(state.onViewStats)
-
         ButtonRouter(state.playButton)
     }
 }

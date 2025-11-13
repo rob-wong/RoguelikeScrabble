@@ -20,9 +20,7 @@ import com.example.gymapprefactor.common.components.presentation.ImageState
 import com.example.gymapprefactor.common.components.presentation.LetterState
 import com.example.gymapprefactor.common.components.presentation.ResourceBarState
 import com.example.gymapprefactor.common.components.presentation.ResourceState
-import com.example.gymapprefactor.common.components.presentation.ScreenBackgroundState
 import com.example.gymapprefactor.common.components.ui.ResourceBarRouter
-import com.example.gymapprefactor.common.components.ui.ScreenBackgroundRouter
 import com.example.gymapprefactor.features.game.presentation.models.GameScreenState
 import com.example.gymapprefactor.features.game.presentation.models.GameScreenState.DraggableLetter
 import com.example.gymapprefactor.features.game.presentation.models.InputButtonState
@@ -40,8 +38,7 @@ fun GamePlayScreen(
 	onScoreAnimationComplete: () -> Unit,
 	modifier: Modifier = Modifier,
 ) {
-	Box(modifier) {
-		ScreenBackgroundRouter(ScreenBackgroundState.Game)
+	Box(modifier.fillMaxSize()) {
 		Column(horizontalAlignment = Alignment.CenterHorizontally) {
 			ResourceBarRouter(state.resourceBar)
 			Column(Modifier.fillMaxSize()) {

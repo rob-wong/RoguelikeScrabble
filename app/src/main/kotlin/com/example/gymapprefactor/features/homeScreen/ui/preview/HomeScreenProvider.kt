@@ -4,10 +4,8 @@ import androidx.compose.ui.tooling.preview.PreviewParameterProvider
 import com.example.gymapprefactor.common.components.buttons.presentation.IconButtonState
 import com.example.gymapprefactor.common.components.buttons.presentation.ImageButtonState
 import com.example.gymapprefactor.common.components.presentation.ImageState
-import com.example.gymapprefactor.common.components.buttons.presentation.RectangleButtonState
 import com.example.gymapprefactor.common.components.presentation.ResourceBarState
 import com.example.gymapprefactor.common.components.presentation.ResourceState
-import com.example.gymapprefactor.common.components.presentation.TopBarState
 import com.example.gymapprefactor.features.homeScreen.presentation.models.HomeScreenState
 
 class HomeScreenProvider : PreviewParameterProvider<HomeScreenState.Content> {
@@ -20,19 +18,6 @@ class HomeScreenProvider : PreviewParameterProvider<HomeScreenState.Content> {
 				),
 				glyphState = ResourceState.None
 			),
-			onExercises = RectangleButtonState.Content(
-				onClick = { },
-				text = "Exercises"
-			),
-			onRoutines = RectangleButtonState.Content(
-				onClick = { },
-				text = "Routines",
-			),
-			onViewStats = RectangleButtonState.Content(
-				onClick = { },
-				text = "View Stats"
-			),
-			topBarState = TopBarState.Content(title = "Home Screen", onBack = { }),
 			shopButton = IconButtonState.Content(
 				onClick = { },
 				image = ImageState.ShopIcon,

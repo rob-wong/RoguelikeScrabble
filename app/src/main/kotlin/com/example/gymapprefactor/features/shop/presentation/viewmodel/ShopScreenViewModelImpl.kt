@@ -2,6 +2,9 @@ package com.example.gymapprefactor.features.shop.presentation.viewmodel
 
 import androidx.lifecycle.viewModelScope
 import com.example.gymapprefactor.app.util.dispatcher.DispatcherProvider
+import com.example.gymapprefactor.common.components.presentation.ScreenBackgroundState
+import com.example.gymapprefactor.common.components.presentation.models.BackgroundAction
+import com.example.gymapprefactor.common.components.presentation.state.BackgroundReducer
 import com.example.gymapprefactor.features.navigation.presentation.models.NavigationAction
 import com.example.gymapprefactor.features.navigation.presentation.state.NavigationReducer
 import com.example.gymapprefactor.features.shop.presentation.models.ShopScreenAction
@@ -14,12 +17,20 @@ import javax.inject.Inject
 class ShopScreenViewModelImpl @Inject constructor(
 	private val shopScreenReducer: ShopScreenReducer,
 	private val navigationReducer: NavigationReducer,
+	private val backgroundReducer: BackgroundReducer,
 	private val dispatcherProvider: DispatcherProvider
 ): ShopScreenViewModel() {
 	override val state = shopScreenReducer.state
 
 	init {
+		setBackground()
 		setContent()
+	}
+
+	private fun setBackground() {
+		viewModelScope.launch(dispatcherProvider.main) {
+			backgroundReducer.update(BackgroundAction.SetBackground(ScreenBackgroundState.Shop))
+		}
 	}
 
 	private fun setContent() {

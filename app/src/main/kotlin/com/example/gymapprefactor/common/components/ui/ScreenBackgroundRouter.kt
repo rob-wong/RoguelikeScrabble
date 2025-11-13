@@ -3,21 +3,29 @@ package com.example.gymapprefactor.common.components.ui
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
+import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.gymapprefactor.R
 import com.example.gymapprefactor.app.util.DevicePreviews
 import com.example.gymapprefactor.common.components.presentation.ScreenBackgroundState
+import com.example.gymapprefactor.common.components.presentation.viewmodel.BackgroundViewModelImpl
 
 @Composable
 fun ScreenBackgroundRouter(
-	state: ScreenBackgroundState,
-	modifier: Modifier = Modifier
+	modifier: Modifier = Modifier,
+	backgroundViewModel: BackgroundViewModelImpl = hiltViewModel()
 ) {
-	when(state) {
+	val backgroundState by backgroundViewModel.state.collectAsStateWithLifecycle(
+		ScreenBackgroundState.None
+	)
+	
+	when(backgroundState) {
 		is ScreenBackgroundState.Shop -> ScreenBackgroundContent(
 			painter = painterResource(R.drawable.background_shop),
 			modifier = modifier,
@@ -60,5 +68,8 @@ private fun ScreenBackgroundContent(
 @DevicePreviews
 @Composable
 fun ScreenBackgroundRouterPreview() {
-	ScreenBackgroundRouter(state = ScreenBackgroundState.Home)
+	ScreenBackgroundContent(
+		painter = painterResource(id = R.drawable.background_home),
+		modifier = Modifier
+	)
 }

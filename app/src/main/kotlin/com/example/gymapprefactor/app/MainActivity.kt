@@ -3,11 +3,16 @@ package com.example.gymapprefactor.app
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import com.example.gymapprefactor.app.util.SpacerUtil
 import androidx.lifecycle.lifecycleScope
+import com.example.gymapprefactor.common.components.ui.ScreenBackgroundRouter
 import com.example.gymapprefactor.business.models.AppDataModel
 import com.example.gymapprefactor.business.network.UserStorage
 import com.example.gymapprefactor.business.startup.StartupController
@@ -51,9 +56,23 @@ private fun LaunchAppContent() {
         modifier = Modifier,
         color = Color.Transparent,
     ) {
-        NavigationHost()
-        
-        SettingsRoot()
-        DialogRoot()
+        Box(modifier = Modifier.fillMaxSize()) {
+            ScreenBackgroundRouter(
+                modifier = Modifier.fillMaxSize()
+            )
+
+            NavigationHost(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(vertical = SpacerUtil.screenVerticalPadding)
+            )
+            
+            SettingsRoot(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(vertical = SpacerUtil.screenVerticalPadding)
+            )
+            DialogRoot()
+        }
     }
 }
