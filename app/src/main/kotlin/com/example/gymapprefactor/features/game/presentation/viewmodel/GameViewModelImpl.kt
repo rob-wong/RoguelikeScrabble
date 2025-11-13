@@ -4,7 +4,6 @@ import androidx.lifecycle.viewModelScope
 import com.example.gymapprefactor.app.util.dispatcher.DispatcherProvider
 import com.example.gymapprefactor.business.gameplayLoop.domain.AdvanceToNextEnemyUseCase
 import com.example.gymapprefactor.business.gameplayLoop.domain.ApplyScoreToEnemyUseCase
-import com.example.gymapprefactor.business.gameplayLoop.domain.CheckGameConditionsUseCase
 import com.example.gymapprefactor.business.gameplayLoop.domain.GameplayBusinessMediator
 import com.example.gymapprefactor.business.gameplayLoop.domain.GameRules
 import com.example.gymapprefactor.business.gameplayLoop.domain.ScoredWordResult
@@ -39,7 +38,6 @@ class GameViewModelImpl @Inject constructor(
 	private val backgroundReducer: BackgroundReducer,
 	private val dispatcherProvider: DispatcherProvider,
 	private val applyScoreToEnemyUseCase: ApplyScoreToEnemyUseCase,
-	private val checkGameConditionsUseCase: CheckGameConditionsUseCase,
 	private val advanceToNextEnemyUseCase: AdvanceToNextEnemyUseCase,
 	private val gameRules: GameRules,
 	private val enemyCreationMapper: EnemyCreationMapper,
