@@ -11,11 +11,18 @@ class DrawHandUseCase @Inject constructor(
 		drawnAmount: Int,
 		game: ActiveGameState
 	): ActiveGameState {
-		val (_, values, round) = game
-		val (_, seed) = values.deck to values.seed
+		val (variables, values, round) = game
+		val baseSeed = values.seed
+		
+		// Combine base seed with level and stage for deterministic, level-specific hands
+		val levelStageSeed = combineSeedWithLevelAndStage(
+			baseSeed = baseSeed,
+			stage = variables.stage,
+			level = variables.level
+		)
 
 		val result = drawHandMapper.map(
-			DrawHandMapper.Param(round.mutableDeck, seed, drawnAmount)
+			DrawHandMapper.Param(round.mutableDeck, levelStageSeed, drawnAmount)
 		)
 		val newGameState = game.copy(
 			currentRound = round.copy(
@@ -27,5 +34,15 @@ class DrawHandUseCase @Inject constructor(
 		)
 
 		return newGameState
+	}
+	
+	private fun combineSeedWithLevelAndStage(
+		baseSeed: Long,
+		stage: Int,
+		level: Int
+	): Long {
+		// Combine seed with stage and level using bit operations for deterministic results
+		// This ensures different levels/stages have different hands, but same seed+level+stage = same hands
+		return baseSeed xor (stage.toLong() shl 32) xor (level.toLong() shl 16)
 	}
 }

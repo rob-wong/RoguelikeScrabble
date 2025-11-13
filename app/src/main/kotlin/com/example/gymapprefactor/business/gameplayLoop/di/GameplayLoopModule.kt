@@ -154,9 +154,13 @@ object GameplayLoopModule {
 
 	@Provides
 	fun provideAdvanceToNextEnemyUseCase(
-		enemyCreationMapper: EnemyCreationMapper
+		enemyCreationMapper: EnemyCreationMapper,
+		drawHandUseCase: DrawHandUseCase
 	): AdvanceToNextEnemyUseCase {
-		return AdvanceToNextEnemyUseCase(enemyCreationMapper)
+		return AdvanceToNextEnemyUseCase(
+			enemyCreationMapper = enemyCreationMapper,
+			drawHandUseCase = drawHandUseCase
+		)
 	}
 
 	@Provides

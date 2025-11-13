@@ -48,6 +48,8 @@ fun LetterBoard(
 	state: GameScreenState.Playing,
 	invalidWordTrigger: Boolean,
 	onInvalidWordConsumed: () -> Unit,
+	levelAdvanceShakeTrigger: Boolean,
+	onLevelAdvanceShakeConsumed: () -> Unit,
 	scoreBreakdown: ScoreAnimationPayload?,
 	onScoreAnimationConsumed: () -> Unit,
 	onScoreAnimationComplete: () -> Unit,
@@ -58,15 +60,23 @@ fun LetterBoard(
 	val scoreState = rememberScoreAnimationState()
 	val shakeOffset = remember { Animatable(0f) }
 	val shakeMutex = remember { Mutex() }
+	val holdingAreaShakeOffset = remember { Animatable(0f) }
+	val bagShakeOffset = remember { Animatable(0f) }
+	val levelAdvanceShakeMutex = remember { Mutex() }
 	val gridColumns = 5
 
 	println("PlayedLetters: ${boardState.playedLetters.map { it.id }}")
 
-	InvalidWordShakeHandler(
+	LetterBoardShakeHandlers(
 		invalidWordTrigger = invalidWordTrigger,
+		onInvalidWordConsumed = onInvalidWordConsumed,
+		levelAdvanceShakeTrigger = levelAdvanceShakeTrigger,
+		onLevelAdvanceShakeConsumed = onLevelAdvanceShakeConsumed,
 		shakeOffset = shakeOffset,
 		shakeMutex = shakeMutex,
-		onInvalidWordConsumed = onInvalidWordConsumed
+		holdingAreaShakeOffset = holdingAreaShakeOffset,
+		bagShakeOffset = bagShakeOffset,
+		levelAdvanceShakeMutex = levelAdvanceShakeMutex
 	)
 
 	ScoreAnimationHandler(
@@ -89,6 +99,7 @@ fun LetterBoard(
 			boardState = boardState,
 			scoreState = scoreState,
 			shakeOffset = shakeOffset,
+			holdingAreaShakeOffset = holdingAreaShakeOffset,
 			gridColumns = gridColumns
 		)
 
@@ -99,6 +110,7 @@ fun LetterBoard(
 				.align(Alignment.BottomEnd)
 				.padding(bottom = 60.dp, end = 8.dp)
 				.wrapContentWidth()
+				.offset { IntOffset(bagShakeOffset.value.roundToInt(), 0) }
 		)
 
 		LetterOverlays(
@@ -109,11 +121,40 @@ fun LetterBoard(
 }
 
 @Composable
+private fun LetterBoardShakeHandlers(
+	invalidWordTrigger: Boolean,
+	onInvalidWordConsumed: () -> Unit,
+	levelAdvanceShakeTrigger: Boolean,
+	onLevelAdvanceShakeConsumed: () -> Unit,
+	shakeOffset: Animatable<Float, androidx.compose.animation.core.AnimationVector1D>,
+	shakeMutex: Mutex,
+	holdingAreaShakeOffset: Animatable<Float, androidx.compose.animation.core.AnimationVector1D>,
+	bagShakeOffset: Animatable<Float, androidx.compose.animation.core.AnimationVector1D>,
+	levelAdvanceShakeMutex: Mutex
+) {
+	InvalidWordShakeHandler(
+		invalidWordTrigger = invalidWordTrigger,
+		shakeOffset = shakeOffset,
+		shakeMutex = shakeMutex,
+		onInvalidWordConsumed = onInvalidWordConsumed
+	)
+
+	LevelAdvanceShakeHandler(
+		levelAdvanceShakeTrigger = levelAdvanceShakeTrigger,
+		holdingAreaShakeOffset = holdingAreaShakeOffset,
+		bagShakeOffset = bagShakeOffset,
+		shakeMutex = levelAdvanceShakeMutex,
+		onLevelAdvanceShakeConsumed = onLevelAdvanceShakeConsumed
+	)
+}
+
+@Composable
 private fun LetterBoardContent(
 	state: GameScreenState.Playing,
 	boardState: LetterBoardState,
 	scoreState: ScoreAnimationState,
 	shakeOffset: Animatable<Float, androidx.compose.animation.core.AnimationVector1D>,
+	holdingAreaShakeOffset: Animatable<Float, androidx.compose.animation.core.AnimationVector1D>,
 	gridColumns: Int
 ) {
 	Column(modifier = Modifier.fillMaxSize()) {
@@ -147,7 +188,8 @@ private fun LetterBoardContent(
 
 		HoldingArea(
 			boardState = boardState,
-			gridColumns = gridColumns
+			gridColumns = gridColumns,
+			shakeOffset = holdingAreaShakeOffset
 		)
 
 		// Confirm and discard buttons centered below holding area
