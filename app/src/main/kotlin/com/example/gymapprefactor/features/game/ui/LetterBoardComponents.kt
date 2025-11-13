@@ -8,6 +8,7 @@ import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxScope
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -120,22 +121,30 @@ internal fun ScoreLane(
 		}
 
 		scoreState.totalScore?.let { total ->
-			val totalFontLevel = scoreState.orderedScoredLetters.maxOfOrNull { 
-				scoreState.scoredLetters[it.id]?.level ?: 1 
-			} ?: 1
-			OutlinedText(
-				text = "+$total",
-				textAlign = TextAlign.Center,
-				textStyle = letterFontRouter(totalFontLevel),
-				modifier = Modifier
-					.align(Alignment.Center)
-					.offset { IntOffset(scoreState.totalScoreShake.value.roundToInt(), 0) }
-					.graphicsLayer(alpha = scoreState.totalScoreAlpha.value),
-				outlineWidth = 7,
-				useGlow = false
-			)
+			TotalScoreDisplay(total, scoreState)
 		}
 	}
+}
+
+@Composable
+private fun BoxScope.TotalScoreDisplay(
+	total: Int,
+	scoreState: ScoreAnimationState
+) {
+	val totalFontLevel = scoreState.orderedScoredLetters.maxOfOrNull {
+		scoreState.scoredLetters[it.id]?.level ?: 1
+	} ?: 1
+	OutlinedText(
+		text = "+$total",
+		textAlign = TextAlign.Center,
+		textStyle = letterFontRouter(totalFontLevel),
+		modifier = Modifier
+			.align(Alignment.Center)
+			.offset { IntOffset(scoreState.totalScoreShake.value.roundToInt(), 0) }
+			.graphicsLayer(alpha = scoreState.totalScoreAlpha.value),
+		outlineWidth = 7,
+		useGlow = false
+	)
 }
 
 @OptIn(ExperimentalFoundationApi::class)
