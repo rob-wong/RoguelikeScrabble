@@ -2,6 +2,8 @@ package com.example.gymapprefactor.features.game.presentation.viewmodel
 
 import androidx.lifecycle.viewModelScope
 import com.example.gymapprefactor.app.util.dispatcher.DispatcherProvider
+import com.example.gymapprefactor.business.gameplayLoop.domain.ApplyScoreToEnemyUseCase
+import com.example.gymapprefactor.business.gameplayLoop.domain.CheckGameConditionsUseCase
 import com.example.gymapprefactor.business.gameplayLoop.domain.GameplayBusinessMediator
 import com.example.gymapprefactor.business.gameplayLoop.domain.ScoredWordResult
 import com.example.gymapprefactor.business.models.ActiveGameState
@@ -28,6 +30,8 @@ class GameViewModelImpl @Inject constructor(
 	private val gameplayBusinessMediator: GameplayBusinessMediator,
 	private val navigationReducer: NavigationReducer,
 	private val dispatcherProvider: DispatcherProvider,
+	private val applyScoreToEnemyUseCase: ApplyScoreToEnemyUseCase,
+	private val checkGameConditionsUseCase: CheckGameConditionsUseCase,
 ) : GameViewModel() {
 	override val state = gameScreenReducer.state
 
@@ -125,31 +129,20 @@ class GameViewModelImpl @Inject constructor(
 		)
 		// Wait for animation to complete before applying score and checking win/loss
 		scoreAnimationComplete.first()
-		
-		// Apply score to enemy health
-		activeGameState = activeGameState.copy(
-			currentRound = activeGameState.currentRound.copy(
-				enemyHealth = (activeGameState.currentRound.enemyHealth - totalScore).coerceAtLeast(0)
-			)
-		)
-		
-		// Check win/loss conditions after score is applied
-		val isWon = activeGameState.currentRound.enemyHealth <= 0
-		val isLost = activeGameState.currentRound.round > activeGameState.activeGameVariables.maxRounds
+
+		activeGameState = applyScoreToEnemyUseCase(totalScore, activeGameState)
+
+		val conditionResult = checkGameConditionsUseCase(activeGameState)
 		
 		println("GameViewModelImpl: After score applied - " +
 				"enemyHealth=${activeGameState.currentRound.enemyHealth}, " +
 				"round=${activeGameState.currentRound.round}, " +
 				"maxRounds=${activeGameState.activeGameVariables.maxRounds}, " +
-				"isWon=$isWon, " +
-				"isLost=$isLost"
+				"isWon=${conditionResult.isWon}, " +
+				"isLost=${conditionResult.isLost}"
 		)
 		
-		activeGameState = activeGameState.copy(
-			activeGameVariables = activeGameState.activeGameVariables.copy(
-				gameLost = isLost && !isWon
-			)
-		)
+		activeGameState = conditionResult.updatedGame
 		
 		println("GameViewModelImpl: gameLost flag set to ${activeGameState.activeGameVariables.gameLost}")
 		

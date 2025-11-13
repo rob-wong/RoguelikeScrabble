@@ -13,6 +13,7 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
 @Composable
+@SuppressWarnings("MaxLineLength")
 internal fun ScoreAnimationHandler(
 	scoreBreakdown: ScoreAnimationPayload?,
 	scoreState: ScoreAnimationState,
@@ -31,95 +32,128 @@ internal fun ScoreAnimationHandler(
 				"holding=${boardState.holdingLetters.map { it.id }} played=${boardState.playedLetters.map { it.id }}"
 		)
 
-		scoreState.scoredLetters.clear()
-		scoreState.scoreLetterPositions.clear()
-		scoreState.orderedScoredLetters.clear()
-		scoreBreakdown.letters.forEach { letter ->
-			scoreState.scoredLetters[letter.id] = letter
-			scoreState.orderedScoredLetters.add(
-				GameScreenState.DraggableLetter(
-					id = letter.id,
-					letterState = LetterState.Display(
-						type = DeckType.Default,
-						letter = letter.letter.uppercaseChar(),
-						level = letter.level
-					)
-				)
-			)
-			scoreState.scoreLetterPositions[letter.id] = boardState.slotPositions[letter.id] ?: androidx.compose.ui.geometry.Offset.Zero
-		}
-
-		val filteredScores = scoreBreakdown.letterScores.filter { score ->
-			scoreState.scoredLetters.containsKey(score.first)
-		}
-
-		println("LetterBoard: filteredScores=${filteredScores.map { it.first }}")
+		initializeScoreState(scoreBreakdown, scoreState, boardState)
+		val filteredScores = filterValidScores(scoreBreakdown, scoreState)
 
 		if (filteredScores.isEmpty()) {
 			println("LetterBoard: filteredScores empty, skipping animation")
 			onScoreAnimationConsumed()
-			scoreState.orderedScoredLetters.clear()
-			scoreState.scoreLetterPositions.clear()
+			clearScoreState(scoreState)
 			return@LaunchedEffect
 		}
 
-		scoreState.totalScore = filteredScores.sumOf { it.second }
-		scoreState.totalScoreAlpha.snapTo(0f)
-		scoreState.totalScoreShake.snapTo(0f)
-		scoreState.scoreValueMap.clear()
-
-		for ((letterId, _) in filteredScores) {
-			scoreState.scoreAlphaMap.getOrPut(letterId) { Animatable(0f) }.snapTo(0f)
-			scoreState.scoreShakeMap.getOrPut(letterId) { Animatable(0f) }.snapTo(0f)
-		}
-
-		for ((letterId, score) in filteredScores) {
-			scoreState.scoreValueMap[letterId] = score
-
-			coroutineScope {
-				launch {
-					val shakeAnim = scoreState.scoreShakeMap.getOrPut(letterId) { Animatable(0f) }
-					shakeAnim.snapTo(0f)
-					repeat(2) {
-						shakeAnim.animateTo(12f, tween(durationMillis = 70))
-						shakeAnim.animateTo(-12f, tween(durationMillis = 70))
-					}
-					shakeAnim.animateTo(0f, tween(durationMillis = 80))
-				}
-				launch {
-					val alphaAnim = scoreState.scoreAlphaMap.getOrPut(letterId) { Animatable(0f) }
-					alphaAnim.snapTo(0f)
-					alphaAnim.animateTo(1f, tween(durationMillis = 250))
-				}
-			}
-
-			delay(320L)
-		}
-
-		delay(240L)
-
-		for ((letterId, _) in filteredScores) {
-			val alphaAnim = scoreState.scoreAlphaMap[letterId] ?: continue
-			alphaAnim.animateTo(0f, tween(durationMillis = 180))
-		}
-
-		scoreState.totalScoreAlpha.snapTo(0f)
-		scoreState.totalScoreAlpha.animateTo(1f, tween(durationMillis = 280))
-		repeat(2) {
-			scoreState.totalScoreShake.animateTo(14f, tween(durationMillis = 90))
-			scoreState.totalScoreShake.animateTo(-14f, tween(durationMillis = 90))
-		}
-		scoreState.totalScoreShake.animateTo(0f, tween(durationMillis = 90))
-		delay(300L)
-		scoreState.totalScoreAlpha.animateTo(0f, tween(durationMillis = 200))
-		scoreState.totalScore = null
-		scoreState.scoreValueMap.clear()
-		scoreState.orderedScoredLetters.clear()
-		scoreState.scoreLetterPositions.clear()
+		animateLetterScores(filteredScores, scoreState)
+		animateTotalScore(scoreState)
+		clearScoreState(scoreState)
 
 		onScoreAnimationConsumed()
 		onScoreAnimationComplete()
 	}
+}
+
+private fun initializeScoreState(
+	scoreBreakdown: ScoreAnimationPayload,
+	scoreState: ScoreAnimationState,
+	boardState: LetterBoardState
+) {
+	scoreState.scoredLetters.clear()
+	scoreState.scoreLetterPositions.clear()
+	scoreState.orderedScoredLetters.clear()
+	scoreBreakdown.letters.forEach { letter ->
+		scoreState.scoredLetters[letter.id] = letter
+		scoreState.orderedScoredLetters.add(
+			GameScreenState.DraggableLetter(
+				id = letter.id,
+				letterState = LetterState.Display(
+					type = DeckType.Default,
+					letter = letter.letter.uppercaseChar(),
+					level = letter.level
+				)
+			)
+		)
+		scoreState.scoreLetterPositions[letter.id] =
+			boardState.slotPositions[letter.id] ?: androidx.compose.ui.geometry.Offset.Zero
+	}
+}
+
+private fun filterValidScores(
+	scoreBreakdown: ScoreAnimationPayload,
+	scoreState: ScoreAnimationState
+): List<Pair<String, Int>> {
+	val filteredScores = scoreBreakdown.letterScores.filter { score ->
+		scoreState.scoredLetters.containsKey(score.first)
+	}
+	println("LetterBoard: filteredScores=${filteredScores.map { it.first }}")
+	return filteredScores
+}
+
+private suspend fun animateLetterScores(
+	filteredScores: List<Pair<String, Int>>,
+	scoreState: ScoreAnimationState
+) {
+	scoreState.totalScore = filteredScores.sumOf { it.second }
+	scoreState.totalScoreAlpha.snapTo(0f)
+	scoreState.totalScoreShake.snapTo(0f)
+	scoreState.scoreValueMap.clear()
+
+	for ((letterId, _) in filteredScores) {
+		scoreState.scoreAlphaMap.getOrPut(letterId) { Animatable(0f) }.snapTo(0f)
+		scoreState.scoreShakeMap.getOrPut(letterId) { Animatable(0f) }.snapTo(0f)
+	}
+
+	for ((letterId, score) in filteredScores) {
+		scoreState.scoreValueMap[letterId] = score
+		animateLetterScore(letterId, scoreState)
+		delay(320L)
+	}
+
+	delay(240L)
+
+	for ((letterId, _) in filteredScores) {
+		val alphaAnim = scoreState.scoreAlphaMap[letterId] ?: continue
+		alphaAnim.animateTo(0f, tween(durationMillis = 180))
+	}
+}
+
+private suspend fun animateLetterScore(
+	letterId: String,
+	scoreState: ScoreAnimationState
+) {
+	coroutineScope {
+		launch {
+			val shakeAnim = scoreState.scoreShakeMap.getOrPut(letterId) { Animatable(0f) }
+			shakeAnim.snapTo(0f)
+			repeat(2) {
+				shakeAnim.animateTo(12f, tween(durationMillis = 70))
+				shakeAnim.animateTo(-12f, tween(durationMillis = 70))
+			}
+			shakeAnim.animateTo(0f, tween(durationMillis = 80))
+		}
+		launch {
+			val alphaAnim = scoreState.scoreAlphaMap.getOrPut(letterId) { Animatable(0f) }
+			alphaAnim.snapTo(0f)
+			alphaAnim.animateTo(1f, tween(durationMillis = 250))
+		}
+	}
+}
+
+private suspend fun animateTotalScore(scoreState: ScoreAnimationState) {
+	scoreState.totalScoreAlpha.snapTo(0f)
+	scoreState.totalScoreAlpha.animateTo(1f, tween(durationMillis = 280))
+	repeat(2) {
+		scoreState.totalScoreShake.animateTo(14f, tween(durationMillis = 90))
+		scoreState.totalScoreShake.animateTo(-14f, tween(durationMillis = 90))
+	}
+	scoreState.totalScoreShake.animateTo(0f, tween(durationMillis = 90))
+	delay(300L)
+	scoreState.totalScoreAlpha.animateTo(0f, tween(durationMillis = 200))
+}
+
+private fun clearScoreState(scoreState: ScoreAnimationState) {
+	scoreState.totalScore = null
+	scoreState.scoreValueMap.clear()
+	scoreState.orderedScoredLetters.clear()
+	scoreState.scoreLetterPositions.clear()
 }
 
 
