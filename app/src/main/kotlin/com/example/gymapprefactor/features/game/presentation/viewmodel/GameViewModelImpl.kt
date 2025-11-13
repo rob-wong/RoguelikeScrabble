@@ -2,9 +2,10 @@ package com.example.gymapprefactor.features.game.presentation.viewmodel
 
 import androidx.lifecycle.viewModelScope
 import com.example.gymapprefactor.app.util.dispatcher.DispatcherProvider
+import com.example.gymapprefactor.business.gameplayLoop.domain.AdvanceToNextEnemyUseCase
 import com.example.gymapprefactor.business.gameplayLoop.domain.ApplyScoreToEnemyUseCase
-import com.example.gymapprefactor.business.gameplayLoop.domain.CheckGameConditionsUseCase
 import com.example.gymapprefactor.business.gameplayLoop.domain.GameplayBusinessMediator
+import com.example.gymapprefactor.business.gameplayLoop.domain.GameRules
 import com.example.gymapprefactor.business.gameplayLoop.domain.ScoredWordResult
 import com.example.gymapprefactor.business.gameplayLoop.domain.mappers.EnemyCreationMapper
 import com.example.gymapprefactor.business.models.ActiveGameState
@@ -19,6 +20,7 @@ import com.example.gymapprefactor.features.navigation.presentation.models.Naviga
 import com.example.gymapprefactor.features.navigation.presentation.models.NavigationPage
 import com.example.gymapprefactor.features.navigation.presentation.state.NavigationReducer
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
@@ -36,7 +38,8 @@ class GameViewModelImpl @Inject constructor(
 	private val backgroundReducer: BackgroundReducer,
 	private val dispatcherProvider: DispatcherProvider,
 	private val applyScoreToEnemyUseCase: ApplyScoreToEnemyUseCase,
-	private val checkGameConditionsUseCase: CheckGameConditionsUseCase,
+	private val advanceToNextEnemyUseCase: AdvanceToNextEnemyUseCase,
+	private val gameRules: GameRules,
 	private val enemyCreationMapper: EnemyCreationMapper,
 ) : GameViewModel() {
 	override val state = gameScreenReducer.state
@@ -151,30 +154,45 @@ class GameViewModelImpl @Inject constructor(
 				letters = result.letters
 			)
 		)
-		// Wait for animation to complete before applying score and checking win/loss
 		scoreAnimationComplete.first()
 
 		activeGameState = applyScoreToEnemyUseCase(totalScore, activeGameState)
 
-		val conditionResult = checkGameConditionsUseCase(activeGameState)
+		val isWon = gameRules.checkWinCondition(activeGameState)
+		val isLost = gameRules.checkLossCondition(activeGameState) && !isWon
 		
 		println("GameViewModelImpl: After score applied - " +
 				"enemyHealth=${activeGameState.currentRound.enemyHealth}, " +
 				"round=${activeGameState.currentRound.round}, " +
 				"maxRounds=${activeGameState.activeGameVariables.maxRounds}, " +
-				"isWon=${conditionResult.isWon}, " +
-				"isLost=${conditionResult.isLost}"
+				"isWon=$isWon, " +
+				"isLost=$isLost"
 		)
 		
-		activeGameState = conditionResult.updatedGame
-		
-		println("GameViewModelImpl: gameLost flag set to ${activeGameState.activeGameVariables.gameLost}")
-		
-		// Save updated state with applied score and win/loss check
-		activeGameState = gameplayBusinessMediator.saveGameState(activeGameState)
-		println("GameViewModelImpl: After save - gameLost=${activeGameState.activeGameVariables.gameLost}")
-		
-		updateGame()
+		if (isWon) {
+			activeGameState = activeGameState.copy(
+				activeGameVariables = activeGameState.activeGameVariables.copy(
+					gameLost = false
+				)
+			)
+			activeGameState = gameplayBusinessMediator.saveGameState(activeGameState)
+			updateGame()
+			
+			delay(500)
+			
+			activeGameState = advanceToNextEnemyUseCase(activeGameState)
+			activeGameState = gameplayBusinessMediator.saveGameState(activeGameState)
+			updateGame()
+		} else {
+			activeGameState = activeGameState.copy(
+				activeGameVariables = activeGameState.activeGameVariables.copy(
+					gameLost = isLost
+				)
+			)
+			activeGameState = gameplayBusinessMediator.saveGameState(activeGameState)
+			println("GameViewModelImpl: gameLost flag set to ${activeGameState.activeGameVariables.gameLost}")
+			updateGame()
+		}
 	}
 
 	private fun quitGame() {
