@@ -30,16 +30,16 @@ private fun BagContent(
 	modifier: Modifier = Modifier,
 ) {
 	Column(
-		modifier.width(150.dp),
+		modifier = modifier,
 		horizontalAlignment = Alignment.CenterHorizontally
 	) {
-		ImageRouter(state.image)
+		ImageRouter(state.image, Modifier.width(100.dp))
 		OutlinedText(
 			text = textRouter(state),
 			textAlign = TextAlign.Center,
 			textStyle = common,
 			outlineWidth = 5,
-			useGlow = true,
+			useGlow = false,
 		)
 	}
 }

@@ -3,12 +3,20 @@ package com.example.gymapprefactor.features.game.ui
 import androidx.compose.animation.core.Animatable
 import androidx.compose.foundation.gestures.detectDragGestures
 import androidx.compose.foundation.gestures.detectTapGestures
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.offset
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.wrapContentWidth
+import androidx.compose.ui.Alignment
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -24,9 +32,14 @@ import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.zIndex
+import com.example.gymapprefactor.common.components.buttons.ui.ButtonRouter
+import com.example.gymapprefactor.common.components.ui.BagRouter
 import com.example.gymapprefactor.common.components.ui.LetterRouter
 import com.example.gymapprefactor.features.game.presentation.models.GameScreenState
 import com.example.gymapprefactor.features.game.presentation.viewmodel.ScoreAnimationPayload
+import com.example.gymapprefactor.features.game.ui.InputButtonRouter
+import com.example.gymapprefactor.features.game.ui.components.DiscardsRemainingRouter
+import com.example.gymapprefactor.features.game.ui.components.RoundsRemainingRouter
 import kotlinx.coroutines.sync.Mutex
 import kotlin.math.roundToInt
 
@@ -71,35 +84,90 @@ fun LetterBoard(
 				boardState.rootOffset = coords.boundsInWindow().topLeft
 			}
 	) {
-		Column(modifier = Modifier.fillMaxSize()) {
-			LetterBoardTopBar(
-				playButton = state.playButton,
-				discardButton = state.discardButton,
-				bag = state.bag,
-				roundsRemainingState = state.roundsRemainingState,
-				discardsRemainingState = state.discardsRemainingState,
-				playedLetters = boardState.playedLetters
-			)
+		LetterBoardContent(
+			state = state,
+			boardState = boardState,
+			scoreState = scoreState,
+			shakeOffset = shakeOffset,
+			gridColumns = gridColumns
+		)
 
-			ScoreLane(scoreState = scoreState)
-
-			PlayedArea(
-				boardState = boardState,
-				shakeOffset = shakeOffset
-			)
-
-			Spacer(modifier = Modifier.height(16.dp))
-
-			HoldingArea(
-				boardState = boardState,
-				gridColumns = gridColumns
-			)
-		}
+		// Bag icon on the right side below holding area
+		BagRouter(
+			state.bag,
+			modifier = Modifier
+				.align(Alignment.BottomEnd)
+				.padding(bottom = 60.dp, end = 8.dp)
+				.wrapContentWidth()
+		)
 
 		LetterOverlays(
 			boardState = boardState,
 			scoreState = scoreState
 		)
+	}
+}
+
+@Composable
+private fun LetterBoardContent(
+	state: GameScreenState.Playing,
+	boardState: LetterBoardState,
+	scoreState: ScoreAnimationState,
+	shakeOffset: Animatable<Float, androidx.compose.animation.core.AnimationVector1D>,
+	gridColumns: Int
+) {
+	Column(modifier = Modifier.fillMaxSize()) {
+		// Rounds and discards remaining on the right side above scoring lane
+		Box(modifier = Modifier.fillMaxWidth()) {
+			Column(
+				modifier = Modifier
+					.align(Alignment.TopEnd)
+					.padding(top = 8.dp, end = 8.dp)
+			) {
+				RoundsRemainingRouter(
+					state = state.roundsRemainingState,
+					modifier = Modifier.wrapContentWidth()
+				)
+				Spacer(modifier = Modifier.height(4.dp))
+				DiscardsRemainingRouter(
+					state = state.discardsRemainingState,
+					modifier = Modifier.wrapContentWidth()
+				)
+			}
+		}
+
+		ScoreLane(scoreState = scoreState)
+
+		PlayedArea(
+			boardState = boardState,
+			shakeOffset = shakeOffset
+		)
+
+		Spacer(modifier = Modifier.height(16.dp))
+
+		HoldingArea(
+			boardState = boardState,
+			gridColumns = gridColumns
+		)
+
+		// Confirm and discard buttons centered below holding area
+		Row(
+			modifier = Modifier
+				.fillMaxWidth()
+				.padding(vertical = 8.dp),
+			horizontalArrangement = Arrangement.Center
+		) {
+			InputButtonRouter(
+				state.playButton,
+				boardState.playedLetters,
+				Modifier.size(80.dp, 40.dp)
+			)
+			Spacer(modifier = Modifier.width(8.dp))
+			ButtonRouter(
+				state.discardButton,
+				Modifier.size(80.dp, 40.dp)
+			)
+		}
 	}
 }
 

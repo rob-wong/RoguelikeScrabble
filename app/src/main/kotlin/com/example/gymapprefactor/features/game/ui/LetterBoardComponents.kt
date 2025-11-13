@@ -181,14 +181,11 @@ internal fun PlayedArea(
 		) { index, letter ->
 			if (letter == null) {
 				Box(
-					modifier = Modifier
-						.background(Color.Green)
-						.size(48.dp)
+					modifier = Modifier.size(48.dp)
 				)
 			} else if (letter.id != boardState.draggingLetterId) {
 				Box(
 					modifier = Modifier
-						.background(Color.Red)
 						.size(48.dp)
 						.onGloballyPositioned { coords ->
 							val topLeftInWindow = coords.boundsInWindow().topLeft
