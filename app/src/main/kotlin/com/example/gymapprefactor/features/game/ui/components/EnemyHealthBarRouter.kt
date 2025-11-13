@@ -18,6 +18,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.example.gymapprefactor.common.components.ui.OutlinedText
+import java.util.Locale
 import com.example.gymapprefactor.features.game.presentation.models.components.EnemyHealthBarState
 import com.example.gymapprefactor.ui.theme.BlackishGray
 import com.example.gymapprefactor.ui.theme.HealthBarGreen
@@ -92,7 +93,7 @@ private fun EnemyHealthBarContent(
 				contentAlignment = Alignment.Center
 			) {
 				OutlinedText(
-					text = formatHealthText(state.currentHealth, state.maxHealth),
+					text = formatHealthText(state.currentHealth),
 					textAlign = TextAlign.Center,
 					textStyle = common.copy(fontSize = common.fontSize * 0.5f),
 					outlineWidth = 2,
@@ -111,14 +112,30 @@ private fun calculateHealthColor(percentage: Float): Color {
 	}
 }
 
-private fun formatHealthText(current: Int, max: Int): String {
+private fun formatHealthText(current: Int): String {
 	return formatNumber(current)
 }
 
 private fun formatNumber(number: Int): String {
 	return when {
-		number >= 1_000_000 -> "${(number / 1_000_000.0).let { if (it % 1.0 == 0.0) it.toInt() else String.format("%.1f", it) }}M"
-		number >= 1_000 -> "${(number / 1_000.0).let { if (it % 1.0 == 0.0) it.toInt() else String.format("%.1f", it) }}K"
+		number >= 1_000_000 -> {
+			val millions = number / 1_000_000.0
+			val formatted = if (millions % 1.0 == 0.0) {
+				millions.toInt().toString()
+			} else {
+				String.format(Locale.US, "%.1f", millions)
+			}
+			"${formatted}M"
+		}
+		number >= 1_000 -> {
+			val thousands = number / 1_000.0
+			val formatted = if (thousands % 1.0 == 0.0) {
+				thousands.toInt().toString()
+			} else {
+				String.format(Locale.US, "%.1f", thousands)
+			}
+			"${formatted}K"
+		}
 		else -> number.toString()
 	}
 }
