@@ -3,6 +3,7 @@ package com.example.gymapprefactor.business.gameplayLoop.di
 import android.content.Context
 import com.example.gymapprefactor.business.gameplayLoop.data.GameplayDataSource
 import com.example.gymapprefactor.business.gameplayLoop.data.GameplayRepositoryImpl
+import com.example.gymapprefactor.business.gameplayLoop.domain.AdvanceToNextEnemyUseCase
 import com.example.gymapprefactor.business.gameplayLoop.domain.ApplyScoreToEnemyUseCase
 import com.example.gymapprefactor.business.gameplayLoop.domain.CheckGameConditionsUseCase
 import com.example.gymapprefactor.business.gameplayLoop.domain.CreateGameUseCase
@@ -21,6 +22,8 @@ import com.example.gymapprefactor.business.gameplayLoop.domain.ScoreWordMapper
 import com.example.gymapprefactor.business.gameplayLoop.domain.ScoreWordMapperImpl
 import com.example.gymapprefactor.business.gameplayLoop.domain.WordValidityMapper
 import com.example.gymapprefactor.business.gameplayLoop.domain.WordValidityMapperImpl
+import com.example.gymapprefactor.business.gameplayLoop.domain.mappers.EnemyCreationMapper
+import com.example.gymapprefactor.business.gameplayLoop.domain.mappers.EnemyCreationMapperImpl
 import com.example.gymapprefactor.business.models.AppDataModel
 import com.example.gymapprefactor.business.user.domain.UserBusinessMediator
 import dagger.Module
@@ -96,6 +99,11 @@ object GameplayLoopModule {
 	}
 
 	@Provides
+	fun provideEnemyCreationMapper(): EnemyCreationMapper {
+		return EnemyCreationMapperImpl()
+	}
+
+	@Provides
 	fun provideGameRules(): GameRules {
 		return GameRulesImpl()
 	}
@@ -126,12 +134,14 @@ object GameplayLoopModule {
 	fun provideCreateGameUseCase(
 		userBusinessMediator: UserBusinessMediator,
 		drawHandUseCase: DrawHandUseCase,
-		saveGameStateUseCase: SaveGameStateUseCase
+		saveGameStateUseCase: SaveGameStateUseCase,
+		enemyCreationMapper: EnemyCreationMapper
 	): CreateGameUseCase {
 		return CreateGameUseCase(
 			userBusinessMediator = userBusinessMediator,
 			drawHandUseCase = drawHandUseCase,
-			saveGameStateUseCase = saveGameStateUseCase
+			saveGameStateUseCase = saveGameStateUseCase,
+			enemyCreationMapper = enemyCreationMapper
 		)
 	}
 
@@ -143,10 +153,18 @@ object GameplayLoopModule {
 	}
 
 	@Provides
+	fun provideAdvanceToNextEnemyUseCase(
+		enemyCreationMapper: EnemyCreationMapper
+	): AdvanceToNextEnemyUseCase {
+		return AdvanceToNextEnemyUseCase(enemyCreationMapper)
+	}
+
+	@Provides
 	fun provideCheckGameConditionsUseCase(
-		gameRules: GameRules
+		gameRules: GameRules,
+		advanceToNextEnemyUseCase: AdvanceToNextEnemyUseCase
 	): CheckGameConditionsUseCase {
-		return CheckGameConditionsUseCase(gameRules)
+		return CheckGameConditionsUseCase(gameRules, advanceToNextEnemyUseCase)
 	}
 
 	@Provides

@@ -13,6 +13,7 @@ import com.example.gymapprefactor.features.game.presentation.models.GameScreenAc
 import com.example.gymapprefactor.features.game.presentation.models.GameScreenState
 import com.example.gymapprefactor.features.game.presentation.models.GameScreenState.DraggableLetter
 import com.example.gymapprefactor.features.game.presentation.models.components.DiscardsRemainingState
+import com.example.gymapprefactor.features.game.presentation.models.components.EnemyHealthBarState
 import com.example.gymapprefactor.features.game.presentation.models.components.RoundsRemainingState
 import kotlinx.coroutines.flow.MutableStateFlow
 
@@ -46,6 +47,7 @@ class GameScreenReducerImpl : GameScreenReducer {
 			bag = mapBag(action),
 			roundsRemainingState = mapRoundsRemaining(action),
 			discardsRemainingState = mapDiscardsRemaining(action),
+			enemyHealthBarState = mapEnemyHealthBar(action),
 		)
 	}
 
@@ -103,6 +105,14 @@ class GameScreenReducerImpl : GameScreenReducer {
 		return DiscardsRemainingState.Content(
 			image = ImageState.DiscardsLeftIcon,
 			remaining = action.discardsRemaining
+		)
+	}
+
+	private fun mapEnemyHealthBar(action: GameScreenAction.StartPlaying): EnemyHealthBarState {
+		return EnemyHealthBarState.Content(
+			label = action.enemyLabel,
+			currentHealth = action.enemyHealth,
+			maxHealth = action.enemyMaxHealth
 		)
 	}
 }

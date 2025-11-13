@@ -1,5 +1,6 @@
 package com.example.gymapprefactor.business.gameplayLoop.domain
 
+import com.example.gymapprefactor.business.gameplayLoop.domain.mappers.EnemyCreationMapper
 import com.example.gymapprefactor.business.models.ActiveGameState
 import com.example.gymapprefactor.business.models.ActiveGameValues
 import com.example.gymapprefactor.business.models.ActiveGameVariables
@@ -17,6 +18,7 @@ class CreateGameUseCase @Inject constructor(
 	private val userBusinessMediator: UserBusinessMediator,
 	private val drawHandUseCase: DrawHandUseCase,
 	private val saveGameStateUseCase: SaveGameStateUseCase,
+	private val enemyCreationMapper: EnemyCreationMapper,
 ) {
 	companion object {
 		private const val STARTING_STAGE = 1
@@ -33,6 +35,14 @@ class CreateGameUseCase @Inject constructor(
 		val gameDeck = user.decks
 			.first() // change with multiple deck support
 			.copy() // during the game, the deck will be changed but not permanently
+
+		// Calculate initial enemy health using mapper
+		val initialEnemyHealth = enemyCreationMapper.map(
+			EnemyCreationMapper.Param(
+				stage = STARTING_STAGE,
+				level = STARTING_LEVEL
+			)
+		)
 
 		val game = ActiveGameState(
 			activeGameVariables = ActiveGameVariables(
@@ -53,7 +63,7 @@ class CreateGameUseCase @Inject constructor(
 			currentRound = CurrentRound(
 				round = STARTING_ROUND,
 				discardsUsed = STARTING_DISCARDS_USED,
-				enemyHealth = 200000,
+				enemyHealth = initialEnemyHealth,
 				wordsPlayed = listOf(),
 				mutableDeck = gameDeck.copy(),
 				hand = listOf(),

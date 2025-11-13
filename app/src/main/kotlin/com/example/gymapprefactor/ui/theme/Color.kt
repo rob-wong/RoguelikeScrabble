@@ -40,3 +40,8 @@ val LightSkyBlue = Color(0xFFE3F2FD)
 val SoftCoral = Color(0xFFFFCCBC)
 val AquaBlue = Color(0xFF8CDBFF)
 val BlushPink = Color(0xFFFFEBEE)
+
+// Health bar colors
+val HealthBarGreen = Color(0xFF4CAF50)
+val HealthBarYellow = Color(0xFFFFC107)
+val HealthBarRed = Color(0xFFF44336)
