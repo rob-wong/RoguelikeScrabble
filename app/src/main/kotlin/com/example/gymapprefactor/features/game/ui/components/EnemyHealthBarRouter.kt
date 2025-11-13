@@ -1,5 +1,9 @@
+@file:Suppress("TooManyFunctions")
 package com.example.gymapprefactor.features.game.ui.components
 
+import androidx.compose.animation.core.Animatable
+import androidx.compose.animation.core.LinearEasing
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -7,18 +11,26 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.key
+import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.example.gymapprefactor.common.components.ui.OutlinedText
-import java.util.Locale
 import com.example.gymapprefactor.features.game.presentation.models.components.EnemyHealthBarState
 import com.example.gymapprefactor.ui.theme.BlackishGray
 import com.example.gymapprefactor.ui.theme.HealthBarGreen
@@ -26,6 +38,9 @@ import com.example.gymapprefactor.ui.theme.HealthBarRed
 import com.example.gymapprefactor.ui.theme.HealthBarYellow
 import com.example.gymapprefactor.ui.theme.OffWhite
 import com.example.gymapprefactor.ui.theme.common
+import kotlinx.coroutines.coroutineScope
+import kotlinx.coroutines.launch
+import java.util.Locale
 
 @Composable
 fun EnemyHealthBarRouter(
@@ -43,10 +58,53 @@ private fun EnemyHealthBarContent(
 	state: EnemyHealthBarState.Content,
 	modifier: Modifier = Modifier,
 ) {
+	var previousHealth by remember(state.maxHealth) { mutableIntStateOf(0) }
+	var previousMaxHealth by remember { mutableIntStateOf(state.maxHealth) }
+	
+	LaunchedEffect(state.maxHealth) {
+		if (state.maxHealth != previousMaxHealth) {
+			previousHealth = 0
+			previousMaxHealth = state.maxHealth
+		}
+	}
+	
+	val targetHealthPercentage = calculateHealthPercentage(
+		currentHealth = state.currentHealth,
+		maxHealth = state.maxHealth
+	)
+	
+	val animatedHealthPercentage = key(state.maxHealth) {
+		remember { Animatable(0f) }
+	}
+	
+	LaunchedEffect(targetHealthPercentage) {
+		animatedHealthPercentage.animateTo(
+			targetValue = targetHealthPercentage,
+			animationSpec = tween(
+				durationMillis = 500,
+				easing = LinearEasing
+			)
+		)
+	}
+	
+	val shakeOffset = remember { Animatable(0f) }
+	val flashAlpha = remember { Animatable(0f) }
+	val scope = rememberCoroutineScope()
+	
+	HandleDamageAnimations(
+		currentHealth = state.currentHealth,
+		previousHealth = previousHealth,
+		shakeOffset = shakeOffset,
+		flashAlpha = flashAlpha,
+		scope = scope,
+		onHealthUpdated = { previousHealth = it }
+	)
+	
 	Column(
 		modifier = modifier
 			.fillMaxWidth()
-			.padding(horizontal = 16.dp, vertical = 8.dp),
+			.padding(horizontal = 16.dp, vertical = 8.dp)
+			.offset(x = shakeOffset.value.dp),
 		horizontalAlignment = Alignment.CenterHorizontally
 	) {
 		OutlinedText(
@@ -57,50 +115,150 @@ private fun EnemyHealthBarContent(
 			useGlow = false,
 		)
 		
+		HealthBarBox(
+			animatedHealthPercentage = animatedHealthPercentage.value,
+			flashAlpha = flashAlpha.value,
+			currentHealth = state.currentHealth
+		)
+	}
+}
+
+@Composable
+private fun HealthBarBox(
+	animatedHealthPercentage: Float,
+	flashAlpha: Float,
+	currentHealth: Int
+) {
+	Box(
+		modifier = Modifier
+			.fillMaxWidth()
+			.height(32.dp)
+			.border(
+				border = BorderStroke(width = 3.dp, color = OffWhite),
+				shape = RoundedCornerShape(4.dp)
+			)
+			.clip(RoundedCornerShape(4.dp))
+			.background(BlackishGray)
+	) {
+		Box(
+			modifier = Modifier
+				.fillMaxWidth(animatedHealthPercentage)
+				.height(32.dp)
+				.background(
+					color = calculateHealthColor(animatedHealthPercentage),
+					shape = RoundedCornerShape(4.dp)
+				)
+		)
+		
 		Box(
 			modifier = Modifier
 				.fillMaxWidth()
 				.height(32.dp)
-				.border(
-					border = BorderStroke(width = 3.dp, color = OffWhite),
+				.alpha(flashAlpha)
+				.background(
+					color = HealthBarRed,
 					shape = RoundedCornerShape(4.dp)
 				)
-				.clip(RoundedCornerShape(4.dp))
-				.background(BlackishGray)
+		)
+		
+		Box(
+			modifier = Modifier
+				.fillMaxWidth()
+				.height(32.dp),
+			contentAlignment = Alignment.Center
 		) {
-			// Health fill bar
-			val healthPercentage = if (state.maxHealth > 0) {
-				(state.currentHealth.toFloat() / state.maxHealth.toFloat()).coerceIn(0f, 1f)
-			} else {
-				0f
-			}
-			
-			Box(
-				modifier = Modifier
-					.fillMaxWidth(healthPercentage)
-					.height(32.dp)
-					.background(
-						color = calculateHealthColor(healthPercentage),
-						shape = RoundedCornerShape(4.dp)
-					)
+			OutlinedText(
+				text = formatHealthText(currentHealth),
+				textAlign = TextAlign.Center,
+				textStyle = common.copy(fontSize = common.fontSize * 0.5f),
+				outlineWidth = 2,
+				useGlow = false,
 			)
-			
-			// Health text overlay
-			Box(
-				modifier = Modifier
-					.fillMaxWidth()
-					.height(32.dp),
-				contentAlignment = Alignment.Center
-			) {
-				OutlinedText(
-					text = formatHealthText(state.currentHealth),
-					textAlign = TextAlign.Center,
-					textStyle = common.copy(fontSize = common.fontSize * 0.5f),
-					outlineWidth = 2,
-					useGlow = false,
-				)
+		}
+	}
+}
+
+@Composable
+private fun HandleDamageAnimations(
+	currentHealth: Int,
+	previousHealth: Int,
+	shakeOffset: Animatable<Float, *>,
+	flashAlpha: Animatable<Float, *>,
+	scope: kotlinx.coroutines.CoroutineScope,
+	onHealthUpdated: (Int) -> Unit
+) {
+	LaunchedEffect(currentHealth) {
+		val healthDecreased = currentHealth < previousHealth
+		if (healthDecreased) {
+			scope.launch {
+				coroutineScope {
+					launch { animateShake(shakeOffset) }
+					launch { animateFlash(flashAlpha) }
+				}
 			}
 		}
+		onHealthUpdated(currentHealth)
+	}
+}
+
+private suspend fun animateShake(shakeOffset: Animatable<Float, *>) {
+	val shakeDuration = 300
+	val shakeAmount = 6f
+	val shakeCycles = 3
+	val cycleDuration = shakeDuration / shakeCycles
+	
+	shakeOffset.animateTo(
+		targetValue = shakeAmount,
+		animationSpec = tween(
+			durationMillis = cycleDuration / 2,
+			easing = LinearEasing
+		)
+	)
+	shakeOffset.animateTo(
+		targetValue = -shakeAmount,
+		animationSpec = tween(
+			durationMillis = cycleDuration,
+			easing = LinearEasing
+		)
+	)
+	shakeOffset.animateTo(
+		targetValue = shakeAmount,
+		animationSpec = tween(
+			durationMillis = cycleDuration,
+			easing = LinearEasing
+		)
+	)
+	shakeOffset.animateTo(
+		targetValue = 0f,
+		animationSpec = tween(
+			durationMillis = cycleDuration / 2,
+			easing = LinearEasing
+		)
+	)
+}
+
+private suspend fun animateFlash(flashAlpha: Animatable<Float, *>) {
+	flashAlpha.animateTo(
+		targetValue = 0.6f,
+		animationSpec = tween(
+			durationMillis = 50,
+			easing = LinearEasing
+		)
+	)
+	flashAlpha.animateTo(
+		targetValue = 0f,
+		animationSpec = tween(
+			durationMillis = 250,
+			easing = LinearEasing
+		)
+	)
+}
+
+private fun calculateHealthPercentage(currentHealth: Int, maxHealth: Int): Float {
+	return if (maxHealth > 0) {
+		(currentHealth.toFloat() / maxHealth.toFloat()).coerceIn(0f, 1f)
+	} else {
+		0f
 	}
 }
 
