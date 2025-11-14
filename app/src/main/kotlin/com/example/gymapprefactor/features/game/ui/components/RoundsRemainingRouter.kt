@@ -2,6 +2,7 @@ package com.example.gymapprefactor.features.game.ui.components
 
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.ReadOnlyComposable
 import androidx.compose.ui.Alignment
@@ -32,10 +33,10 @@ private fun RoundsRemainingContent(
 	modifier: Modifier = Modifier,
 ) {
 	Column(
-		modifier = modifier,
+		modifier = modifier.wrapContentWidth(),
 		horizontalAlignment = Alignment.CenterHorizontally
 	) {
-		ImageRouter(state.image, Modifier.width(100.dp))
+		ImageRouter(state.image, Modifier.width(70.dp))
 		OutlinedText(
 			text = textRouter(state),
 			textAlign = TextAlign.Center,
@@ -57,8 +58,8 @@ private fun RoundsRemainingRouterPreview() {
     RoundsRemainingRouter(
         state = RoundsRemainingState.Content(
             image = ImageState.PlaysLeftIcon,
-            currentRound = 5,
-            maxRounds = 10
+            currentRound = 500,
+            maxRounds = 1000
         )
     )
 }

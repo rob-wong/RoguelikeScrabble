@@ -33,7 +33,7 @@ private fun BagContent(
 		modifier = modifier,
 		horizontalAlignment = Alignment.CenterHorizontally
 	) {
-		ImageRouter(state.image, Modifier.width(100.dp))
+		ImageRouter(state.image, Modifier.width(70.dp))
 		OutlinedText(
 			text = textRouter(state),
 			textAlign = TextAlign.Center,
@@ -55,8 +55,8 @@ private fun BagPreview() {
 	BagRouter(
 		BagState.Content(
 			image = ImageState.BasicBagIcon,
-			currentLetters = 5,
-			maxLetters = 10
+			currentLetters = 5000,
+			maxLetters = 1000
 		)
 	)
 }
