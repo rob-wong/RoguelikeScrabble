@@ -1,11 +1,18 @@
 package com.example.gymapprefactor.business.models
 
+import kotlinx.serialization.Serializable
+import kotlinx.serialization.Polymorphic
+import kotlinx.serialization.SerialName
+
+@Polymorphic
 interface Letter {
 	val id: String
 	val letter: Char
 	val level: Int
 }
 
+@Serializable
+@SerialName("default")
 class DefaultLetter(
 	override val id: String,
 	override val letter: Char,

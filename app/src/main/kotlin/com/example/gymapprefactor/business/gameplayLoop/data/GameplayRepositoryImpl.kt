@@ -47,14 +47,14 @@ class GameplayDataSource @Inject constructor(
 		appDataModel.saveUser(
 			user.copy(
 				runesCount = user.runesCount + gameState.activeGameVariables.runesCount,
-				gameState = NoneGameState()
+				gameState = NoneGameState
 			)
 		)
 	}
 
 	suspend fun quitGame() {
 		appDataModel.saveUser(
-			appDataModel.getCurrentUser().copy(gameState = NoneGameState())
+			appDataModel.getCurrentUser().copy(gameState = NoneGameState)
 		)
 	}
 }

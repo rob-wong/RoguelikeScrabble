@@ -1,15 +1,25 @@
 package com.example.gymapprefactor.business.models
 
+import kotlinx.serialization.Serializable
+import kotlinx.serialization.Polymorphic
+import kotlinx.serialization.SerialName
+
+@Polymorphic
 interface GameState
 
-class NoneGameState : GameState
+@Serializable
+@SerialName("none")
+object NoneGameState : GameState
 
+@Serializable
+@SerialName("active")
 data class ActiveGameState(
 	val activeGameVariables: ActiveGameVariables,
 	val activeGameValues: ActiveGameValues,
 	val currentRound: CurrentRound,
 ) : GameState
 
+@Serializable
 data class ActiveGameVariables(
 	val glyphCount: Int,
 	val runesCount: Int,
@@ -21,12 +31,14 @@ data class ActiveGameVariables(
 	val gameLost: Boolean,
 )
 
+@Serializable
 data class ActiveGameValues(
 	val seed: Long,
 	val deck: Deck,
 	val effects: List<Effect>,
 )
 
+@Serializable
 data class CurrentRound(
 	val round: Int,
 	val discardsUsed : Int,

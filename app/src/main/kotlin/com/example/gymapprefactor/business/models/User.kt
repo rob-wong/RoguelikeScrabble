@@ -1,5 +1,10 @@
 package com.example.gymapprefactor.business.models
 
+import kotlinx.serialization.Serializable
+import kotlinx.serialization.Polymorphic
+import kotlinx.serialization.SerialName
+
+@Polymorphic
 interface User {
 	val username: String
 	val runesCount: Int
@@ -8,6 +13,8 @@ interface User {
 	val gameState: GameState
 }
 
+@Serializable
+@SerialName("default")
 class DefaultUser(
 	override val username: String,
 	override val runesCount: Int,
@@ -16,12 +23,14 @@ class DefaultUser(
 	override val gameState: GameState
 ): User
 
+@Serializable
+@SerialName("none")
 object NoneUser : User {
 	override val username = ""
 	override val runesCount = 0
 	override val decks = listOf<Deck>()
 	override val unlockedEffects = listOf<Effect>()
-	override val gameState = NoneGameState()
+	override val gameState = NoneGameState
 }
 
 fun User.copy(
