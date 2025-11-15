@@ -33,5 +33,6 @@ data class CurrentRound(
 	val enemyHealth: Int,
 	val wordsPlayed: List<String>,
 	val mutableDeck: Deck,
-	val hand: List<Letter>
+	val hand: List<Letter>,
+	val effects: List<Effect>,
 )

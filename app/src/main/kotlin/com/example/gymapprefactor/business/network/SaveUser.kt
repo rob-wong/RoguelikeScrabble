@@ -5,8 +5,10 @@ import com.example.gymapprefactor.app.util.dispatcher.DispatcherProvider
 import com.example.gymapprefactor.business.models.ActiveGameState
 import com.example.gymapprefactor.business.models.Deck
 import com.example.gymapprefactor.business.models.DefaultDeck
+import com.example.gymapprefactor.business.models.DefaultEffect
 import com.example.gymapprefactor.business.models.DefaultLetter
 import com.example.gymapprefactor.business.models.DefaultUser
+import com.example.gymapprefactor.business.models.Effect
 import com.example.gymapprefactor.business.models.GameState
 import com.example.gymapprefactor.business.models.Letter
 import com.example.gymapprefactor.business.models.NoneGameState
@@ -43,12 +45,17 @@ class UserStorage @Inject constructor(
 	private val userAdapterFactory = RuntimeTypeAdapterFactory
 		.of(User::class.java, "type")
 		.registerSubtype(DefaultUser::class.java, "default")
+	
+	private val effectAdapterFactory = RuntimeTypeAdapterFactory
+		.of(Effect::class.java, "type")
+		.registerSubtype(DefaultEffect::class.java, "default")
 
 	private val gson = GsonBuilder()
 		.registerTypeAdapterFactory(userAdapterFactory)
 		.registerTypeAdapterFactory(gameStateAdapterFactory)
 		.registerTypeAdapterFactory(deckAdapterFactory)
 		.registerTypeAdapterFactory(letterAdapterFactory)
+		.registerTypeAdapterFactory(effectAdapterFactory)
 		.create()
 	private val mutex = Mutex()
 

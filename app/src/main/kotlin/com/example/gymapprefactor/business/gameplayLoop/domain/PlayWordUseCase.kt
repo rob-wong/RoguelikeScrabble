@@ -2,7 +2,9 @@ package com.example.gymapprefactor.business.gameplayLoop.domain
 
 import com.example.gymapprefactor.business.gameplayLoop.domain.models.GameplayExceptions
 import com.example.gymapprefactor.business.models.ActiveGameState
+import com.example.gymapprefactor.business.models.DefaultEffect
 import com.example.gymapprefactor.business.models.Letter
+import java.util.UUID
 import javax.inject.Inject
 
 class PlayWordUseCase @Inject constructor(
@@ -19,12 +21,19 @@ class PlayWordUseCase @Inject constructor(
 		val wordAsString = letters.map { it.letter }.joinToString(separator = "")
 
 		return if (wordValidityMapper.map(letters)) {
-			// Remove letters from hand, increment round, add word to words played
+			// Create effect from the played word
+			val wordEffect = DefaultEffect(
+				id = UUID.randomUUID().toString(),
+				label = wordAsString.uppercase()
+			)
+			
+			// Remove letters from hand, increment round, add word to words played and effects
 			val gameWithoutLetters = game.copy(
 				currentRound = game.currentRound.copy(
 					hand = game.currentRound.hand.filterNot { letters.contains(it) },
 					round = game.currentRound.round + 1,
 					wordsPlayed = game.currentRound.wordsPlayed + wordAsString,
+					effects = game.currentRound.effects + wordEffect,
 					// TODO enemy health in the enemy update
 				)
 			)

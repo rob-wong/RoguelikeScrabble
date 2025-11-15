@@ -57,6 +57,7 @@ class AdvanceToNextEnemyUseCase @Inject constructor(
 				wordsPlayed = emptyList(),
 				mutableDeck = game.activeGameValues.deck.copy(),
 				hand = emptyList(),
+				effects = emptyList(),
 			)
 		)
 		

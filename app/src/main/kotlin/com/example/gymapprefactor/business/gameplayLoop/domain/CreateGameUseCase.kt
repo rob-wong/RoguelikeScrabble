@@ -67,6 +67,7 @@ class CreateGameUseCase @Inject constructor(
 				wordsPlayed = listOf(),
 				mutableDeck = gameDeck.copy(),
 				hand = listOf(),
+				effects = emptyList(),
 			)
 		)
 

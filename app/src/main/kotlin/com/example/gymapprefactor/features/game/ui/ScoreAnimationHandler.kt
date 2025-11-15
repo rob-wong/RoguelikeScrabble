@@ -7,7 +7,7 @@ import androidx.compose.runtime.LaunchedEffect
 import com.example.gymapprefactor.common.components.presentation.DeckType
 import com.example.gymapprefactor.common.components.presentation.LetterState
 import com.example.gymapprefactor.features.game.presentation.models.GameScreenState
-import com.example.gymapprefactor.features.game.presentation.viewmodel.ScoreAnimationPayload
+import com.example.gymapprefactor.features.game.presentation.models.ScoreAnimationPayload
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch

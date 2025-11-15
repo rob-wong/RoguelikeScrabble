@@ -48,6 +48,7 @@ class GameScreenReducerImpl : GameScreenReducer {
 			roundsRemainingState = mapRoundsRemaining(action),
 			discardsRemainingState = mapDiscardsRemaining(action),
 			enemyHealthBarState = mapEnemyHealthBar(action),
+			effects = action.effects,
 		)
 	}
 

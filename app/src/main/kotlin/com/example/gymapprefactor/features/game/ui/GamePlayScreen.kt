@@ -12,6 +12,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.example.gymapprefactor.app.util.DevicePreviews
+import com.example.gymapprefactor.business.models.DefaultEffect
 import com.example.gymapprefactor.common.components.buttons.presentation.IconButtonState
 import com.example.gymapprefactor.common.components.buttons.ui.ButtonRouter
 import com.example.gymapprefactor.common.components.presentation.BagState
@@ -26,7 +27,7 @@ import com.example.gymapprefactor.features.game.presentation.models.GameScreenSt
 import com.example.gymapprefactor.features.game.presentation.models.InputButtonState
 import com.example.gymapprefactor.features.game.presentation.models.components.DiscardsRemainingState
 import com.example.gymapprefactor.features.game.presentation.models.components.EnemyHealthBarState
-import com.example.gymapprefactor.features.game.presentation.viewmodel.ScoreAnimationPayload
+import com.example.gymapprefactor.features.game.presentation.models.ScoreAnimationPayload
 import com.example.gymapprefactor.features.game.presentation.models.components.RoundsRemainingState
 import com.example.gymapprefactor.features.game.ui.components.EnemyHealthBarRouter
 
@@ -150,6 +151,12 @@ private fun GamePlayScreenPreview() {
 				label = "ENEMY",
 				currentHealth = 15000,
 				maxHealth = 30000
+			),
+			effects = listOf(
+				DefaultEffect(
+					id = "f",
+					label = "EFFECT"
+				)
 			)
 		),
 		invalidWordTrigger = false,
