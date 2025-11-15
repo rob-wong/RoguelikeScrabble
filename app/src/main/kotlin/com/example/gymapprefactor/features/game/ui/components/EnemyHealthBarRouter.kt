@@ -301,11 +301,20 @@ private fun formatNumber(number: Int): String {
 @Preview
 @Composable
 private fun EnemyHealthBarRouterPreview() {
-	EnemyHealthBarRouter(
-		state = EnemyHealthBarState.Content(
-			label = "ENEMY",
-			currentHealth = 15000,
-			maxHealth = 30000
+	Column {
+		EnemyHealthBarRouter(
+			state = EnemyHealthBarState.Content(
+				label = "ENEMY",
+				currentHealth = 15000,
+				maxHealth = 30000
+			)
 		)
-	)
+		EnemyHealthBarRouter(
+			state = EnemyHealthBarState.Content(
+				label = "ENEMY",
+				currentHealth = 15000000,
+				maxHealth = 30000000
+			)
+		)
+	}
 }

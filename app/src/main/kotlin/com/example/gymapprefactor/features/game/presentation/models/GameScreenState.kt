@@ -2,6 +2,7 @@ package com.example.gymapprefactor.features.game.presentation.models
 
 import androidx.compose.ui.geometry.Offset
 import com.example.gymapprefactor.business.interfaces.State
+import com.example.gymapprefactor.business.models.Effect
 import com.example.gymapprefactor.common.components.buttons.presentation.ButtonState
 import com.example.gymapprefactor.common.components.presentation.BagState
 import com.example.gymapprefactor.common.components.presentation.LetterState
@@ -21,6 +22,7 @@ sealed class GameScreenState : State {
 		val roundsRemainingState: RoundsRemainingState,
 		val discardsRemainingState: DiscardsRemainingState,
 		val enemyHealthBarState: EnemyHealthBarState,
+		val effects: List<Effect>,
 	): GameScreenState()
 
 	data object None : GameScreenState()

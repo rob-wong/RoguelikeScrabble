@@ -16,13 +16,13 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.wrapContentWidth
-import androidx.compose.ui.Alignment
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshots.SnapshotStateList
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.input.pointer.pointerInput
@@ -36,9 +36,9 @@ import com.example.gymapprefactor.common.components.buttons.ui.ButtonRouter
 import com.example.gymapprefactor.common.components.ui.BagRouter
 import com.example.gymapprefactor.common.components.ui.LetterRouter
 import com.example.gymapprefactor.features.game.presentation.models.GameScreenState
-import com.example.gymapprefactor.features.game.presentation.viewmodel.ScoreAnimationPayload
-import com.example.gymapprefactor.features.game.ui.InputButtonRouter
+import com.example.gymapprefactor.features.game.presentation.models.ScoreAnimationPayload
 import com.example.gymapprefactor.features.game.ui.components.DiscardsRemainingRouter
+import com.example.gymapprefactor.features.game.ui.components.EffectsColumn
 import com.example.gymapprefactor.features.game.ui.components.RoundsRemainingRouter
 import kotlinx.coroutines.sync.Mutex
 import kotlin.math.roundToInt
@@ -157,25 +157,26 @@ private fun LetterBoardContent(
 	holdingAreaShakeOffset: Animatable<Float, androidx.compose.animation.core.AnimationVector1D>,
 	gridColumns: Int
 ) {
-	Column(modifier = Modifier.fillMaxSize()) {
-		// Rounds and discards remaining on the right side above scoring lane
-		Box(modifier = Modifier.fillMaxWidth()) {
-			Column(
-				modifier = Modifier
-					.align(Alignment.TopEnd)
-					.padding(top = 8.dp, end = 8.dp)
-			) {
-				RoundsRemainingRouter(
-					state = state.roundsRemainingState,
-					modifier = Modifier.wrapContentWidth()
-				)
-				Spacer(modifier = Modifier.height(4.dp))
-				DiscardsRemainingRouter(
-					state = state.discardsRemainingState,
-					modifier = Modifier.wrapContentWidth()
-				)
+	Box(modifier = Modifier.fillMaxSize()) {
+		Column(modifier = Modifier.fillMaxSize()) {
+			// Rounds and discards remaining on the right side above scoring lane
+			Box(modifier = Modifier.fillMaxWidth()) {
+				Column(
+					modifier = Modifier
+						.align(Alignment.TopEnd)
+						.padding(top = 8.dp, end = 8.dp)
+				) {
+					RoundsRemainingRouter(
+						state = state.roundsRemainingState,
+						modifier = Modifier.wrapContentWidth()
+					)
+					Spacer(modifier = Modifier.height(4.dp))
+					DiscardsRemainingRouter(
+						state = state.discardsRemainingState,
+						modifier = Modifier.wrapContentWidth()
+					)
+				}
 			}
-		}
 
 		ScoreLane(scoreState = scoreState)
 
@@ -210,6 +211,15 @@ private fun LetterBoardContent(
 				Modifier.size(80.dp, 40.dp)
 			)
 		}
+		}
+		
+		// Effects column on the left side
+		EffectsColumn(
+			effects = state.effects,
+			modifier = Modifier
+				.align(Alignment.TopStart)
+				.padding(top = 8.dp, start = 8.dp)
+		)
 	}
 }
 

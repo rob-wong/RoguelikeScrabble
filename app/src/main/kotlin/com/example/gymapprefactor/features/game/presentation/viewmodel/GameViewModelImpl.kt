@@ -15,6 +15,7 @@ import com.example.gymapprefactor.common.components.presentation.state.Backgroun
 import com.example.gymapprefactor.features.dialogs.presentation.models.DialogAction
 import com.example.gymapprefactor.features.dialogs.presentation.state.DialogReducer
 import com.example.gymapprefactor.features.game.presentation.models.GameScreenAction
+import com.example.gymapprefactor.features.game.presentation.models.ScoreAnimationPayload
 import com.example.gymapprefactor.features.game.presentation.state.GameScreenReducer
 import com.example.gymapprefactor.features.navigation.presentation.models.NavigationAction
 import com.example.gymapprefactor.features.navigation.presentation.models.NavigationPage
@@ -98,6 +99,7 @@ class GameViewModelImpl @Inject constructor(
 				enemyHealth = activeGameState.currentRound.enemyHealth,
 				enemyMaxHealth = enemyMaxHealth,
 				enemyLabel = enemyLabel,
+				effects = activeGameState.currentRound.effects,
 			))
 		}
 	}

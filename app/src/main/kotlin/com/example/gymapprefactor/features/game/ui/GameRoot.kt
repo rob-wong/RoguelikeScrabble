@@ -13,7 +13,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.gymapprefactor.features.game.presentation.models.GameScreenState
 import com.example.gymapprefactor.features.game.presentation.models.GameScreenState.None
 import com.example.gymapprefactor.features.game.presentation.viewmodel.GameViewModelImpl
-import com.example.gymapprefactor.features.game.presentation.viewmodel.ScoreAnimationPayload
+import com.example.gymapprefactor.features.game.presentation.models.ScoreAnimationPayload
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 

@@ -1,6 +1,7 @@
 package com.example.gymapprefactor.features.game.presentation.models
 
 import com.example.gymapprefactor.business.interfaces.Action
+import com.example.gymapprefactor.business.models.Effect
 import com.example.gymapprefactor.business.models.Letter
 
 sealed class GameScreenAction : Action {
@@ -19,6 +20,7 @@ sealed class GameScreenAction : Action {
 		val enemyHealth: Int,
 		val enemyMaxHealth: Int,
 		val enemyLabel: String,
+		val effects: List<Effect>,
 	) : GameScreenAction()
 
 	data object None : GameScreenAction()
