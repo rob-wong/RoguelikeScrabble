@@ -42,7 +42,7 @@ class AppDataModel @Inject constructor(
             runesCount = 100,
             decks = listOf(createDefaultDeck()),
             unlockedEffects = listOf(),
-            gameState = NoneGameState()
+			gameState = NoneGameState
         )
 
         return userStorage.saveUser(newUser)
