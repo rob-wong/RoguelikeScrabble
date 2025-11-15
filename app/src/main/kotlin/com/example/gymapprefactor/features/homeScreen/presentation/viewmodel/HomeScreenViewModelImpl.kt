@@ -2,9 +2,6 @@ package com.example.gymapprefactor.features.homeScreen.presentation.viewmodel
 
 import androidx.lifecycle.viewModelScope
 import com.example.gymapprefactor.app.util.dispatcher.DispatcherProvider
-import com.example.gymapprefactor.common.components.presentation.ScreenBackgroundState
-import com.example.gymapprefactor.common.components.presentation.models.BackgroundAction
-import com.example.gymapprefactor.common.components.presentation.state.BackgroundReducer
 import com.example.gymapprefactor.features.homeScreen.presentation.models.HomeScreenAction
 import com.example.gymapprefactor.features.homeScreen.presentation.state.HomeScreenReducer
 import com.example.gymapprefactor.features.navigation.presentation.models.NavigationAction
@@ -18,20 +15,12 @@ import javax.inject.Inject
 class HomeScreenViewModelImpl @Inject constructor(
     private val homeScreenReducer: HomeScreenReducer,
     private val navigationReducer: NavigationReducer,
-    private val backgroundReducer: BackgroundReducer,
     private val dispatcherProvider: DispatcherProvider,
 ) : HomeScreenViewModel() {
     override val state = homeScreenReducer.state
 
     init {
-        setBackground()
         setContent()
-    }
-
-    private fun setBackground() {
-        viewModelScope.launch(dispatcherProvider.main) {
-            backgroundReducer.update(BackgroundAction.SetBackground(ScreenBackgroundState.Home))
-        }
     }
 
     private fun setContent() {
