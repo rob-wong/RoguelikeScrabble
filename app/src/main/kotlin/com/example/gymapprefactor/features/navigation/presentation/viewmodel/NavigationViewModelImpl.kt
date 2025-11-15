@@ -2,6 +2,9 @@ package com.example.gymapprefactor.features.navigation.presentation.viewmodel
 
 import androidx.lifecycle.viewModelScope
 import com.example.gymapprefactor.app.util.dispatcher.DispatcherProvider
+import com.example.gymapprefactor.common.components.presentation.ScreenBackgroundState
+import com.example.gymapprefactor.common.components.presentation.models.BackgroundAction
+import com.example.gymapprefactor.common.components.presentation.state.BackgroundReducer
 import com.example.gymapprefactor.features.navigation.presentation.models.NavigationAction
 import com.example.gymapprefactor.features.navigation.presentation.models.NavigationPage
 import com.example.gymapprefactor.features.navigation.presentation.models.NavigationState
@@ -13,6 +16,7 @@ import javax.inject.Inject
 @HiltViewModel
 class NavigationViewModelImpl @Inject constructor(
     private val navigationReducer: NavigationReducer,
+    private val backgroundReducer: BackgroundReducer,
     private val dispatcherProvider: DispatcherProvider,
 ) : NavigationViewModel() {
 
@@ -47,6 +51,7 @@ class NavigationViewModelImpl @Inject constructor(
     private fun onPageChange(state: NavigationState.CurrentPage) {
         val index = findIndexForPageInStack(state.page)
         addPageToBackStack(page = state.page, newIndex = index)
+        setBackgroundForPage(state.page)
         sendGoToAction(state.page)
         println(navigationStack.toString())
     }
@@ -89,6 +94,22 @@ class NavigationViewModelImpl @Inject constructor(
     private fun sendGoToAction(page: NavigationPage) {
         viewModelScope.launch(dispatcherProvider.main) {
             navigationReducer.update(NavigationAction.GoTo(page))
+        }
+    }
+
+    private fun setBackgroundForPage(page: NavigationPage) {
+        val backgroundState = mapPageToBackground(page)
+        viewModelScope.launch(dispatcherProvider.main) {
+            backgroundReducer.update(BackgroundAction.SetBackground(backgroundState))
+        }
+    }
+
+    private fun mapPageToBackground(page: NavigationPage): ScreenBackgroundState {
+        return when (page) {
+            is NavigationPage.HomeScreen -> ScreenBackgroundState.Home
+            is NavigationPage.ShopScreen -> ScreenBackgroundState.Shop
+            is NavigationPage.UpgradeScreen -> ScreenBackgroundState.Upgrade
+            is NavigationPage.GameScreen -> ScreenBackgroundState.Game
         }
     }
 }

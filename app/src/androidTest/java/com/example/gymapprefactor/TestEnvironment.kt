@@ -60,6 +60,6 @@ object TestEnvironment {
 		runesCount = 777,
 		decks = emptyList(),
 		unlockedEffects = emptyList(),
-		gameState = NoneGameState()
+		gameState = NoneGameState
 	)
 }

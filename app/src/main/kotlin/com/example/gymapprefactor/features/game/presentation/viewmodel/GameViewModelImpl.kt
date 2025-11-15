@@ -9,9 +9,6 @@ import com.example.gymapprefactor.business.gameplayLoop.domain.GameRules
 import com.example.gymapprefactor.business.gameplayLoop.domain.ScoredWordResult
 import com.example.gymapprefactor.business.gameplayLoop.domain.mappers.EnemyCreationMapper
 import com.example.gymapprefactor.business.models.ActiveGameState
-import com.example.gymapprefactor.common.components.presentation.ScreenBackgroundState
-import com.example.gymapprefactor.common.components.presentation.models.BackgroundAction
-import com.example.gymapprefactor.common.components.presentation.state.BackgroundReducer
 import com.example.gymapprefactor.features.dialogs.presentation.models.DialogAction
 import com.example.gymapprefactor.features.dialogs.presentation.state.DialogReducer
 import com.example.gymapprefactor.features.game.presentation.models.GameScreenAction
@@ -36,7 +33,6 @@ class GameViewModelImpl @Inject constructor(
 	private val gameScreenReducer: GameScreenReducer,
 	private val gameplayBusinessMediator: GameplayBusinessMediator,
 	private val navigationReducer: NavigationReducer,
-	private val backgroundReducer: BackgroundReducer,
 	private val dispatcherProvider: DispatcherProvider,
 	private val applyScoreToEnemyUseCase: ApplyScoreToEnemyUseCase,
 	private val advanceToNextEnemyUseCase: AdvanceToNextEnemyUseCase,
@@ -53,14 +49,7 @@ class GameViewModelImpl @Inject constructor(
 	private val mutex = Mutex()
 
 	init {
-		setBackground()
 		initGame()
-	}
-
-	private fun setBackground() {
-		viewModelScope.launch(dispatcherProvider.main) {
-			backgroundReducer.update(BackgroundAction.SetBackground(ScreenBackgroundState.Game))
-		}
 	}
 
 	private fun initGame() {
