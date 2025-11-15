@@ -18,6 +18,11 @@ import com.example.gymapprefactor.business.gameplayLoop.domain.GameplayRepositor
 import com.example.gymapprefactor.business.gameplayLoop.domain.GetGameStateUseCase
 import com.example.gymapprefactor.business.gameplayLoop.domain.PlayWordUseCase
 import com.example.gymapprefactor.business.gameplayLoop.domain.SaveGameStateUseCase
+import com.example.gymapprefactor.business.effects.data.EffectsDataSource
+import com.example.gymapprefactor.business.effects.data.EffectsRepositoryImpl
+import com.example.gymapprefactor.business.effects.domain.EffectsRepository
+import com.example.gymapprefactor.business.gameplayLoop.domain.EffectScoreMapper
+import com.example.gymapprefactor.business.gameplayLoop.domain.EffectScoreMapperImpl
 import com.example.gymapprefactor.business.gameplayLoop.domain.ScoreWordMapper
 import com.example.gymapprefactor.business.gameplayLoop.domain.ScoreWordMapperImpl
 import com.example.gymapprefactor.business.gameplayLoop.domain.WordValidityMapper
@@ -96,6 +101,28 @@ object GameplayLoopModule {
 	@Provides
 	fun provideScoreWordMapper(): ScoreWordMapper {
 		return ScoreWordMapperImpl()
+	}
+
+	@Provides
+	fun provideEffectsDataSource(
+		@ApplicationContext context: Context,
+		dispatcherProvider: com.example.gymapprefactor.app.util.dispatcher.DispatcherProvider
+	): EffectsDataSource {
+		return EffectsDataSource(context, dispatcherProvider)
+	}
+
+	@Provides
+	fun provideEffectsRepository(
+		dataSource: EffectsDataSource
+	): EffectsRepository {
+		return EffectsRepositoryImpl(dataSource)
+	}
+
+	@Provides
+	fun provideEffectScoreMapper(
+		effectsRepository: EffectsRepository
+	): EffectScoreMapper {
+		return EffectScoreMapperImpl(effectsRepository)
 	}
 
 	@Provides

@@ -27,13 +27,13 @@ class PlayWordUseCase @Inject constructor(
 				label = wordAsString.uppercase()
 			)
 			
-			// Remove letters from hand, increment round, add word to words played and effects
+			// Remove letters from hand, increment round, add word to words played
+			// NOTE: Do NOT add wordEffect to effects yet - it will be added after animations
 			val gameWithoutLetters = game.copy(
 				currentRound = game.currentRound.copy(
 					hand = game.currentRound.hand.filterNot { letters.contains(it) },
 					round = game.currentRound.round + 1,
 					wordsPlayed = game.currentRound.wordsPlayed + wordAsString,
-					effects = game.currentRound.effects + wordEffect,
 					// TODO enemy health in the enemy update
 				)
 			)
@@ -59,7 +59,8 @@ class PlayWordUseCase @Inject constructor(
 				ScoredWordResult(
 					gameState = savedGame,
 					letterScores = letterScores,
-					letters = letters
+					letters = letters,
+					wordEffect = wordEffect
 				)
 			)
 		} else {

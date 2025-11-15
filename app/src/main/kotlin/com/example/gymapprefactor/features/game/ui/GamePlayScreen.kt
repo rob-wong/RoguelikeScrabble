@@ -27,6 +27,7 @@ import com.example.gymapprefactor.features.game.presentation.models.GameScreenSt
 import com.example.gymapprefactor.features.game.presentation.models.InputButtonState
 import com.example.gymapprefactor.features.game.presentation.models.components.DiscardsRemainingState
 import com.example.gymapprefactor.features.game.presentation.models.components.EnemyHealthBarState
+import com.example.gymapprefactor.features.game.presentation.models.EffectAnimationPayload
 import com.example.gymapprefactor.features.game.presentation.models.ScoreAnimationPayload
 import com.example.gymapprefactor.features.game.presentation.models.components.RoundsRemainingState
 import com.example.gymapprefactor.features.game.ui.components.EnemyHealthBarRouter
@@ -41,6 +42,9 @@ fun GamePlayScreen(
 	scoreBreakdown: ScoreAnimationPayload?,
 	onScoreAnimationConsumed: () -> Unit,
 	onScoreAnimationComplete: () -> Unit,
+	effectAnimations: List<EffectAnimationPayload>?,
+	onEffectAnimationConsumed: () -> Unit,
+	onEffectAnimationComplete: () -> Unit,
 	modifier: Modifier = Modifier,
 ) {
 	Box(modifier.fillMaxSize()) {
@@ -58,6 +62,9 @@ fun GamePlayScreen(
 					scoreBreakdown = scoreBreakdown,
 					onScoreAnimationConsumed = onScoreAnimationConsumed,
 					onScoreAnimationComplete = onScoreAnimationComplete,
+					effectAnimations = effectAnimations,
+					onEffectAnimationConsumed = onEffectAnimationConsumed,
+					onEffectAnimationComplete = onEffectAnimationComplete,
 				)
 			}
 		}
@@ -166,5 +173,8 @@ private fun GamePlayScreenPreview() {
 		scoreBreakdown = null,
 		onScoreAnimationConsumed = { },
 		onScoreAnimationComplete = { },
+		effectAnimations = null,
+		onEffectAnimationConsumed = { },
+		onEffectAnimationComplete = { },
 	)
 }

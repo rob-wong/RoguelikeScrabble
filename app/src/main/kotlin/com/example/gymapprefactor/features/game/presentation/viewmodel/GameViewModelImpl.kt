@@ -4,13 +4,16 @@ import androidx.lifecycle.viewModelScope
 import com.example.gymapprefactor.app.util.dispatcher.DispatcherProvider
 import com.example.gymapprefactor.business.gameplayLoop.domain.AdvanceToNextEnemyUseCase
 import com.example.gymapprefactor.business.gameplayLoop.domain.ApplyScoreToEnemyUseCase
+import com.example.gymapprefactor.business.gameplayLoop.domain.EffectScoreMapper
 import com.example.gymapprefactor.business.gameplayLoop.domain.GameplayBusinessMediator
 import com.example.gymapprefactor.business.gameplayLoop.domain.GameRules
 import com.example.gymapprefactor.business.gameplayLoop.domain.ScoredWordResult
 import com.example.gymapprefactor.business.gameplayLoop.domain.mappers.EnemyCreationMapper
 import com.example.gymapprefactor.business.models.ActiveGameState
+import com.example.gymapprefactor.business.models.Effect
 import com.example.gymapprefactor.features.dialogs.presentation.models.DialogAction
 import com.example.gymapprefactor.features.dialogs.presentation.state.DialogReducer
+import com.example.gymapprefactor.features.game.presentation.models.EffectAnimationPayload
 import com.example.gymapprefactor.features.game.presentation.models.GameScreenAction
 import com.example.gymapprefactor.features.game.presentation.models.ScoreAnimationPayload
 import com.example.gymapprefactor.features.game.presentation.state.GameScreenReducer
@@ -38,6 +41,7 @@ class GameViewModelImpl @Inject constructor(
 	private val advanceToNextEnemyUseCase: AdvanceToNextEnemyUseCase,
 	private val gameRules: GameRules,
 	private val enemyCreationMapper: EnemyCreationMapper,
+	private val effectScoreMapper: EffectScoreMapper,
 ) : GameViewModel() {
 	override val state = gameScreenReducer.state
 
@@ -45,6 +49,8 @@ class GameViewModelImpl @Inject constructor(
 	val invalidWordEvent = MutableSharedFlow<Unit>()
 	val scoreEvent = MutableSharedFlow<ScoreAnimationPayload>()
 	val scoreAnimationComplete = MutableSharedFlow<Unit>()
+	val effectAnimationEvent = MutableSharedFlow<List<EffectAnimationPayload>>()
+	val effectAnimationComplete = MutableSharedFlow<Unit>()
 	val levelAdvanceShakeTrigger = MutableSharedFlow<Unit>()
 	private val mutex = Mutex()
 
@@ -143,17 +149,13 @@ class GameViewModelImpl @Inject constructor(
 	private suspend fun handleScoredWord(result: ScoredWordResult) {
 		println("GameViewModelImpl.handleScoredWord -> scores=${result.letterScores}")
 		activeGameState = result.gameState
-		val totalScore = result.letterScores.sumOf { it.second }
+		val rawScore = result.letterScores.sumOf { it.second }
 		
-		scoreEvent.emit(
-			ScoreAnimationPayload(
-				letterScores = result.letterScores,
-				letters = result.letters
-			)
-		)
-		scoreAnimationComplete.first()
-
-		activeGameState = applyScoreToEnemyUseCase(totalScore, activeGameState)
+		emitScoreAnimation(result)
+		val finalScore = processEffectsAndEmitAnimations(rawScore)
+		applyFinalScore(finalScore)
+		// Add word effect to game state after animations complete
+		addWordEffectToGameState(result.wordEffect)
 
 		val isWon = gameRules.checkWinCondition(activeGameState)
 		val isLost = gameRules.checkLossCondition(activeGameState) && !isWon
@@ -206,6 +208,60 @@ class GameViewModelImpl @Inject constructor(
 		} else {
 			"ENEMY"
 		}
+	}
+
+	private suspend fun emitScoreAnimation(result: ScoredWordResult) {
+		scoreEvent.emit(
+			ScoreAnimationPayload(
+				letterScores = result.letterScores,
+				letters = result.letters
+			)
+		)
+		scoreAnimationComplete.first()
+	}
+
+	private suspend fun processEffectsAndEmitAnimations(rawScore: Int): Int {
+		val combinedEffects = activeGameState.activeGameValues.effects + 
+			activeGameState.currentRound.effects
+		val effectModifications = effectScoreMapper.map(
+			EffectScoreMapper.Param(
+				effects = combinedEffects,
+				rawScore = rawScore
+			)
+		)
+
+		var cumulativeScore = rawScore
+		val effectAnimations = effectModifications.map { modification ->
+			cumulativeScore += modification.scoreDelta
+			EffectAnimationPayload(
+				effectId = modification.effectId,
+				effectLabel = modification.effectLabel,
+				scoreDelta = modification.scoreDelta,
+				orderIndex = modification.orderIndex,
+				cumulativeScore = cumulativeScore
+			)
+		}
+
+		if (effectAnimations.isNotEmpty()) {
+			effectAnimationEvent.emit(effectAnimations)
+			effectAnimationComplete.first()
+		}
+
+		return cumulativeScore
+	}
+
+	private suspend fun applyFinalScore(finalScore: Int) {
+		activeGameState = applyScoreToEnemyUseCase(finalScore, activeGameState)
+	}
+
+	private suspend fun addWordEffectToGameState(wordEffect: Effect) {
+		activeGameState = activeGameState.copy(
+			currentRound = activeGameState.currentRound.copy(
+				effects = activeGameState.currentRound.effects + wordEffect
+			)
+		)
+		activeGameState = gameplayBusinessMediator.saveGameState(activeGameState)
+		updateGame()
 	}
 
 	private suspend fun triggerGameLostDialog() {

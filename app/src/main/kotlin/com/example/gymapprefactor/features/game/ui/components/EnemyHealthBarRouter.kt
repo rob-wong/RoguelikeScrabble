@@ -38,6 +38,7 @@ import com.example.gymapprefactor.ui.theme.HealthBarRed
 import com.example.gymapprefactor.ui.theme.HealthBarYellow
 import com.example.gymapprefactor.ui.theme.OffWhite
 import com.example.gymapprefactor.ui.theme.common
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.launch
 import java.util.Locale
@@ -184,7 +185,7 @@ private fun HandleDamageAnimations(
 	previousHealth: Int,
 	shakeOffset: Animatable<Float, *>,
 	flashAlpha: Animatable<Float, *>,
-	scope: kotlinx.coroutines.CoroutineScope,
+	scope: CoroutineScope,
 	onHealthUpdated: (Int) -> Unit
 ) {
 	LaunchedEffect(currentHealth) {

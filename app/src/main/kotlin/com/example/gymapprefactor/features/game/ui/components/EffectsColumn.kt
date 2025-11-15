@@ -1,22 +1,29 @@
 package com.example.gymapprefactor.features.game.ui.components
 
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import com.example.gymapprefactor.app.util.DeviceUtil
 import com.example.gymapprefactor.business.models.Effect
 import com.example.gymapprefactor.common.components.ui.OutlinedText
-import com.example.gymapprefactor.ui.theme.common
+import com.example.gymapprefactor.features.game.ui.EffectAnimationState
+import kotlin.math.roundToInt
 
 @Composable
 fun EffectsColumn(
 	effects: List<Effect>,
+	effectState: EffectAnimationState?,
 	modifier: Modifier = Modifier,
 ) {
 	LazyColumn(
@@ -28,14 +35,38 @@ fun EffectsColumn(
 			items = effects,
 			key = { effect -> effect.id }
 		) { effect ->
-			OutlinedText(
-				text = effect.label,
-				textAlign = TextAlign.Center,
-				textStyle = common,
-				outlineWidth = 5,
-				useGlow = false,
-				modifier = Modifier.padding(vertical = 4.dp)
-			)
+			val shake = effectState?.effectShakeMap?.get(effect.id)?.value ?: 0f
+			val scoreAlpha = effectState?.effectScoreAlphaMap?.get(effect.id)?.value ?: 0f
+			val scoreDelta = effectState?.effectScoreValueMap?.get(effect.id)
+
+			Row(
+				modifier = Modifier
+					.padding(vertical = 4.dp)
+					.offset { IntOffset(shake.roundToInt(), 0) },
+				verticalAlignment = Alignment.CenterVertically
+			) {
+				OutlinedText(
+					text = effect.label,
+					textAlign = TextAlign.Center,
+					textStyle = com.example.gymapprefactor.ui.theme.common,
+					outlineWidth = 5,
+					useGlow = false
+				)
+				if (scoreDelta != null && scoreAlpha > 0f) {
+					OutlinedText(
+						text = "+$scoreDelta",
+						textAlign = TextAlign.Center,
+						textStyle = com.example.gymapprefactor.ui.theme.common.copy(
+							fontSize = com.example.gymapprefactor.ui.theme.common.fontSize * 0.8f
+						),
+						outlineWidth = 4,
+						useGlow = false,
+						modifier = Modifier
+							.graphicsLayer(alpha = scoreAlpha)
+							.padding(start = 8.dp)
+					)
+				}
+			}
 		}
 	}
 }
