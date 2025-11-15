@@ -3,6 +3,7 @@ package com.example.gymapprefactor.features.game.ui
 import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.AnimationVector1D
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.runtime.mutableStateOf
@@ -16,7 +17,7 @@ internal class ScoreAnimationState(
 	val scoreValueMap: MutableMap<String, Int>,
 	val scoreAlphaMap: MutableMap<String, Animatable<Float, AnimationVector1D>>,
 	val scoreShakeMap: MutableMap<String, Animatable<Float, AnimationVector1D>>,
-	val totalScoreState: androidx.compose.runtime.MutableState<Int?>,
+	val totalScoreState: MutableState<Int?>,
 	val totalScoreAlpha: Animatable<Float, AnimationVector1D>,
 	val totalScoreShake: Animatable<Float, AnimationVector1D>,
 	val scoredLetters: MutableMap<String, Letter>,

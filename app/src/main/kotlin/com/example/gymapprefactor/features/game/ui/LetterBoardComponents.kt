@@ -73,6 +73,7 @@ internal fun LetterBoardTopBar(
 @Composable
 internal fun ScoreLane(
 	scoreState: ScoreAnimationState,
+	effectState: EffectAnimationState?,
 	modifier: Modifier = Modifier
 ) {
 	Box(
@@ -120,8 +121,10 @@ internal fun ScoreLane(
 			}
 		}
 
-		scoreState.totalScore?.let { total ->
-			TotalScoreDisplay(total, scoreState)
+		// Show total score from effectState if available, otherwise from scoreState
+		val totalScore = effectState?.totalScore ?: scoreState.totalScore
+		totalScore?.let { total ->
+			TotalScoreDisplay(total, scoreState, effectState)
 		}
 	}
 }
@@ -129,19 +132,23 @@ internal fun ScoreLane(
 @Composable
 private fun BoxScope.TotalScoreDisplay(
 	total: Int,
-	scoreState: ScoreAnimationState
+	scoreState: ScoreAnimationState,
+	effectState: EffectAnimationState?
 ) {
 	val totalFontLevel = scoreState.orderedScoredLetters.maxOfOrNull {
 		scoreState.scoredLetters[it.id]?.level ?: 1
 	} ?: 1
+	val shakeOffset = effectState?.totalScoreShake?.value ?: scoreState.totalScoreShake.value
+	// Always use scoreState's alpha - it's kept at 1f after initial animation and during effects
+	val alpha = scoreState.totalScoreAlpha.value
 	OutlinedText(
 		text = "+$total",
 		textAlign = TextAlign.Center,
 		textStyle = letterFontRouter(totalFontLevel),
 		modifier = Modifier
 			.align(Alignment.Center)
-			.offset { IntOffset(scoreState.totalScoreShake.value.roundToInt(), 0) }
-			.graphicsLayer(alpha = scoreState.totalScoreAlpha.value),
+			.offset { IntOffset(shakeOffset.roundToInt(), 0) }
+			.graphicsLayer(alpha = alpha),
 		outlineWidth = 7,
 		useGlow = false
 	)

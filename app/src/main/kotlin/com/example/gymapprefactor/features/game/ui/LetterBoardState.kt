@@ -1,6 +1,8 @@
 package com.example.gymapprefactor.features.game.ui
 
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateMapOf
 import androidx.compose.runtime.mutableStateOf
@@ -15,11 +17,11 @@ internal class LetterBoardState(
 	val playedLetters: SnapshotStateList<GameScreenState.DraggableLetter>,
 	val slotPositions: MutableMap<String, Offset>,
 	val letterAreaMap: MutableMap<String, Area>,
-	val placeholderIndexState: androidx.compose.runtime.MutableState<Int?>,
-	val playedBoundsState: androidx.compose.runtime.MutableState<Rect?>,
-	val holdingBoundsState: androidx.compose.runtime.MutableState<Rect?>,
-	val rootOffsetState: androidx.compose.runtime.MutableState<Offset>,
-	val draggingLetterIdState: androidx.compose.runtime.MutableState<String?>,
+	val placeholderIndexState: MutableState<Int?>,
+	val playedBoundsState: MutableState<Rect?>,
+	val holdingBoundsState: MutableState<Rect?>,
+	val rootOffsetState: MutableState<Offset>,
+	val draggingLetterIdState: MutableState<String?>,
 	val rowBoundsMap: MutableMap<Int, Rect>,
 	val tileWidthPx: Float,
 ) {
@@ -61,7 +63,7 @@ internal fun rememberLetterBoardState(
 	val rowBoundsMap = remember { mutableStateMapOf<Int, Rect>() }
 
 	// Update holding letters when initial letters change
-	androidx.compose.runtime.LaunchedEffect(initialLetters) {
+	LaunchedEffect(initialLetters) {
 		holdingLetters.clear()
 		holdingLetters.addAll(initialLetters.map { it.copy() })
 		playedLetters.clear()

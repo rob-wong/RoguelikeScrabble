@@ -4,6 +4,7 @@ import androidx.compose.animation.core.Animatable
 import androidx.compose.animation.core.tween
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.ui.geometry.Offset
 import com.example.gymapprefactor.common.components.presentation.DeckType
 import com.example.gymapprefactor.common.components.presentation.LetterState
 import com.example.gymapprefactor.features.game.presentation.models.GameScreenState
@@ -38,13 +39,14 @@ internal fun ScoreAnimationHandler(
 		if (filteredScores.isEmpty()) {
 			println("LetterBoard: filteredScores empty, skipping animation")
 			onScoreAnimationConsumed()
-			clearScoreState(scoreState)
+			clearLetterScoreState(scoreState)
 			return@LaunchedEffect
 		}
 
 		animateLetterScores(filteredScores, scoreState)
 		animateTotalScore(scoreState)
-		clearScoreState(scoreState)
+		// Don't clear totalScore - let it persist for effect animations
+		clearLetterScoreState(scoreState)
 
 		onScoreAnimationConsumed()
 		onScoreAnimationComplete()
@@ -72,7 +74,7 @@ private fun initializeScoreState(
 			)
 		)
 		scoreState.scoreLetterPositions[letter.id] =
-			boardState.slotPositions[letter.id] ?: androidx.compose.ui.geometry.Offset.Zero
+			boardState.slotPositions[letter.id] ?: Offset.Zero
 	}
 }
 
@@ -145,12 +147,11 @@ private suspend fun animateTotalScore(scoreState: ScoreAnimationState) {
 		scoreState.totalScoreShake.animateTo(-14f, tween(durationMillis = 90))
 	}
 	scoreState.totalScoreShake.animateTo(0f, tween(durationMillis = 90))
-	delay(300L)
-	scoreState.totalScoreAlpha.animateTo(0f, tween(durationMillis = 200))
+	// Keep alpha at 1f - don't fade out, effects will update the score
 }
 
-private fun clearScoreState(scoreState: ScoreAnimationState) {
-	scoreState.totalScore = null
+private fun clearLetterScoreState(scoreState: ScoreAnimationState) {
+	// Clear letter-specific score state, but keep totalScore for effect animations
 	scoreState.scoreValueMap.clear()
 	scoreState.orderedScoredLetters.clear()
 	scoreState.scoreLetterPositions.clear()

@@ -2,18 +2,21 @@ package com.example.gymapprefactor.features.game.ui
 
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.example.gymapprefactor.features.game.presentation.models.EffectAnimationPayload
 import com.example.gymapprefactor.features.game.presentation.models.GameScreenState
 import com.example.gymapprefactor.features.game.presentation.models.GameScreenState.None
-import com.example.gymapprefactor.features.game.presentation.viewmodel.GameViewModelImpl
 import com.example.gymapprefactor.features.game.presentation.models.ScoreAnimationPayload
+import com.example.gymapprefactor.features.game.presentation.viewmodel.GameViewModelImpl
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
 
@@ -28,20 +31,116 @@ fun GameRoot(
 		None
 	)
 
+	val animationQueues = rememberAnimationQueues()
+	val coroutineScope = rememberCoroutineScope()
+
+	setupEventCollectors(viewModel, animationQueues)
+
+	val callbacks = createAnimationCallbacks(
+		animationQueues.invalidWordTrigger,
+		animationQueues.levelAdvanceShakeTrigger,
+		animationQueues.scoreQueue,
+		animationQueues.effectAnimationQueue,
+		coroutineScope,
+		viewModel
+	)
+	val activeScoreAnimation = animationQueues.scoreQueue.firstOrNull()
+	val activeEffectAnimations = animationQueues.effectAnimationQueue.firstOrNull()
+
+	when (val state = screenState) {
+		is GameScreenState.Playing ->
+			GamePlayScreen(
+				state = state,
+				invalidWordTrigger = animationQueues.invalidWordTrigger.value,
+				onInvalidWordConsumed = callbacks.invalidWordConsumed,
+				levelAdvanceShakeTrigger = animationQueues.levelAdvanceShakeTrigger.value,
+				onLevelAdvanceShakeConsumed = callbacks.levelAdvanceShakeConsumed,
+				scoreBreakdown = activeScoreAnimation,
+				onScoreAnimationConsumed = callbacks.scoreAnimationConsumed,
+				onScoreAnimationComplete = callbacks.scoreAnimationComplete,
+				effectAnimations = activeEffectAnimations,
+				onEffectAnimationConsumed = callbacks.effectAnimationConsumed,
+				onEffectAnimationComplete = callbacks.effectAnimationComplete,
+				modifier = modifier
+			)
+		is None -> Unit
+	}
+}
+
+private data class AnimationCallbacks(
+	val invalidWordConsumed: () -> Unit,
+	val levelAdvanceShakeConsumed: () -> Unit,
+	val scoreAnimationConsumed: () -> Unit,
+	val scoreAnimationComplete: () -> Unit,
+	val effectAnimationConsumed: () -> Unit,
+	val effectAnimationComplete: () -> Unit
+)
+
+@Composable
+private fun createAnimationCallbacks(
+	invalidWordTrigger: MutableState<Boolean>,
+	levelAdvanceShakeTrigger: MutableState<Boolean>,
+	scoreQueue: MutableList<ScoreAnimationPayload>,
+	effectAnimationQueue: MutableList<List<EffectAnimationPayload>>,
+	coroutineScope: CoroutineScope,
+	viewModel: GameViewModelImpl
+): AnimationCallbacks {
+	return AnimationCallbacks(
+		invalidWordConsumed = { invalidWordTrigger.value = false },
+		levelAdvanceShakeConsumed = { levelAdvanceShakeTrigger.value = false },
+		scoreAnimationConsumed = {
+			if (scoreQueue.isNotEmpty()) {
+				scoreQueue.removeAt(0)
+			}
+		},
+		scoreAnimationComplete = {
+			coroutineScope.launch {
+				viewModel.scoreAnimationComplete.emit(Unit)
+			}
+		},
+		effectAnimationConsumed = {
+			if (effectAnimationQueue.isNotEmpty()) {
+				effectAnimationQueue.removeAt(0)
+			}
+		},
+		effectAnimationComplete = {
+			coroutineScope.launch {
+				viewModel.effectAnimationComplete.emit(Unit)
+			}
+		}
+	)
+}
+
+private data class AnimationQueues(
+	val invalidWordTrigger: MutableState<Boolean>,
+	val levelAdvanceShakeTrigger: MutableState<Boolean>,
+	val scoreQueue: MutableList<ScoreAnimationPayload>,
+	val effectAnimationQueue: MutableList<List<EffectAnimationPayload>>
+)
+
+@Composable
+private fun rememberAnimationQueues(): AnimationQueues {
 	val invalidWordTrigger = remember { mutableStateOf(false) }
 	val levelAdvanceShakeTrigger = remember { mutableStateOf(false) }
 	val scoreQueue = remember { mutableStateListOf<ScoreAnimationPayload>() }
-	val coroutineScope = rememberCoroutineScope()
+	val effectAnimationQueue = remember { mutableStateListOf<List<EffectAnimationPayload>>() }
+	return AnimationQueues(invalidWordTrigger, levelAdvanceShakeTrigger, scoreQueue, effectAnimationQueue)
+}
 
+@Composable
+private fun setupEventCollectors(
+	viewModel: GameViewModelImpl,
+	animationQueues: AnimationQueues
+) {
 	LaunchedEffect(Unit) {
 		viewModel.invalidWordEvent.collectLatest {
-			invalidWordTrigger.value = true
+			animationQueues.invalidWordTrigger.value = true
 		}
 	}
 
 	LaunchedEffect(Unit) {
 		viewModel.levelAdvanceShakeTrigger.collectLatest {
-			levelAdvanceShakeTrigger.value = true
+			animationQueues.levelAdvanceShakeTrigger.value = true
 		}
 	}
 
@@ -49,38 +148,14 @@ fun GameRoot(
 		viewModel.scoreEvent.collectLatest { payload ->
 			println("GameRoot: received score payload size=${payload.letterScores.size} " +
 					"ids=${payload.letterScores.map { it.first }}")
-			scoreQueue.add(payload)
+			animationQueues.scoreQueue.add(payload)
 		}
 	}
 
-	val invalidWordConsumed: () -> Unit = { invalidWordTrigger.value = false }
-	val levelAdvanceShakeConsumed: () -> Unit = { levelAdvanceShakeTrigger.value = false }
-	val scoreAnimationConsumed: () -> Unit = {
-		if (scoreQueue.isNotEmpty()) {
-			scoreQueue.removeAt(0)
+	LaunchedEffect(Unit) {
+		viewModel.effectAnimationEvent.collectLatest { payload ->
+			println("GameRoot: received effect animation payload size=${payload.size}")
+			animationQueues.effectAnimationQueue.add(payload)
 		}
-	}
-	val scoreAnimationComplete: () -> Unit = {
-		coroutineScope.launch {
-			viewModel.scoreAnimationComplete.emit(Unit)
-		}
-	}
-	val activeScoreAnimation = scoreQueue.firstOrNull()
-	println("GameRoot: activeScoreAnimation size=${activeScoreAnimation?.letterScores?.size}")
-
-	when (val state = screenState) {
-		is GameScreenState.Playing ->
-			GamePlayScreen(
-				state = state,
-				invalidWordTrigger = invalidWordTrigger.value,
-				onInvalidWordConsumed = invalidWordConsumed,
-				levelAdvanceShakeTrigger = levelAdvanceShakeTrigger.value,
-				onLevelAdvanceShakeConsumed = levelAdvanceShakeConsumed,
-				scoreBreakdown = activeScoreAnimation,
-				onScoreAnimationConsumed = scoreAnimationConsumed,
-				onScoreAnimationComplete = scoreAnimationComplete,
-				modifier = modifier
-			)
-		is None -> Unit
 	}
 }

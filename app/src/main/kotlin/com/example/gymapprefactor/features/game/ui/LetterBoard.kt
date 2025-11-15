@@ -1,6 +1,7 @@
 package com.example.gymapprefactor.features.game.ui
 
 import androidx.compose.animation.core.Animatable
+import androidx.compose.animation.core.AnimationVector1D
 import androidx.compose.foundation.gestures.detectDragGestures
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Arrangement
@@ -35,8 +36,10 @@ import androidx.compose.ui.zIndex
 import com.example.gymapprefactor.common.components.buttons.ui.ButtonRouter
 import com.example.gymapprefactor.common.components.ui.BagRouter
 import com.example.gymapprefactor.common.components.ui.LetterRouter
+import com.example.gymapprefactor.features.game.presentation.models.EffectAnimationPayload
 import com.example.gymapprefactor.features.game.presentation.models.GameScreenState
 import com.example.gymapprefactor.features.game.presentation.models.ScoreAnimationPayload
+import com.example.gymapprefactor.features.game.presentation.models.components.EnemyHealthBarState
 import com.example.gymapprefactor.features.game.ui.components.DiscardsRemainingRouter
 import com.example.gymapprefactor.features.game.ui.components.EffectsColumn
 import com.example.gymapprefactor.features.game.ui.components.RoundsRemainingRouter
@@ -53,69 +56,151 @@ fun LetterBoard(
 	scoreBreakdown: ScoreAnimationPayload?,
 	onScoreAnimationConsumed: () -> Unit,
 	onScoreAnimationComplete: () -> Unit,
+	effectAnimations: List<EffectAnimationPayload>?,
+	onEffectAnimationConsumed: () -> Unit,
+	onEffectAnimationComplete: () -> Unit,
 	modifier: Modifier = Modifier
 ) {
+	val letterBoardData = rememberLetterBoardData(state.letters)
+	
+	setupLetterBoardAnimations(
+		invalidWordTrigger,
+		onInvalidWordConsumed,
+		levelAdvanceShakeTrigger,
+		onLevelAdvanceShakeConsumed,
+		letterBoardData
+	)
+
+	AnimationHandler(
+		scoreBreakdown = scoreBreakdown,
+		effectAnimations = effectAnimations,
+		scoreState = letterBoardData.scoreState,
+		effectState = letterBoardData.effectState,
+		boardState = letterBoardData.boardState,
+		onScoreAnimationConsumed = onScoreAnimationConsumed,
+		onScoreAnimationComplete = onScoreAnimationComplete,
+		onEffectAnimationConsumed = onEffectAnimationConsumed,
+		onEffectAnimationComplete = onEffectAnimationComplete
+	)
+
+	// Watch for health changes and fade out score when damage is applied
+	val currentHealth = when (val healthState = state.enemyHealthBarState) {
+		is EnemyHealthBarState.Content -> healthState.currentHealth
+		else -> null
+	}
+	ScoreFadeOutOnDamageHandler(
+		currentHealth = currentHealth,
+		scoreState = letterBoardData.scoreState,
+		effectState = letterBoardData.effectState
+	)
+
+	LetterBoardContentBox(
+		state = state,
+		letterBoardData = letterBoardData,
+		modifier = modifier
+	)
+}
+
+private data class LetterBoardData(
+	val boardState: LetterBoardState,
+	val scoreState: ScoreAnimationState,
+	val effectState: EffectAnimationState,
+	val shakeOffset: Animatable<Float, AnimationVector1D>,
+	val holdingAreaShakeOffset: Animatable<Float, AnimationVector1D>,
+	val bagShakeOffset: Animatable<Float, AnimationVector1D>,
+	val shakeMutex: Mutex,
+	val levelAdvanceShakeMutex: Mutex,
+	val gridColumns: Int
+)
+
+@Composable
+private fun rememberLetterBoardData(letters: List<GameScreenState.DraggableLetter>): LetterBoardData {
 	val tileWidthPx = with(LocalDensity.current) { 48.dp.toPx() }
-	val boardState = rememberLetterBoardState(state.letters, tileWidthPx)
+	val boardState = rememberLetterBoardState(letters, tileWidthPx)
 	val scoreState = rememberScoreAnimationState()
+	val effectState = rememberEffectAnimationState()
 	val shakeOffset = remember { Animatable(0f) }
-	val shakeMutex = remember { Mutex() }
 	val holdingAreaShakeOffset = remember { Animatable(0f) }
 	val bagShakeOffset = remember { Animatable(0f) }
+	val shakeMutex = remember { Mutex() }
 	val levelAdvanceShakeMutex = remember { Mutex() }
-	val gridColumns = 5
+	return LetterBoardData(
+		boardState = boardState,
+		scoreState = scoreState,
+		effectState = effectState,
+		shakeOffset = shakeOffset,
+		holdingAreaShakeOffset = holdingAreaShakeOffset,
+		bagShakeOffset = bagShakeOffset,
+		shakeMutex = shakeMutex,
+		levelAdvanceShakeMutex = levelAdvanceShakeMutex,
+		gridColumns = 5
+	)
+}
 
-	println("PlayedLetters: ${boardState.playedLetters.map { it.id }}")
-
+@Composable
+private fun setupLetterBoardAnimations(
+	invalidWordTrigger: Boolean,
+	onInvalidWordConsumed: () -> Unit,
+	levelAdvanceShakeTrigger: Boolean,
+	onLevelAdvanceShakeConsumed: () -> Unit,
+	letterBoardData: LetterBoardData
+) {
 	LetterBoardShakeHandlers(
 		invalidWordTrigger = invalidWordTrigger,
 		onInvalidWordConsumed = onInvalidWordConsumed,
 		levelAdvanceShakeTrigger = levelAdvanceShakeTrigger,
 		onLevelAdvanceShakeConsumed = onLevelAdvanceShakeConsumed,
-		shakeOffset = shakeOffset,
-		shakeMutex = shakeMutex,
-		holdingAreaShakeOffset = holdingAreaShakeOffset,
-		bagShakeOffset = bagShakeOffset,
-		levelAdvanceShakeMutex = levelAdvanceShakeMutex
+		shakeOffset = letterBoardData.shakeOffset,
+		shakeMutex = letterBoardData.shakeMutex,
+		holdingAreaShakeOffset = letterBoardData.holdingAreaShakeOffset,
+		bagShakeOffset = letterBoardData.bagShakeOffset,
+		levelAdvanceShakeMutex = letterBoardData.levelAdvanceShakeMutex
 	)
 
-	ScoreAnimationHandler(
-		scoreBreakdown = scoreBreakdown,
-		scoreState = scoreState,
-		boardState = boardState,
-		onScoreAnimationConsumed = onScoreAnimationConsumed,
-		onScoreAnimationComplete = onScoreAnimationComplete
+	LevelAdvanceShakeHandler(
+		levelAdvanceShakeTrigger = levelAdvanceShakeTrigger,
+		holdingAreaShakeOffset = letterBoardData.holdingAreaShakeOffset,
+		bagShakeOffset = letterBoardData.bagShakeOffset,
+		shakeMutex = letterBoardData.levelAdvanceShakeMutex,
+		onLevelAdvanceShakeConsumed = onLevelAdvanceShakeConsumed
 	)
+}
 
+@Composable
+private fun LetterBoardContentBox(
+	state: GameScreenState.Playing,
+	letterBoardData: LetterBoardData,
+	modifier: Modifier
+) {
 	Box(
 		modifier = modifier
 			.fillMaxSize()
 			.onGloballyPositioned { coords ->
-				boardState.rootOffset = coords.boundsInWindow().topLeft
+				letterBoardData.boardState.rootOffset = coords.boundsInWindow().topLeft
 			}
 	) {
 		LetterBoardContent(
 			state = state,
-			boardState = boardState,
-			scoreState = scoreState,
-			shakeOffset = shakeOffset,
-			holdingAreaShakeOffset = holdingAreaShakeOffset,
-			gridColumns = gridColumns
+			boardState = letterBoardData.boardState,
+			scoreState = letterBoardData.scoreState,
+			effectState = letterBoardData.effectState,
+			shakeOffset = letterBoardData.shakeOffset,
+			holdingAreaShakeOffset = letterBoardData.holdingAreaShakeOffset,
+			gridColumns = letterBoardData.gridColumns
 		)
 
-		// Bag icon on the right side below holding area
 		BagRouter(
 			state.bag,
 			modifier = Modifier
 				.align(Alignment.BottomEnd)
 				.padding(bottom = 60.dp, end = 8.dp)
 				.wrapContentWidth()
-				.offset { IntOffset(bagShakeOffset.value.roundToInt(), 0) }
+				.offset { IntOffset(letterBoardData.bagShakeOffset.value.roundToInt(), 0) }
 		)
 
 		LetterOverlays(
-			boardState = boardState,
-			scoreState = scoreState
+			boardState = letterBoardData.boardState,
+			scoreState = letterBoardData.scoreState
 		)
 	}
 }
@@ -126,10 +211,10 @@ private fun LetterBoardShakeHandlers(
 	onInvalidWordConsumed: () -> Unit,
 	levelAdvanceShakeTrigger: Boolean,
 	onLevelAdvanceShakeConsumed: () -> Unit,
-	shakeOffset: Animatable<Float, androidx.compose.animation.core.AnimationVector1D>,
+	shakeOffset: Animatable<Float, AnimationVector1D>,
 	shakeMutex: Mutex,
-	holdingAreaShakeOffset: Animatable<Float, androidx.compose.animation.core.AnimationVector1D>,
-	bagShakeOffset: Animatable<Float, androidx.compose.animation.core.AnimationVector1D>,
+	holdingAreaShakeOffset: Animatable<Float, AnimationVector1D>,
+	bagShakeOffset: Animatable<Float, AnimationVector1D>,
 	levelAdvanceShakeMutex: Mutex
 ) {
 	InvalidWordShakeHandler(
@@ -153,8 +238,9 @@ private fun LetterBoardContent(
 	state: GameScreenState.Playing,
 	boardState: LetterBoardState,
 	scoreState: ScoreAnimationState,
-	shakeOffset: Animatable<Float, androidx.compose.animation.core.AnimationVector1D>,
-	holdingAreaShakeOffset: Animatable<Float, androidx.compose.animation.core.AnimationVector1D>,
+	effectState: EffectAnimationState,
+	shakeOffset: Animatable<Float, AnimationVector1D>,
+	holdingAreaShakeOffset: Animatable<Float, AnimationVector1D>,
 	gridColumns: Int
 ) {
 	Box(modifier = Modifier.fillMaxSize()) {
@@ -178,7 +264,7 @@ private fun LetterBoardContent(
 				}
 			}
 
-		ScoreLane(scoreState = scoreState)
+		ScoreLane(scoreState = scoreState, effectState = effectState)
 
 		PlayedArea(
 			boardState = boardState,
@@ -216,6 +302,7 @@ private fun LetterBoardContent(
 		// Effects column on the left side
 		EffectsColumn(
 			effects = state.effects,
+			effectState = effectState,
 			modifier = Modifier
 				.align(Alignment.TopStart)
 				.padding(top = 8.dp, start = 8.dp)

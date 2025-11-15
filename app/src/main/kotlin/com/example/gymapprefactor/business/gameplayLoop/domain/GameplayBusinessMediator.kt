@@ -1,6 +1,7 @@
 package com.example.gymapprefactor.business.gameplayLoop.domain
 
 import com.example.gymapprefactor.business.models.ActiveGameState
+import com.example.gymapprefactor.business.models.Effect
 import com.example.gymapprefactor.business.models.GameState
 import com.example.gymapprefactor.business.models.Letter
 
@@ -53,5 +54,6 @@ class GameplayBusinessMediator(
 data class ScoredWordResult(
 	val gameState: ActiveGameState,
 	val letterScores: List<LetterScore>,
-	val letters: List<Letter>
+	val letters: List<Letter>,
+	val wordEffect: Effect
 )
