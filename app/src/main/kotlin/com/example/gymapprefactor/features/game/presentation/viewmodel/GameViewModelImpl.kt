@@ -72,35 +72,40 @@ class GameViewModelImpl @Inject constructor(
 
 	private suspend fun updateGame() {
 		println("GameViewModelImpl.updateGame: gameLost=${activeGameState.activeGameVariables.gameLost}")
+		
+		// Always update the UI first to show enemy health and effects
+		val enemyMaxHealth = enemyCreationMapper.map(
+			EnemyCreationMapper.Param(
+				stage = activeGameState.activeGameVariables.stage,
+				level = activeGameState.activeGameVariables.level
+			)
+		)
+		val enemyLabel = calculateEnemyLabel(activeGameState.activeGameVariables.level)
+		
+		gameScreenReducer.update(GameScreenAction.StartPlaying(
+			runesCount = 10,
+			glyphCount = 30,
+			onQuitPressed = ::onQuitPressed,
+			onWordPlayed = ::onWordPlayed,
+			onDiscardPressed = ::onDiscardPressed,
+			hand = activeGameState.currentRound.hand,
+			currentLettersInDeck = activeGameState.currentRound.mutableDeck.size(),
+			maxLettersInDeck = activeGameState.activeGameValues.deck.size(),
+			discardsRemaining = activeGameState.activeGameVariables.maxDiscards - activeGameState.currentRound.discardsUsed,
+			currentRound = activeGameState.currentRound.round,
+			maxRounds = activeGameState.activeGameVariables.maxRounds,
+			enemyHealth = activeGameState.currentRound.enemyHealth,
+			enemyMaxHealth = enemyMaxHealth,
+			enemyLabel = enemyLabel,
+			effects = activeGameState.currentRound.effects,
+		))
+		
+		// If game is lost, wait for UI to update then show dialog
 		if (activeGameState.activeGameVariables.gameLost) {
+			println("GameViewModelImpl.updateGame: UI updated, waiting before triggering game lost dialog")
+			delay(300) // Allow time for UI to render enemy health and effects
 			println("GameViewModelImpl.updateGame: Triggering game lost dialog")
 			triggerGameLostDialog()
-		} else {
-			val enemyMaxHealth = enemyCreationMapper.map(
-				EnemyCreationMapper.Param(
-					stage = activeGameState.activeGameVariables.stage,
-					level = activeGameState.activeGameVariables.level
-				)
-			)
-			val enemyLabel = calculateEnemyLabel(activeGameState.activeGameVariables.level)
-			
-			gameScreenReducer.update(GameScreenAction.StartPlaying(
-				runesCount = 10,
-				glyphCount = 30,
-				onQuitPressed = ::onQuitPressed,
-				onWordPlayed = ::onWordPlayed,
-				onDiscardPressed = ::onDiscardPressed,
-				hand = activeGameState.currentRound.hand,
-				currentLettersInDeck = activeGameState.currentRound.mutableDeck.size(),
-				maxLettersInDeck = activeGameState.activeGameValues.deck.size(),
-				discardsRemaining = activeGameState.activeGameVariables.maxDiscards - activeGameState.currentRound.discardsUsed,
-				currentRound = activeGameState.currentRound.round,
-				maxRounds = activeGameState.activeGameVariables.maxRounds,
-				enemyHealth = activeGameState.currentRound.enemyHealth,
-				enemyMaxHealth = enemyMaxHealth,
-				enemyLabel = enemyLabel,
-				effects = activeGameState.currentRound.effects,
-			))
 		}
 	}
 
