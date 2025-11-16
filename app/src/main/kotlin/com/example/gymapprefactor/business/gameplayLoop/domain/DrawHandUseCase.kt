@@ -1,6 +1,7 @@
 package com.example.gymapprefactor.business.gameplayLoop.domain
 
 import com.example.gymapprefactor.business.models.ActiveGameState
+import com.example.gymapprefactor.business.models.CurrentRound
 import com.example.gymapprefactor.business.models.copy
 import javax.inject.Inject
 
@@ -12,11 +13,8 @@ class DrawHandUseCase @Inject constructor(
 		game: ActiveGameState
 	): ActiveGameState {
 		val (variables, values, round) = game
-		val baseSeed = values.seed
-		
-		// Combine base seed with level and stage for deterministic, level-specific hands
 		val levelStageSeed = combineSeedWithLevelAndStage(
-			baseSeed = baseSeed,
+			baseSeed = values.seed,
 			stage = variables.stage,
 			level = variables.level
 		)
@@ -24,16 +22,8 @@ class DrawHandUseCase @Inject constructor(
 		val result = drawHandMapper.map(
 			DrawHandMapper.Param(round.mutableDeck, levelStageSeed, drawnAmount)
 		)
-		val newGameState = game.copy(
-			currentRound = round.copy(
-				mutableDeck = round.mutableDeck.copy(
-					letters = round.mutableDeck.letters.filter { result.remaining.contains(it) }
-				),
-				hand = round.hand + result.drawn
-			)
-		)
 
-		return newGameState
+		return applyDrawResultToGameState(game, round, result)
 	}
 	
 	private fun combineSeedWithLevelAndStage(
@@ -41,8 +31,21 @@ class DrawHandUseCase @Inject constructor(
 		stage: Int,
 		level: Int
 	): Long {
-		// Combine seed with stage and level using bit operations for deterministic results
-		// This ensures different levels/stages have different hands, but same seed+level+stage = same hands
 		return baseSeed xor (stage.toLong() shl 32) xor (level.toLong() shl 16)
+	}
+
+	private fun applyDrawResultToGameState(
+		game: ActiveGameState,
+		round: CurrentRound,
+		result: DrawHandMapper.Output
+	): ActiveGameState {
+		return game.copy(
+			currentRound = round.copy(
+				mutableDeck = round.mutableDeck.copy(
+					letters = round.mutableDeck.letters.filter { result.remaining.contains(it) }
+				),
+				hand = round.hand + result.drawn
+			)
+		)
 	}
 }

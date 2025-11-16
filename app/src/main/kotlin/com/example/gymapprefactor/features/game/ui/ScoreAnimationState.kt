@@ -27,6 +27,18 @@ internal class ScoreAnimationState(
 	var totalScore: Int?
 		get() = totalScoreState.value
 		set(value) { totalScoreState.value = value }
+
+	suspend fun clear() {
+		scoreValueMap.clear()
+		scoreAlphaMap.clear()
+		scoreShakeMap.clear()
+		totalScoreState.value = null
+		totalScoreAlpha.snapTo(0f)
+		totalScoreShake.snapTo(0f)
+		scoredLetters.clear()
+		orderedScoredLetters.clear()
+		scoreLetterPositions.clear()
+	}
 }
 
 @Composable

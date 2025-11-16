@@ -33,6 +33,12 @@ import com.example.gymapprefactor.business.gameplayLoop.domain.WordValidityMappe
 import com.example.gymapprefactor.business.gameplayLoop.domain.WordValidityMapperImpl
 import com.example.gymapprefactor.business.gameplayLoop.domain.mappers.EnemyCreationMapper
 import com.example.gymapprefactor.business.gameplayLoop.domain.mappers.EnemyCreationMapperImpl
+import com.example.gymapprefactor.business.gameplayLoop.domain.mappers.EnemyLabelMapper
+import com.example.gymapprefactor.business.gameplayLoop.domain.mappers.EnemyLabelMapperImpl
+import com.example.gymapprefactor.business.gameplayLoop.domain.mappers.DiscardsRemainingMapper
+import com.example.gymapprefactor.business.gameplayLoop.domain.mappers.DiscardsRemainingMapperImpl
+import com.example.gymapprefactor.business.gameplayLoop.domain.mappers.EffectAnimationPayloadMapper
+import com.example.gymapprefactor.business.gameplayLoop.domain.mappers.EffectAnimationPayloadMapperImpl
 import com.example.gymapprefactor.business.models.AppDataModel
 import com.example.gymapprefactor.business.user.domain.UserBusinessMediator
 import dagger.Module
@@ -179,6 +185,21 @@ object GameplayLoopModule {
 	}
 
 	@Provides
+	fun provideEnemyLabelMapper(): EnemyLabelMapper {
+		return EnemyLabelMapperImpl()
+	}
+
+	@Provides
+	fun provideDiscardsRemainingMapper(): DiscardsRemainingMapper {
+		return DiscardsRemainingMapperImpl()
+	}
+
+	@Provides
+	fun provideEffectAnimationPayloadMapper(): EffectAnimationPayloadMapper {
+		return EffectAnimationPayloadMapperImpl()
+	}
+
+	@Provides
 	fun provideGameRules(): GameRules {
 		return GameRulesImpl()
 	}
@@ -253,7 +274,11 @@ object GameplayLoopModule {
 		endGameUseCase: EndGameUseCase,
 		playWordUseCase: PlayWordUseCase,
 		drawHandUseCase: DrawHandUseCase,
-		createGameUseCase: CreateGameUseCase
+		createGameUseCase: CreateGameUseCase,
+		applyScoreToEnemyUseCase: ApplyScoreToEnemyUseCase,
+		effectScoreMapper: EffectScoreMapper,
+		gameRules: GameRules,
+		advanceToNextEnemyUseCase: AdvanceToNextEnemyUseCase
 	): GameplayBusinessMediator {
 		return GameplayBusinessMediator(
 			getGameStateUseCase = getGameStateUseCase,
@@ -261,7 +286,11 @@ object GameplayLoopModule {
 			endGameUseCase = endGameUseCase,
 			playWordUseCase = playWordUseCase,
 			drawHandUseCase = drawHandUseCase,
-			createGameUseCase = createGameUseCase
+			createGameUseCase = createGameUseCase,
+			applyScoreToEnemyUseCase = applyScoreToEnemyUseCase,
+			effectScoreMapper = effectScoreMapper,
+			gameRules = gameRules,
+			advanceToNextEnemyUseCase = advanceToNextEnemyUseCase
 		)
 	}
 }

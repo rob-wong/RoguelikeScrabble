@@ -38,23 +38,26 @@ class DrawHandMapperImpl : DrawHandMapper {
 				return Output(emptyList(), deck.letters)
 			}
 
-			// Debug mode: try to draw specific letters if debug string is provided
-			// Check both the param and the companion object for debug string
 			val debugHandString = (debugHandString ?: DEBUG_HAND_STRING)?.takeIf { it.isNotBlank() }
 			val debugResult = debugHandString?.let { 
 				tryDrawDebugHand(it, deck.letters, drawnAmount) 
 			}
-			
-			// Use debug result if available, otherwise use normal random drawing
-			return debugResult ?: run {
-				val random = Random(seed)
-				val shuffled = deck.letters.shuffled(random)
-				val drawCount = minOf(drawnAmount, shuffled.size)
-				val drawn = shuffled.take(drawCount)
-				val remaining = shuffled.drop(drawCount)
-				Output(drawn, remaining)
-			}
+
+			return debugResult ?: drawRandomHand(deck.letters, seed, drawnAmount)
 		}
+	}
+
+	private fun drawRandomHand(
+		availableLetters: List<Letter>,
+		seed: Long,
+		requestedAmount: Int
+	): Output {
+		val random = Random(seed)
+		val shuffled = availableLetters.shuffled(random)
+		val drawCount = minOf(requestedAmount, shuffled.size)
+		val drawn = shuffled.take(drawCount)
+		val remaining = shuffled.drop(drawCount)
+		return Output(drawn, remaining)
 	}
 
 	private fun tryDrawDebugHand(
@@ -67,34 +70,42 @@ class DrawHandMapperImpl : DrawHandMapper {
 			return null
 		}
 
-		// Create a mutable copy of available letters to track what we've used
 		val remainingLetters = availableLetters.toMutableList()
 		val drawnLetters = mutableListOf<Letter>()
 
-		// Try to match each character in the debug string
 		for (char in normalizedString) {
-			// Stop if we've drawn enough or can't find a matching letter
-			val matchingLetterIndex = if (drawnLetters.size < requestedAmount) {
-				remainingLetters.indexOfFirst { 
-					it.letter.uppercaseChar() == char.uppercaseChar() 
-				}
-			} else {
-				-1
-			}
-
-			if (matchingLetterIndex == -1) {
-				// If we can't find a letter or have drawn enough, stop trying to match
+			if (!canContinueMatching(drawnLetters.size, requestedAmount, remainingLetters, char)) {
 				break
 			}
-			
+
+			val matchingLetterIndex = findMatchingLetterIndex(remainingLetters, char)
 			val matchedLetter = remainingLetters.removeAt(matchingLetterIndex)
 			drawnLetters.add(matchedLetter)
 		}
 
-		// Return what we have if we drew any letters
-		// This allows partial matches if the string is shorter than requested amount
 		return drawnLetters.takeIf { it.isNotEmpty() }?.let {
 			Output(it, remainingLetters)
+		}
+	}
+
+	private fun canContinueMatching(
+		currentDrawnCount: Int,
+		requestedAmount: Int,
+		availableLetters: List<Letter>,
+		targetChar: Char
+	): Boolean {
+		if (currentDrawnCount >= requestedAmount) {
+			return false
+		}
+		return findMatchingLetterIndex(availableLetters, targetChar) != -1
+	}
+
+	private fun findMatchingLetterIndex(
+		availableLetters: List<Letter>,
+		targetChar: Char
+	): Int {
+		return availableLetters.indexOfFirst { 
+			it.letter.uppercaseChar() == targetChar.uppercaseChar() 
 		}
 	}
 }

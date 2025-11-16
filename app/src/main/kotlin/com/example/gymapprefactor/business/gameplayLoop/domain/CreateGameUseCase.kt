@@ -20,23 +20,12 @@ class CreateGameUseCase @Inject constructor(
 	private val saveGameStateUseCase: SaveGameStateUseCase,
 	private val enemyCreationMapper: EnemyCreationMapper,
 ) {
-	companion object {
-		private const val STARTING_STAGE = 1
-		private const val STARTING_LEVEL = 1
-		private const val STARTING_ROUND = 1
-		private const val STARTING_DISCARDS_USED = 0
-		private const val STARTING_MAX_ROUNDS = 3
-		private const val STARTING_MAX_DISCARDS = 2
-		private const val STARTING_HAND_SIZE = 8
-	}
-
 	suspend operator fun invoke(): ActiveGameState {
 		val user = userBusinessMediator.getUser()
 		val gameDeck = user.decks
 			.first() // change with multiple deck support
 			.copy() // during the game, the deck will be changed but not permanently
 
-		// Calculate initial enemy health using mapper
 		val initialEnemyHealth = enemyCreationMapper.map(
 			EnemyCreationMapper.Param(
 				stage = STARTING_STAGE,
@@ -78,5 +67,15 @@ class CreateGameUseCase @Inject constructor(
 
 		saveGameStateUseCase(initializedGame)
 		return initializedGame
+	}
+
+	private companion object {
+		const val STARTING_STAGE = 1
+		const val STARTING_LEVEL = 1
+		const val STARTING_ROUND = 1
+		const val STARTING_DISCARDS_USED = 0
+		const val STARTING_MAX_ROUNDS = 3
+		const val STARTING_MAX_DISCARDS = 2
+		const val STARTING_HAND_SIZE = 8
 	}
 }

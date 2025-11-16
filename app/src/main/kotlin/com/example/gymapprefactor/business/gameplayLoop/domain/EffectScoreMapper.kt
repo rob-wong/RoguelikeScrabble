@@ -40,18 +40,16 @@ class EffectScoreMapperImpl @Inject constructor(
 		var currentScore = param.rawScore
 		
 		return param.effects.mapIndexed { index, effect ->
-			val descriptor = effect.descriptor ?: descriptorMap[effect.label]
+			val descriptor = getEffectDescriptor(effect, descriptorMap)
 			val scoreDelta = calculateScoreDelta(
 				effect = effect,
 				currentScore = currentScore,
 				nextEffect = param.effects.getOrNull(index + 1),
-				descriptorMap = descriptorMap,
+				descriptor = descriptor,
 				oldEffectMap = oldEffectMap
 			)
 			
-			// Extract multiplier for display if this is a multiplication effect
 			val multiplier = extractMultiplier(descriptor)
-			
 			currentScore += scoreDelta
 			
 			EffectScoreModification(
@@ -64,17 +62,20 @@ class EffectScoreMapperImpl @Inject constructor(
 		}
 	}
 
+	private fun getEffectDescriptor(
+		effect: Effect,
+		descriptorMap: Map<String, EffectDescriptor>
+	): EffectDescriptor? {
+		return effect.descriptor ?: descriptorMap[effect.label]
+	}
+
 	private fun calculateScoreDelta(
 		effect: Effect,
 		currentScore: Int,
 		nextEffect: Effect?,
-		descriptorMap: Map<String, EffectDescriptor>,
+		descriptor: EffectDescriptor?,
 		oldEffectMap: Map<String, Int>
 	): Int {
-		// Try to use descriptor from effect first
-		val descriptor = effect.descriptor
-			?: descriptorMap[effect.label]
-
 		if (descriptor != null) {
 			val processor = processorFactory.createProcessor(descriptor.type)
 			if (processor != null) {
@@ -82,36 +83,35 @@ class EffectScoreMapperImpl @Inject constructor(
 			}
 		}
 
-		// Fallback to old behavior for backward compatibility
+		return calculateScoreFallback(effect, oldEffectMap)
+	}
+
+	private fun calculateScoreFallback(
+		effect: Effect,
+		oldEffectMap: Map<String, Int>
+	): Int {
 		return oldEffectMap[effect.label] ?: effect.label.length
 	}
 
-	/**
-	 * Extracts the multiplier from a multiplication effect descriptor.
-	 * Also handles nested multiplication effects in combos.
-	 */
 	private fun extractMultiplier(descriptor: EffectDescriptor?): Double? {
 		if (descriptor == null) return null
 		
 		return when (descriptor.type) {
-			"multiplication" -> {
-				try {
-					val config = json.decodeFromJsonElement(
-						serializer<MultiplicationConfig>(),
-						descriptor.config
-					)
-					config.multiplier
-				} catch (_ : Exception) {
-					null
-				}
-			}
-			"combo" -> {
-				// For combos, we'd need to check which effect is being applied
-				// For now, return null - combos will show the delta
-				// TODO: If needed, we could extract multiplier from combo's nested effects
-				null
-			}
+			"multiplication" -> extractMultiplicationMultiplier(descriptor)
+			"combo" -> null
 			else -> null
+		}
+	}
+
+	private fun extractMultiplicationMultiplier(descriptor: EffectDescriptor): Double? {
+		return try {
+			val config = json.decodeFromJsonElement(
+				serializer<MultiplicationConfig>(),
+				descriptor.config
+			)
+			config.multiplier
+		} catch (_: Exception) {
+			null
 		}
 	}
 }
