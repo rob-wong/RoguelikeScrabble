@@ -49,6 +49,7 @@ class GameScreenReducerImpl : GameScreenReducer {
 			discardsRemainingState = mapDiscardsRemaining(action),
 			enemyHealthBarState = mapEnemyHealthBar(action),
 			effects = action.effects,
+			effectDescriptors = action.effectDescriptors,
 		)
 	}
 

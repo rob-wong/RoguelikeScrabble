@@ -164,7 +164,8 @@ private fun GamePlayScreenPreview() {
 					id = "f",
 					label = "EFFECT"
 				)
-			)
+			),
+			effectDescriptors = emptyMap()
 		),
 		invalidWordTrigger = false,
 		onInvalidWordConsumed = { },

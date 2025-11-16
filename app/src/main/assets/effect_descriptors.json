@@ -1,26 +1,212 @@
 {
-  "CAT": {
+  "BONUS": {
     "type": "fixed_addition",
     "config": {
-      "value": 5
+      "value": 20
     }
   },
-  "DOG": {
+  "POINTS": {
     "type": "fixed_addition",
     "config": {
-      "value": 5
+      "value": 15
     }
   },
-  "BIRD": {
+  "SCORE": {
     "type": "fixed_addition",
     "config": {
-      "value": 6
+      "value": 15
+    }
+  },
+  "TEN": {
+    "type": "fixed_addition",
+    "config": {
+      "value": 10
+    }
+  },
+  "TWENTY": {
+    "type": "fixed_addition",
+    "config": {
+      "value": 20
+    }
+  },
+  "THIRTY": {
+    "type": "fixed_addition",
+    "config": {
+      "value": 30
+    }
+  },
+  "FORTY": {
+    "type": "fixed_addition",
+    "config": {
+      "value": 40
+    }
+  },
+  "FIFTY": {
+    "type": "fixed_addition",
+    "config": {
+      "value": 50
+    }
+  },
+  "SIXTY": {
+    "type": "fixed_addition",
+    "config": {
+      "value": 60
+    }
+  },
+  "SEVENTY": {
+    "type": "fixed_addition",
+    "config": {
+      "value": 70
+    }
+  },
+  "EIGHTY": {
+    "type": "fixed_addition",
+    "config": {
+      "value": 80
+    }
+  },
+  "NINETY": {
+    "type": "fixed_addition",
+    "config": {
+      "value": 90
+    }
+  },
+  "HUNDRED": {
+    "type": "fixed_addition",
+    "config": {
+      "value": 100
     }
   },
   "DOUBLE": {
     "type": "multiplication",
     "config": {
       "multiplier": 2.0
+    }
+  },
+  "TRIPLE": {
+    "type": "multiplication",
+    "config": {
+      "multiplier": 3.0
+    }
+  },
+  "QUADRUPLE": {
+    "type": "multiplication",
+    "config": {
+      "multiplier": 4.0
+    }
+  },
+  "QUINTUPLE": {
+    "type": "multiplication",
+    "config": {
+      "multiplier": 5.0
+    }
+  },
+  "SEXTUPLE": {
+    "type": "multiplication",
+    "config": {
+      "multiplier": 6.0
+    }
+  },
+  "SEPTUPLE": {
+    "type": "multiplication",
+    "config": {
+      "multiplier": 7.0
+    }
+  },
+  "OCTUPLE": {
+    "type": "multiplication",
+    "config": {
+      "multiplier": 8.0
+    }
+  },
+  "NONUPLE": {
+    "type": "multiplication",
+    "config": {
+      "multiplier": 9.0
+    }
+  },
+  "DECUPLE": {
+    "type": "multiplication",
+    "config": {
+      "multiplier": 10.0
+    }
+  },
+  "UNDECUPLE": {
+    "type": "multiplication",
+    "config": {
+      "multiplier": 11.0
+    }
+  },
+  "ACE": {
+    "type": "fixed_addition",
+    "config": {
+      "value": 10
+    }
+  },
+  "WIN": {
+    "type": "fixed_addition",
+    "config": {
+      "value": 30
+    }
+  },
+  "LUCKY": {
+    "type": "fixed_addition",
+    "config": {
+      "value": 20
+    }
+  },
+  "EPIC": {
+    "type": "fixed_addition",
+    "config": {
+      "value": 30
+    }
+  },
+  "SUPER": {
+    "type": "multiplication",
+    "config": {
+      "multiplier": 3.0
+    }
+  },
+  "JACKPOT": {
+    "type": "fixed_addition",
+    "config": {
+      "value": 100
+    }
+  },
+  "SPLENDOR": {
+    "type": "fixed_addition",
+    "config": {
+      "value": 50
+    }
+  },
+  "AMPLIFY": {
+    "type": "multiplication",
+    "config": {
+      "multiplier": 2.0
+    }
+  },
+  "ENHANCE": {
+    "type": "multiplication",
+    "config": {
+      "multiplier": 2.0
+    }
+  },
+  "AUGMENT": {
+    "type": "multiplication",
+    "config": {
+      "multiplier": 2.5
+    }
+  },
+  "BLAST": {
+    "type": "fixed_addition",
+    "config": {
+      "value": 25
+    }
+  },
+  "BURST": {
+    "type": "fixed_addition",
+    "config": {
+      "value": 30
     }
   }
 }
