@@ -65,7 +65,7 @@ fun LetterBoard(
 ) {
 	val letterBoardData = rememberLetterBoardData(state.letters)
 	
-	// Clear effect animation state when starting a new game or advancing to a new level
+	// Clear animation state when starting a new game or advancing to a new level
 	val currentRound = when (val roundsState = state.roundsRemainingState) {
 		is RoundsRemainingState.Content -> roundsState.currentRound
 		else -> null
@@ -80,6 +80,7 @@ fun LetterBoard(
 		val isNewGame = state.effects.isEmpty() && currentRound == 1
 		if (isNewLevel || isNewGame) {
 			letterBoardData.effectState.clear()
+			letterBoardData.scoreState.clear()
 		}
 		previousRound.value = currentRound
 	}

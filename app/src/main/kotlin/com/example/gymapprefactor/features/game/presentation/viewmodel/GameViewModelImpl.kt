@@ -2,15 +2,13 @@ package com.example.gymapprefactor.features.game.presentation.viewmodel
 
 import androidx.lifecycle.viewModelScope
 import com.example.gymapprefactor.app.util.dispatcher.DispatcherProvider
-import com.example.gymapprefactor.business.gameplayLoop.domain.AdvanceToNextEnemyUseCase
-import com.example.gymapprefactor.business.gameplayLoop.domain.ApplyScoreToEnemyUseCase
-import com.example.gymapprefactor.business.gameplayLoop.domain.EffectScoreMapper
 import com.example.gymapprefactor.business.gameplayLoop.domain.GameplayBusinessMediator
-import com.example.gymapprefactor.business.gameplayLoop.domain.GameRules
 import com.example.gymapprefactor.business.gameplayLoop.domain.ScoredWordResult
+import com.example.gymapprefactor.business.gameplayLoop.domain.mappers.DiscardsRemainingMapper
+import com.example.gymapprefactor.business.gameplayLoop.domain.mappers.EffectAnimationPayloadMapper
 import com.example.gymapprefactor.business.gameplayLoop.domain.mappers.EnemyCreationMapper
+import com.example.gymapprefactor.business.gameplayLoop.domain.mappers.EnemyLabelMapper
 import com.example.gymapprefactor.business.models.ActiveGameState
-import com.example.gymapprefactor.business.models.Effect
 import com.example.gymapprefactor.features.dialogs.presentation.models.DialogAction
 import com.example.gymapprefactor.features.dialogs.presentation.state.DialogReducer
 import com.example.gymapprefactor.features.game.presentation.models.EffectAnimationPayload
@@ -37,11 +35,10 @@ class GameViewModelImpl @Inject constructor(
 	private val gameplayBusinessMediator: GameplayBusinessMediator,
 	private val navigationReducer: NavigationReducer,
 	private val dispatcherProvider: DispatcherProvider,
-	private val applyScoreToEnemyUseCase: ApplyScoreToEnemyUseCase,
-	private val advanceToNextEnemyUseCase: AdvanceToNextEnemyUseCase,
-	private val gameRules: GameRules,
 	private val enemyCreationMapper: EnemyCreationMapper,
-	private val effectScoreMapper: EffectScoreMapper,
+	private val enemyLabelMapper: EnemyLabelMapper,
+	private val discardsRemainingMapper: DiscardsRemainingMapper,
+	private val effectAnimationPayloadMapper: EffectAnimationPayloadMapper,
 ) : GameViewModel() {
 	override val state = gameScreenReducer.state
 
@@ -66,16 +63,18 @@ class GameViewModelImpl @Inject constructor(
 	}
 
 	private suspend fun updateGame() {
-		println("GameViewModelImpl.updateGame: gameLost=${activeGameState.activeGameVariables.gameLost}")
-		
-		// Always update the UI first to show enemy health and effects
 		val enemyMaxHealth = enemyCreationMapper.map(
 			EnemyCreationMapper.Param(
 				stage = activeGameState.activeGameVariables.stage,
 				level = activeGameState.activeGameVariables.level
 			)
 		)
-		val enemyLabel = calculateEnemyLabel(activeGameState.activeGameVariables.level)
+		val enemyLabel = enemyLabelMapper.map(
+			EnemyLabelMapper.Param(level = activeGameState.activeGameVariables.level)
+		)
+		val discardsRemaining = discardsRemainingMapper.map(
+			DiscardsRemainingMapper.Param(game = activeGameState)
+		)
 		
 		gameScreenReducer.update(GameScreenAction.StartPlaying(
 			runesCount = 10,
@@ -86,7 +85,7 @@ class GameViewModelImpl @Inject constructor(
 			hand = activeGameState.currentRound.hand,
 			currentLettersInDeck = activeGameState.currentRound.mutableDeck.size(),
 			maxLettersInDeck = activeGameState.activeGameValues.deck.size(),
-			discardsRemaining = activeGameState.activeGameVariables.maxDiscards - activeGameState.currentRound.discardsUsed,
+			discardsRemaining = discardsRemaining,
 			currentRound = activeGameState.currentRound.round,
 			maxRounds = activeGameState.activeGameVariables.maxRounds,
 			enemyHealth = activeGameState.currentRound.enemyHealth,
@@ -95,11 +94,8 @@ class GameViewModelImpl @Inject constructor(
 			effects = activeGameState.currentRound.effects,
 		))
 		
-		// If game is lost, wait for UI to update then show dialog
 		if (activeGameState.activeGameVariables.gameLost) {
-			println("GameViewModelImpl.updateGame: UI updated, waiting before triggering game lost dialog")
-			delay(300) // Allow time for UI to render enemy health and effects
-			println("GameViewModelImpl.updateGame: Triggering game lost dialog")
+			delay(300)
 			triggerGameLostDialog()
 		}
 	}
@@ -147,50 +143,29 @@ class GameViewModelImpl @Inject constructor(
 	}
 
 	private suspend fun handleScoredWord(result: ScoredWordResult) {
-		println("GameViewModelImpl.handleScoredWord -> scores=${result.letterScores}")
-		activeGameState = result.gameState
-		val rawScore = result.letterScores.sumOf { it.second }
-		
 		emitScoreAnimation(result)
-		val finalScore = processEffectsAndEmitAnimations(rawScore)
-		applyFinalScore(finalScore)
-		// Add word effect to game state after animations complete
-		addWordEffectToGameState(result.wordEffect)
-
-		val isWon = gameRules.checkWinCondition(activeGameState)
-		val isLost = gameRules.checkLossCondition(activeGameState) && !isWon
 		
-		println("GameViewModelImpl: After score applied - " +
-				"enemyHealth=${activeGameState.currentRound.enemyHealth}, " +
-				"round=${activeGameState.currentRound.round}, " +
-				"maxRounds=${activeGameState.activeGameVariables.maxRounds}, " +
-				"isWon=$isWon, " +
-				"isLost=$isLost"
-		)
+		val processedResult = gameplayBusinessMediator.processScoredWord(result)
+		activeGameState = processedResult.gameState
 		
-		if (isWon) {
-			activeGameState = activeGameState.copy(
-				activeGameVariables = activeGameState.activeGameVariables.copy(
-					gameLost = false
-				)
+		val effectAnimations = effectAnimationPayloadMapper.map(
+			EffectAnimationPayloadMapper.Param(
+				effectModifications = processedResult.effectModifications,
+				rawScore = processedResult.rawScore
 			)
-			activeGameState = gameplayBusinessMediator.saveGameState(activeGameState)
+		)
+
+		if (effectAnimations.isNotEmpty()) {
+			effectAnimationEvent.emit(effectAnimations)
+			effectAnimationComplete.first()
+		}
+
+		if (processedResult.isWon) {
 			updateGame()
-			
 			delay(500)
-			
-			activeGameState = advanceToNextEnemyUseCase(activeGameState)
-			activeGameState = gameplayBusinessMediator.saveGameState(activeGameState)
 			levelAdvanceShakeTrigger.emit(Unit)
 			updateGame()
 		} else {
-			activeGameState = activeGameState.copy(
-				activeGameVariables = activeGameState.activeGameVariables.copy(
-					gameLost = isLost
-				)
-			)
-			activeGameState = gameplayBusinessMediator.saveGameState(activeGameState)
-			println("GameViewModelImpl: gameLost flag set to ${activeGameState.activeGameVariables.gameLost}")
 			updateGame()
 		}
 	}
@@ -199,14 +174,6 @@ class GameViewModelImpl @Inject constructor(
 		viewModelScope.launch(dispatcherProvider.default) {
 			gameplayBusinessMediator.endGame(game = activeGameState, saveProgression = false)
 			navigationReducer.update(NavigationAction.GoTo(NavigationPage.HomeScreen))
-		}
-	}
-
-	private fun calculateEnemyLabel(level: Int): String {
-		return if (level >= 4) {
-			"BOSS"
-		} else {
-			"ENEMY"
 		}
 	}
 
@@ -220,55 +187,8 @@ class GameViewModelImpl @Inject constructor(
 		scoreAnimationComplete.first()
 	}
 
-	private suspend fun processEffectsAndEmitAnimations(rawScore: Int): Int {
-		val combinedEffects = activeGameState.activeGameValues.effects + 
-			activeGameState.currentRound.effects
-		val effectModifications = effectScoreMapper.map(
-			EffectScoreMapper.Param(
-				effects = combinedEffects,
-				rawScore = rawScore
-			)
-		)
-
-		var cumulativeScore = rawScore
-		val effectAnimations = effectModifications.map { modification ->
-			cumulativeScore += modification.scoreDelta
-			EffectAnimationPayload(
-				effectId = modification.effectId,
-				effectLabel = modification.effectLabel,
-				scoreDelta = modification.scoreDelta,
-				orderIndex = modification.orderIndex,
-				cumulativeScore = cumulativeScore,
-				multiplier = modification.multiplier
-			)
-		}
-
-		if (effectAnimations.isNotEmpty()) {
-			effectAnimationEvent.emit(effectAnimations)
-			effectAnimationComplete.first()
-		}
-
-		return cumulativeScore
-	}
-
-	private fun applyFinalScore(finalScore: Int) {
-		activeGameState = applyScoreToEnemyUseCase(finalScore, activeGameState)
-	}
-
-	private suspend fun addWordEffectToGameState(wordEffect: Effect) {
-		activeGameState = activeGameState.copy(
-			currentRound = activeGameState.currentRound.copy(
-				effects = activeGameState.currentRound.effects + wordEffect
-			)
-		)
-		activeGameState = gameplayBusinessMediator.saveGameState(activeGameState)
-		updateGame()
-	}
-
 	private suspend fun triggerGameLostDialog() {
-		println("GameViewModelImpl.triggerGameLostDialog: Called")
 		withContext(dispatcherProvider.main) {
-			println("GameViewModelImpl.triggerGameLostDialog: Updating dialog reducer on main thread")
 			dialogReducer.update(
 				DialogAction.TriggerDialog(
 					onDismiss = { dialogReducer.onDefaultDismiss() },
@@ -278,7 +198,6 @@ class GameViewModelImpl @Inject constructor(
 						onConfirm = { quitGame() }
 					),
 				))
-			println("GameViewModelImpl.triggerGameLostDialog: Dialog reducer updated")
 		}
 	}
 }
