@@ -8,9 +8,15 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import kotlinx.coroutines.delay
 import com.example.gymapprefactor.app.util.DevicePreviews
 import com.example.gymapprefactor.business.models.DefaultEffect
 import com.example.gymapprefactor.common.components.buttons.presentation.IconButtonState
@@ -47,6 +53,19 @@ fun GamePlayScreen(
 	onEffectAnimationComplete: () -> Unit,
 	modifier: Modifier = Modifier,
 ) {
+	// Track whether to show overlay with delay
+	var showOverlay by remember { mutableStateOf(false) }
+	
+	LaunchedEffect(state.needsEffectSelection) {
+		if (state.needsEffectSelection) {
+			// Wait 1 second after enemy health reaches 0 before showing overlay
+			delay(1000L)
+			showOverlay = true
+		} else {
+			showOverlay = false
+		}
+	}
+	
 	Box(modifier.fillMaxSize()) {
 		Column(horizontalAlignment = Alignment.CenterHorizontally) {
 			ResourceBarRouter(state.resourceBar)
@@ -75,13 +94,18 @@ fun GamePlayScreen(
 				.size(40.dp)
 		)
 		
-		// Show effect selection overlay when needed
-		if (state.needsEffectSelection && state.onEffectSelected != null && state.onEffectSelectionBackPressed != null) {
+		// Show effect selection overlay when needed (with delay)
+		val shouldShowOverlay = showOverlay &&
+			state.needsEffectSelection &&
+			state.onEffectSelected != null &&
+			state.onEffectSelectionBackPressed != null
+		
+		if (shouldShowOverlay) {
 			EffectSelectionOverlay(
 				effects = state.effectSelectionEffects,
 				effectDescriptors = state.effectDescriptors,
-				onEffectSelected = state.onEffectSelected,
-				onBackPressed = state.onEffectSelectionBackPressed,
+				onEffectSelected = state.onEffectSelected!!,
+				onBackPressed = state.onEffectSelectionBackPressed!!,
 			)
 		}
 	}

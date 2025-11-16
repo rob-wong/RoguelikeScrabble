@@ -7,8 +7,12 @@ import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
@@ -35,9 +39,20 @@ fun EffectsColumn(
 	currentRoundEffects: List<Effect>,
 	effectState: EffectAnimationState?,
 	effectDescriptors: Map<String, EffectDescriptor>,
+	animatingEffectId: String?,
 	modifier: Modifier = Modifier,
 ) {
+	val listState = rememberLazyListState()
+	
+	// Scroll to animating effect when it starts
+	LaunchedEffect(animatingEffectId) {
+		if (animatingEffectId != null) {
+			scrollToEffect(listState, animatingEffectId, activeGameEffects, currentRoundEffects)
+		}
+	}
+	
 	LazyColumn(
+		state = listState,
 		modifier = modifier
 			.width(DeviceUtil.getColumnWidthDp(5))
 			.height(200.dp)
@@ -70,6 +85,30 @@ fun EffectsColumn(
 	}
 }
 
+private suspend fun scrollToEffect(
+	listState: LazyListState,
+	effectId: String,
+	activeGameEffects: List<Effect>,
+	currentRoundEffects: List<Effect>
+) {
+	// Find the index of the effect in the combined list
+	val activeIndex = activeGameEffects.indexOfFirst { it.id == effectId }
+	val currentRoundIndex = currentRoundEffects.indexOfFirst { it.id == effectId }
+	
+	val targetIndex = when {
+		activeIndex >= 0 -> activeIndex
+		currentRoundIndex >= 0 -> activeGameEffects.size + currentRoundIndex
+		else -> return // Effect not found, don't scroll
+	}
+	
+	// Scroll to make the effect the first visible item (scrollOffset = 0)
+	// This will scroll until it reaches the top or can't scroll anymore
+	listState.animateScrollToItem(
+		index = targetIndex,
+		scrollOffset = 0
+	)
+}
+
 @Composable
 private fun EffectItemWithBackground(
 	effect: Effect,
@@ -84,18 +123,22 @@ private fun EffectItemWithBackground(
 	
 	val descriptor = effect.descriptor ?: effectDescriptors[effect.label]
 	val textStyle = getEffectTextStyle(descriptor)
-
 	Row(
-		modifier = createEffectRowModifier(shake, hasStoneBackground),
 		verticalAlignment = Alignment.CenterVertically
 	) {
-		OutlinedText(
-			text = effect.label,
-			textAlign = TextAlign.Center,
-			textStyle = textStyle,
-			outlineWidth = 5,
-			useGlow = false
-		)
+		Row(
+			modifier = createEffectRowModifier(shake, hasStoneBackground),
+		) {
+			OutlinedText(
+				text = effect.label,
+				textAlign = TextAlign.Center,
+				textStyle = textStyle.copy(
+					fontSize = textStyle.fontSize * 0.66
+				),
+				outlineWidth = 5,
+				useGlow = false
+			)
+		}
 		renderEffectModifier(multiplier, scoreDelta, scoreAlpha)
 	}
 }
@@ -111,7 +154,7 @@ private fun createEffectRowModifier(shake: Float, hasStoneBackground: Boolean): 
 					.padding(horizontal = 4.dp)
 					.background(
 						brush = stonePatternBrush(),
-						shape = androidx.compose.foundation.shape.RoundedCornerShape(4.dp)
+						shape = RoundedCornerShape(4.dp)
 					)
 					.padding(horizontal = 8.dp, vertical = 4.dp)
 			} else {
@@ -131,8 +174,8 @@ private fun renderEffectModifier(
 			OutlinedText(
 				text = "x ${multiplier.toInt()}",
 				textAlign = TextAlign.Center,
-				textStyle = com.example.gymapprefactor.ui.theme.common.copy(
-					fontSize = com.example.gymapprefactor.ui.theme.common.fontSize * 0.8f
+				textStyle = common.copy(
+					fontSize = common.fontSize * 0.66
 				),
 				outlineWidth = 4,
 				useGlow = false,
@@ -145,8 +188,8 @@ private fun renderEffectModifier(
 			OutlinedText(
 				text = "+$scoreDelta",
 				textAlign = TextAlign.Center,
-				textStyle = com.example.gymapprefactor.ui.theme.common.copy(
-					fontSize = com.example.gymapprefactor.ui.theme.common.fontSize * 0.8f
+				textStyle = common.copy(
+					fontSize = common.fontSize * 0.66
 				),
 				outlineWidth = 4,
 				useGlow = false,

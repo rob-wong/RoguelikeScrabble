@@ -93,6 +93,9 @@ fun LetterBoard(
 		letterBoardData
 	)
 
+	// Track which effect is currently animating for scrolling
+	val animatingEffectId = remember { mutableStateOf<String?>(null) }
+	
 	AnimationHandler(
 		scoreBreakdown = scoreBreakdown,
 		effectAnimations = effectAnimations,
@@ -102,7 +105,8 @@ fun LetterBoard(
 		onScoreAnimationConsumed = onScoreAnimationConsumed,
 		onScoreAnimationComplete = onScoreAnimationComplete,
 		onEffectAnimationConsumed = onEffectAnimationConsumed,
-		onEffectAnimationComplete = onEffectAnimationComplete
+		onEffectAnimationComplete = onEffectAnimationComplete,
+		onEffectAnimationStart = { effectId -> animatingEffectId.value = effectId }
 	)
 
 	// Watch for health changes and fade out score when damage is applied
@@ -119,6 +123,7 @@ fun LetterBoard(
 	LetterBoardContentBox(
 		state = state,
 		letterBoardData = letterBoardData,
+		animatingEffectId = animatingEffectId.value,
 		modifier = modifier
 	)
 }
@@ -192,6 +197,7 @@ private fun setupLetterBoardAnimations(
 private fun LetterBoardContentBox(
 	state: GameScreenState.Playing,
 	letterBoardData: LetterBoardData,
+	animatingEffectId: String?,
 	modifier: Modifier
 ) {
 	Box(
@@ -208,7 +214,8 @@ private fun LetterBoardContentBox(
 			effectState = letterBoardData.effectState,
 			shakeOffset = letterBoardData.shakeOffset,
 			holdingAreaShakeOffset = letterBoardData.holdingAreaShakeOffset,
-			gridColumns = letterBoardData.gridColumns
+			gridColumns = letterBoardData.gridColumns,
+			animatingEffectId = animatingEffectId
 		)
 
 		BagRouter(
@@ -263,7 +270,8 @@ private fun LetterBoardContent(
 	effectState: EffectAnimationState,
 	shakeOffset: Animatable<Float, AnimationVector1D>,
 	holdingAreaShakeOffset: Animatable<Float, AnimationVector1D>,
-	gridColumns: Int
+	gridColumns: Int,
+	animatingEffectId: String?
 ) {
 	Box(modifier = Modifier.fillMaxSize()) {
 		Column(modifier = Modifier.fillMaxSize()) {
@@ -310,6 +318,7 @@ private fun LetterBoardContent(
 			currentRoundEffects = state.currentRoundEffects,
 			effectState = effectState,
 			effectDescriptors = state.effectDescriptors,
+			animatingEffectId = animatingEffectId,
 			modifier = Modifier
 				.align(Alignment.TopStart)
 				.padding(top = 8.dp, start = 8.dp)
