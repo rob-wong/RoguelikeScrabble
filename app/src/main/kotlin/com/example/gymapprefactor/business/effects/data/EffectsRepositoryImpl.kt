@@ -8,10 +8,6 @@ import javax.inject.Inject
 class EffectsRepositoryImpl @Inject constructor(
 	private val dataSource: EffectsDataSource
 ) : EffectsRepository {
-	override fun getEffects(): Flow<Map<String, Int>> {
-		return dataSource.getEffects()
-	}
-
 	override fun getEffectDescriptors(): Flow<Map<String, EffectDescriptor>> {
 		return dataSource.getEffectDescriptors()
 	}
