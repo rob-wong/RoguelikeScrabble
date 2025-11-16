@@ -35,7 +35,6 @@ class EffectScoreMapperImpl @Inject constructor(
 
 	override suspend fun map(param: EffectScoreMapper.Param): List<EffectScoreModification> {
 		val descriptorMap = effectsRepository.getEffectDescriptors().first()
-		val oldEffectMap = effectsRepository.getEffects().first()
 		
 		var currentScore = param.rawScore
 		
@@ -45,8 +44,7 @@ class EffectScoreMapperImpl @Inject constructor(
 				effect = effect,
 				currentScore = currentScore,
 				nextEffect = param.effects.getOrNull(index + 1),
-				descriptor = descriptor,
-				oldEffectMap = oldEffectMap
+				descriptor = descriptor
 			)
 			
 			val multiplier = extractMultiplier(descriptor)
@@ -73,8 +71,7 @@ class EffectScoreMapperImpl @Inject constructor(
 		effect: Effect,
 		currentScore: Int,
 		nextEffect: Effect?,
-		descriptor: EffectDescriptor?,
-		oldEffectMap: Map<String, Int>
+		descriptor: EffectDescriptor?
 	): Int {
 		if (descriptor != null) {
 			val processor = processorFactory.createProcessor(descriptor.type)
@@ -83,14 +80,8 @@ class EffectScoreMapperImpl @Inject constructor(
 			}
 		}
 
-		return calculateScoreFallback(effect, oldEffectMap)
-	}
-
-	private fun calculateScoreFallback(
-		effect: Effect,
-		oldEffectMap: Map<String, Int>
-	): Int {
-		return oldEffectMap[effect.label] ?: effect.label.length
+		// Fallback: use effect label length if no descriptor/processor available
+		return effect.label.length
 	}
 
 	private fun extractMultiplier(descriptor: EffectDescriptor?): Double? {
