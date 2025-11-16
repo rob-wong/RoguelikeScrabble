@@ -1,0 +1,26 @@
+{
+  "CAT": {
+    "type": "fixed_addition",
+    "config": {
+      "value": 5
+    }
+  },
+  "DOG": {
+    "type": "fixed_addition",
+    "config": {
+      "value": 5
+    }
+  },
+  "BIRD": {
+    "type": "fixed_addition",
+    "config": {
+      "value": 6
+    }
+  },
+  "DOUBLE": {
+    "type": "multiplication",
+    "config": {
+      "multiplier": 2.0
+    }
+  }
+}

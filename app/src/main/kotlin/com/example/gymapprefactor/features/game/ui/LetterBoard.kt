@@ -18,6 +18,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.wrapContentWidth
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -40,6 +41,7 @@ import com.example.gymapprefactor.features.game.presentation.models.EffectAnimat
 import com.example.gymapprefactor.features.game.presentation.models.GameScreenState
 import com.example.gymapprefactor.features.game.presentation.models.ScoreAnimationPayload
 import com.example.gymapprefactor.features.game.presentation.models.components.EnemyHealthBarState
+import com.example.gymapprefactor.features.game.presentation.models.components.RoundsRemainingState
 import com.example.gymapprefactor.features.game.ui.components.DiscardsRemainingRouter
 import com.example.gymapprefactor.features.game.ui.components.EffectsColumn
 import com.example.gymapprefactor.features.game.ui.components.RoundsRemainingRouter
@@ -62,6 +64,25 @@ fun LetterBoard(
 	modifier: Modifier = Modifier
 ) {
 	val letterBoardData = rememberLetterBoardData(state.letters)
+	
+	// Clear effect animation state when starting a new game or advancing to a new level
+	val currentRound = when (val roundsState = state.roundsRemainingState) {
+		is RoundsRemainingState.Content -> roundsState.currentRound
+		else -> null
+	}
+	// Track previous round to detect transitions to round 1 (new level)
+	val previousRound = remember { mutableStateOf<Int?>(null) }
+	LaunchedEffect(currentRound, state.effects.size) {
+		// Clear when:
+		// 1. Transitioning to round 1 from a higher round (new level started)
+		// 2. Effects list is empty at round 1 (new game started)
+		val isNewLevel = currentRound == 1 && previousRound.value != null && previousRound.value != 1
+		val isNewGame = state.effects.isEmpty() && currentRound == 1
+		if (isNewLevel || isNewGame) {
+			letterBoardData.effectState.clear()
+		}
+		previousRound.value = currentRound
+	}
 	
 	setupLetterBoardAnimations(
 		invalidWordTrigger,

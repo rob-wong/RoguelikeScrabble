@@ -21,6 +21,10 @@ import com.example.gymapprefactor.business.gameplayLoop.domain.SaveGameStateUseC
 import com.example.gymapprefactor.business.effects.data.EffectsDataSource
 import com.example.gymapprefactor.business.effects.data.EffectsRepositoryImpl
 import com.example.gymapprefactor.business.effects.domain.EffectsRepository
+import com.example.gymapprefactor.business.effects.templating.domain.EffectProcessorFactory
+import com.example.gymapprefactor.business.effects.templating.domain.processors.ComboProcessor
+import com.example.gymapprefactor.business.effects.templating.domain.processors.FixedAdditionProcessor
+import com.example.gymapprefactor.business.effects.templating.domain.processors.MultiplicationProcessor
 import com.example.gymapprefactor.business.gameplayLoop.domain.EffectScoreMapper
 import com.example.gymapprefactor.business.gameplayLoop.domain.EffectScoreMapperImpl
 import com.example.gymapprefactor.business.gameplayLoop.domain.ScoreWordMapper
@@ -119,10 +123,54 @@ object GameplayLoopModule {
 	}
 
 	@Provides
+	@Singleton
+	fun provideJson(): kotlinx.serialization.json.Json {
+		return kotlinx.serialization.json.Json { ignoreUnknownKeys = true }
+	}
+
+	@Provides
+	fun provideFixedAdditionProcessor(
+		json: kotlinx.serialization.json.Json
+	): FixedAdditionProcessor {
+		return FixedAdditionProcessor(json)
+	}
+
+	@Provides
+	fun provideMultiplicationProcessor(
+		json: kotlinx.serialization.json.Json
+	): MultiplicationProcessor {
+		return MultiplicationProcessor(json)
+	}
+
+	@Provides
+	fun provideComboProcessor(
+		json: kotlinx.serialization.json.Json,
+		processorFactoryProvider: javax.inject.Provider<EffectProcessorFactory>
+	): ComboProcessor {
+		return ComboProcessor(json, processorFactoryProvider)
+	}
+
+	@Provides
+	@Singleton
+	fun provideEffectProcessorFactory(
+		fixedAdditionProcessor: FixedAdditionProcessor,
+		multiplicationProcessor: MultiplicationProcessor,
+		comboProcessor: ComboProcessor
+	): EffectProcessorFactory {
+		return EffectProcessorFactory(
+			fixedAdditionProcessor = fixedAdditionProcessor,
+			multiplicationProcessor = multiplicationProcessor,
+			comboProcessor = comboProcessor
+		)
+	}
+
+	@Provides
 	fun provideEffectScoreMapper(
-		effectsRepository: EffectsRepository
+		effectsRepository: EffectsRepository,
+		processorFactory: EffectProcessorFactory,
+		json: kotlinx.serialization.json.Json
 	): EffectScoreMapper {
-		return EffectScoreMapperImpl(effectsRepository)
+		return EffectScoreMapperImpl(effectsRepository, processorFactory, json)
 	}
 
 	@Provides
