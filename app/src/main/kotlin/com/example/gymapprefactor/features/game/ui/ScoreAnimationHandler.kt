@@ -103,10 +103,15 @@ private suspend fun animateLetterScores(
 		scoreState.scoreShakeMap.getOrPut(letterId) { Animatable(0f) }.snapTo(0f)
 	}
 
-	for ((letterId, score) in filteredScores) {
-		scoreState.scoreValueMap[letterId] = score
-		animateLetterScore(letterId, scoreState)
-		delay(320L)
+	coroutineScope {
+		for ((index, scorePair) in filteredScores.withIndex()) {
+			val (letterId, score) = scorePair
+			scoreState.scoreValueMap[letterId] = score
+			launch {
+				delay(index * 150L) // Start each animation 0.15s after the previous one starts
+				animateLetterScore(letterId, scoreState)
+			}
+		}
 	}
 
 	delay(240L)
@@ -156,5 +161,3 @@ private fun clearLetterScoreState(scoreState: ScoreAnimationState) {
 	scoreState.orderedScoredLetters.clear()
 	scoreState.scoreLetterPositions.clear()
 }
-
-
