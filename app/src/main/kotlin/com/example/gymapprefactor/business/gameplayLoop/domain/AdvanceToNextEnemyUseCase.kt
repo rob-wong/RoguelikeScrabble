@@ -49,6 +49,7 @@ class AdvanceToNextEnemyUseCase @Inject constructor(
 			activeGameVariables = game.activeGameVariables.copy(
 				stage = newStage,
 				level = newLevel,
+				needsEffectSelection = false,
 			),
 			currentRound = game.currentRound.copy(
 				round = 1,

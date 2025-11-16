@@ -43,6 +43,7 @@ class CreateGameUseCase @Inject constructor(
 				maxDiscards = STARTING_MAX_DISCARDS,
 				handSize = STARTING_HAND_SIZE,
 				gameLost = false,
+				needsEffectSelection = false,
 			),
 			activeGameValues = ActiveGameValues(
 				seed = (System.currentTimeMillis() xor UUID.randomUUID().mostSignificantBits),

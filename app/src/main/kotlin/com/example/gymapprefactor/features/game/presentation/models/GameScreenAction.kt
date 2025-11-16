@@ -21,8 +21,13 @@ sealed class GameScreenAction : Action {
 		val enemyHealth: Int,
 		val enemyMaxHealth: Int,
 		val enemyLabel: String,
-		val effects: List<Effect>,
+		val activeGameEffects: List<Effect>,
+		val currentRoundEffects: List<Effect>,
 		val effectDescriptors: Map<String, EffectDescriptor>,
+		val needsEffectSelection: Boolean,
+		val effectSelectionEffects: List<Effect>,
+		val onEffectSelected: ((Effect) -> Unit)?,
+		val onEffectSelectionBackPressed: (() -> Unit)?,
 	) : GameScreenAction()
 
 	data object None : GameScreenAction()

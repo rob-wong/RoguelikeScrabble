@@ -22,13 +22,13 @@ import com.example.gymapprefactor.common.components.presentation.LetterState
 import com.example.gymapprefactor.common.components.presentation.ResourceBarState
 import com.example.gymapprefactor.common.components.presentation.ResourceState
 import com.example.gymapprefactor.common.components.ui.ResourceBarRouter
+import com.example.gymapprefactor.features.game.presentation.models.EffectAnimationPayload
 import com.example.gymapprefactor.features.game.presentation.models.GameScreenState
 import com.example.gymapprefactor.features.game.presentation.models.GameScreenState.DraggableLetter
 import com.example.gymapprefactor.features.game.presentation.models.InputButtonState
+import com.example.gymapprefactor.features.game.presentation.models.ScoreAnimationPayload
 import com.example.gymapprefactor.features.game.presentation.models.components.DiscardsRemainingState
 import com.example.gymapprefactor.features.game.presentation.models.components.EnemyHealthBarState
-import com.example.gymapprefactor.features.game.presentation.models.EffectAnimationPayload
-import com.example.gymapprefactor.features.game.presentation.models.ScoreAnimationPayload
 import com.example.gymapprefactor.features.game.presentation.models.components.RoundsRemainingState
 import com.example.gymapprefactor.features.game.ui.components.EnemyHealthBarRouter
 
@@ -74,6 +74,16 @@ fun GamePlayScreen(
 				.align(Alignment.TopEnd)
 				.size(40.dp)
 		)
+		
+		// Show effect selection overlay when needed
+		if (state.needsEffectSelection && state.onEffectSelected != null && state.onEffectSelectionBackPressed != null) {
+			EffectSelectionOverlay(
+				effects = state.effectSelectionEffects,
+				effectDescriptors = state.effectDescriptors,
+				onEffectSelected = state.onEffectSelected,
+				onBackPressed = state.onEffectSelectionBackPressed,
+			)
+		}
 	}
 }
 
@@ -159,13 +169,18 @@ private fun GamePlayScreenPreview() {
 				currentHealth = 15000,
 				maxHealth = 30000
 			),
-			effects = listOf(
+			activeGameEffects = listOf(
 				DefaultEffect(
 					id = "f",
 					label = "EFFECT"
 				)
 			),
-			effectDescriptors = emptyMap()
+			currentRoundEffects = emptyList(),
+			effectDescriptors = emptyMap(),
+			needsEffectSelection = false,
+			effectSelectionEffects = emptyList(),
+			onEffectSelected = null,
+			onEffectSelectionBackPressed = null,
 		),
 		invalidWordTrigger = false,
 		onInvalidWordConsumed = { },

@@ -10,6 +10,7 @@ import com.example.gymapprefactor.business.gameplayLoop.domain.mappers.EffectAni
 import com.example.gymapprefactor.business.gameplayLoop.domain.mappers.EnemyCreationMapper
 import com.example.gymapprefactor.business.gameplayLoop.domain.mappers.EnemyLabelMapper
 import com.example.gymapprefactor.business.models.ActiveGameState
+import com.example.gymapprefactor.business.models.Effect
 import com.example.gymapprefactor.features.dialogs.presentation.models.DialogAction
 import com.example.gymapprefactor.features.dialogs.presentation.state.DialogReducer
 import com.example.gymapprefactor.features.game.presentation.models.EffectAnimationPayload
@@ -98,8 +99,25 @@ class GameViewModelImpl @Inject constructor(
 			enemyHealth = activeGameState.currentRound.enemyHealth,
 			enemyMaxHealth = enemyMaxHealth,
 			enemyLabel = enemyLabel,
-			effects = activeGameState.currentRound.effects,
+			activeGameEffects = activeGameState.activeGameValues.effects,
+			currentRoundEffects = activeGameState.currentRound.effects,
 			effectDescriptors = effectDescriptors,
+			needsEffectSelection = activeGameState.activeGameVariables.needsEffectSelection,
+			effectSelectionEffects = if (activeGameState.activeGameVariables.needsEffectSelection) {
+				activeGameState.currentRound.effects
+			} else {
+				emptyList()
+			},
+			onEffectSelected = if (activeGameState.activeGameVariables.needsEffectSelection) {
+				::onEffectSelected
+			} else {
+				null
+			},
+			onEffectSelectionBackPressed = if (activeGameState.activeGameVariables.needsEffectSelection) {
+				::quitGame
+			} else {
+				null
+			},
 		))
 		
 		if (activeGameState.activeGameVariables.gameLost) {
@@ -176,6 +194,20 @@ class GameViewModelImpl @Inject constructor(
 		} else {
 			updateGame()
 		}
+	}
+
+	private fun onEffectSelected(effect: Effect) {
+		viewModelScope.launch(dispatcherProvider.default) {
+			activeGameState = gameplayBusinessMediator.selectEffectAndAdvance(
+				effect = effect,
+				game = activeGameState
+			)
+			advanceToNextEnemy()
+		}
+	}
+
+	private suspend fun advanceToNextEnemy() {
+		updateGame()
 	}
 
 	private fun quitGame() {

@@ -3,6 +3,7 @@ package com.example.gymapprefactor.business.gameplayLoop.di
 import android.content.Context
 import com.example.gymapprefactor.business.gameplayLoop.data.GameplayDataSource
 import com.example.gymapprefactor.business.gameplayLoop.data.GameplayRepositoryImpl
+import com.example.gymapprefactor.business.gameplayLoop.domain.AddEffectToActiveGameValuesUseCase
 import com.example.gymapprefactor.business.gameplayLoop.domain.AdvanceToNextEnemyUseCase
 import com.example.gymapprefactor.business.gameplayLoop.domain.ApplyScoreToEnemyUseCase
 import com.example.gymapprefactor.business.gameplayLoop.domain.CheckGameConditionsUseCase
@@ -278,7 +279,8 @@ object GameplayLoopModule {
 		applyScoreToEnemyUseCase: ApplyScoreToEnemyUseCase,
 		effectScoreMapper: EffectScoreMapper,
 		gameRules: GameRules,
-		advanceToNextEnemyUseCase: AdvanceToNextEnemyUseCase
+		advanceToNextEnemyUseCase: AdvanceToNextEnemyUseCase,
+		addEffectToActiveGameValuesUseCase: AddEffectToActiveGameValuesUseCase
 	): GameplayBusinessMediator {
 		return GameplayBusinessMediator(
 			getGameStateUseCase = getGameStateUseCase,
@@ -290,7 +292,8 @@ object GameplayLoopModule {
 			applyScoreToEnemyUseCase = applyScoreToEnemyUseCase,
 			effectScoreMapper = effectScoreMapper,
 			gameRules = gameRules,
-			advanceToNextEnemyUseCase = advanceToNextEnemyUseCase
+			advanceToNextEnemyUseCase = advanceToNextEnemyUseCase,
+			addEffectToActiveGameValuesUseCase = addEffectToActiveGameValuesUseCase
 		)
 	}
 }

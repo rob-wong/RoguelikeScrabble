@@ -16,6 +16,7 @@ class GameplayBusinessMediator(
 	private val effectScoreMapper: EffectScoreMapper,
 	private val gameRules: GameRules,
 	private val advanceToNextEnemyUseCase: AdvanceToNextEnemyUseCase,
+	private val addEffectToActiveGameValuesUseCase: AddEffectToActiveGameValuesUseCase,
 ) {
 	suspend fun fetchOrCreateActiveGame(): ActiveGameState {
 		return getGameState() as? ActiveGameState ?: createGameUseCase()
@@ -127,12 +128,24 @@ class GameplayBusinessMediator(
 	}
 
 	private suspend fun handleWinCondition(gameState: ActiveGameState): ActiveGameState {
+		val needsSelection = gameState.currentRound.effects.isNotEmpty()
 		val gameWithWinFlag = gameState.copy(
 			activeGameVariables = gameState.activeGameVariables.copy(
-				gameLost = false
+				gameLost = false,
+				needsEffectSelection = needsSelection
 			)
 		)
-		val savedGame = saveGameState(gameWithWinFlag)
+		return saveGameState(gameWithWinFlag)
+	}
+
+	suspend fun selectEffectAndAdvance(effect: Effect, game: ActiveGameState): ActiveGameState {
+		val gameWithEffect = addEffectToActiveGameValuesUseCase(effect, game)
+		val gameWithFlagCleared = gameWithEffect.copy(
+			activeGameVariables = gameWithEffect.activeGameVariables.copy(
+				needsEffectSelection = false
+			)
+		)
+		val savedGame = saveGameState(gameWithFlagCleared)
 		val advancedGame = advanceToNextEnemyUseCase(savedGame)
 		return saveGameState(advancedGame)
 	}

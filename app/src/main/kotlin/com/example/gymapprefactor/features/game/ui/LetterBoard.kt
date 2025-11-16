@@ -72,12 +72,12 @@ fun LetterBoard(
 	}
 	// Track previous round to detect transitions to round 1 (new level)
 	val previousRound = remember { mutableStateOf<Int?>(null) }
-	LaunchedEffect(currentRound, state.effects.size) {
+	LaunchedEffect(currentRound, state.currentRoundEffects.size) {
 		// Clear when:
 		// 1. Transitioning to round 1 from a higher round (new level started)
 		// 2. Effects list is empty at round 1 (new game started)
 		val isNewLevel = currentRound == 1 && previousRound.value != null && previousRound.value != 1
-		val isNewGame = state.effects.isEmpty() && currentRound == 1
+		val isNewGame = state.currentRoundEffects.isEmpty() && currentRound == 1
 		if (isNewLevel || isNewGame) {
 			letterBoardData.effectState.clear()
 			letterBoardData.scoreState.clear()
@@ -267,24 +267,7 @@ private fun LetterBoardContent(
 ) {
 	Box(modifier = Modifier.fillMaxSize()) {
 		Column(modifier = Modifier.fillMaxSize()) {
-			// Rounds and discards remaining on the right side above scoring lane
-			Box(modifier = Modifier.fillMaxWidth()) {
-				Column(
-					modifier = Modifier
-						.align(Alignment.TopEnd)
-						.padding(top = 8.dp, end = 8.dp)
-				) {
-					RoundsRemainingRouter(
-						state = state.roundsRemainingState,
-						modifier = Modifier.wrapContentWidth()
-					)
-					Spacer(modifier = Modifier.height(4.dp))
-					DiscardsRemainingRouter(
-						state = state.discardsRemainingState,
-						modifier = Modifier.wrapContentWidth()
-					)
-				}
-			}
+			RoundsAndDiscards(state)
 
 		ScoreLane(scoreState = scoreState, effectState = effectState)
 
@@ -323,13 +306,35 @@ private fun LetterBoardContent(
 		
 		// Effects column on the left side
 		EffectsColumn(
-			effects = state.effects,
+			activeGameEffects = state.activeGameEffects,
+			currentRoundEffects = state.currentRoundEffects,
 			effectState = effectState,
 			effectDescriptors = state.effectDescriptors,
 			modifier = Modifier
 				.align(Alignment.TopStart)
 				.padding(top = 8.dp, start = 8.dp)
 		)
+	}
+}
+
+@Composable
+private fun RoundsAndDiscards(state: GameScreenState.Playing) {
+	Box(modifier = Modifier.fillMaxWidth()) {
+		Column(
+			modifier = Modifier
+				.align(Alignment.TopEnd)
+				.padding(top = 8.dp, end = 8.dp)
+		) {
+			RoundsRemainingRouter(
+				state = state.roundsRemainingState,
+				modifier = Modifier.wrapContentWidth()
+			)
+			Spacer(modifier = Modifier.height(4.dp))
+			DiscardsRemainingRouter(
+				state = state.discardsRemainingState,
+				modifier = Modifier.wrapContentWidth()
+			)
+		}
 	}
 }
 

@@ -29,6 +29,7 @@ data class ActiveGameVariables(
 	val maxDiscards: Int,
 	val handSize: Int,
 	val gameLost: Boolean,
+	val needsEffectSelection: Boolean = false,
 )
 
 @Serializable
