@@ -238,7 +238,8 @@ class GameViewModelImpl @Inject constructor(
 				effectLabel = modification.effectLabel,
 				scoreDelta = modification.scoreDelta,
 				orderIndex = modification.orderIndex,
-				cumulativeScore = cumulativeScore
+				cumulativeScore = cumulativeScore,
+				multiplier = modification.multiplier
 			)
 		}
 
@@ -250,7 +251,7 @@ class GameViewModelImpl @Inject constructor(
 		return cumulativeScore
 	}
 
-	private suspend fun applyFinalScore(finalScore: Int) {
+	private fun applyFinalScore(finalScore: Int) {
 		activeGameState = applyScoreToEnemyUseCase(finalScore, activeGameState)
 	}
 

@@ -1,0 +1,27 @@
+package com.example.gymapprefactor.business.effects.templating.domain
+
+import kotlinx.serialization.Serializable
+import kotlinx.serialization.SerialName
+
+@Serializable
+sealed interface EffectConfig
+
+@Serializable
+@SerialName("fixed_addition")
+data class FixedAdditionConfig(
+	val value: Int
+) : EffectConfig
+
+@Serializable
+@SerialName("multiplication")
+data class MultiplicationConfig(
+	val multiplier: Double
+) : EffectConfig
+
+@Serializable
+@SerialName("combo")
+data class ComboConfig(
+	val defaultEffect: EffectDescriptor,
+	val condition: ComboCondition,
+	val comboEffect: EffectDescriptor
+) : EffectConfig

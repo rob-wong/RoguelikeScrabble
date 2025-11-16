@@ -5,5 +5,6 @@ data class EffectAnimationPayload(
 	val effectLabel: String,
 	val scoreDelta: Int,
 	val orderIndex: Int,
-	val cumulativeScore: Int
+	val cumulativeScore: Int,
+	val multiplier: Double? = null // For multiplication effects, the multiplier to display (e.g., 2.0 for "x 2")
 )

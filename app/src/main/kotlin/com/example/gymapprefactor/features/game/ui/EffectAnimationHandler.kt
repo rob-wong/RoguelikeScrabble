@@ -45,12 +45,21 @@ private suspend fun animateEffect(
 			animateEffectShake(shakeAnim)
 		}
 
-		// 2. Show "+n" text on the effect
+		// 2. Show "+n" or "x n" text on the effect
 		launch {
 			val alphaAnim = effectState.effectScoreAlphaMap.getOrPut(effectAnimation.effectId) {
 				Animatable(0f)
 			}
-			effectState.effectScoreValueMap[effectAnimation.effectId] = effectAnimation.scoreDelta
+			// Store scoreDelta for addition effects, multiplier for multiplication effects
+			if (effectAnimation.multiplier != null) {
+				effectState.effectMultiplierMap[effectAnimation.effectId] = effectAnimation.multiplier
+				// Clear scoreDelta for multiplication effects
+				effectState.effectScoreValueMap.remove(effectAnimation.effectId)
+			} else {
+				effectState.effectScoreValueMap[effectAnimation.effectId] = effectAnimation.scoreDelta
+				// Clear multiplier for non-multiplication effects
+				effectState.effectMultiplierMap.remove(effectAnimation.effectId)
+			}
 			alphaAnim.snapTo(0f)
 			alphaAnim.animateTo(1f, tween(durationMillis = 200, easing = LinearEasing))
 			delay(200)

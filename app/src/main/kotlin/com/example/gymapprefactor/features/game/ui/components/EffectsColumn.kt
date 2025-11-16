@@ -38,6 +38,7 @@ fun EffectsColumn(
 			val shake = effectState?.effectShakeMap?.get(effect.id)?.value ?: 0f
 			val scoreAlpha = effectState?.effectScoreAlphaMap?.get(effect.id)?.value ?: 0f
 			val scoreDelta = effectState?.effectScoreValueMap?.get(effect.id)
+			val multiplier = effectState?.effectMultiplierMap?.get(effect.id)
 
 			Row(
 				modifier = Modifier
@@ -52,7 +53,21 @@ fun EffectsColumn(
 					outlineWidth = 5,
 					useGlow = false
 				)
-				if (scoreDelta != null && scoreAlpha > 0f) {
+				// Show multiplier for multiplication effects, delta for addition effects
+				if (multiplier != null && scoreAlpha > 0f) {
+					OutlinedText(
+						text = "x ${multiplier.toInt()}",
+						textAlign = TextAlign.Center,
+						textStyle = com.example.gymapprefactor.ui.theme.common.copy(
+							fontSize = com.example.gymapprefactor.ui.theme.common.fontSize * 0.8f
+						),
+						outlineWidth = 4,
+						useGlow = false,
+						modifier = Modifier
+							.graphicsLayer(alpha = scoreAlpha)
+							.padding(start = 8.dp)
+					)
+				} else if (scoreDelta != null && scoreAlpha > 0f) {
 					OutlinedText(
 						text = "+$scoreDelta",
 						textAlign = TextAlign.Center,
