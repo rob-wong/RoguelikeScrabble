@@ -14,7 +14,8 @@ internal fun AnimationHandler(
 	onScoreAnimationConsumed: () -> Unit,
 	onScoreAnimationComplete: () -> Unit,
 	onEffectAnimationConsumed: () -> Unit,
-	onEffectAnimationComplete: () -> Unit
+	onEffectAnimationComplete: () -> Unit,
+	onEffectAnimationStart: (effectId: String) -> Unit
 ) {
 	// Handle score animations (letter scores)
 	ScoreAnimationHandler(
@@ -30,6 +31,7 @@ internal fun AnimationHandler(
 		effectAnimations = effectAnimations,
 		effectState = effectState,
 		scoreState = scoreState,
+		onEffectAnimationStart = onEffectAnimationStart,
 		onEffectAnimationComplete = {
 			onEffectAnimationConsumed()
 			onEffectAnimationComplete()

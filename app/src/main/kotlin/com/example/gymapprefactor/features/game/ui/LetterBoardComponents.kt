@@ -31,7 +31,6 @@ import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import androidx.compose.ui.zIndex
 import com.example.gymapprefactor.common.components.buttons.presentation.ButtonState
 import com.example.gymapprefactor.common.components.buttons.ui.ButtonRouter
@@ -96,6 +95,7 @@ internal fun ScoreLane(
 				val alpha = scoreState.scoreAlphaMap[letter.id]?.value ?: 0f
 				val score = scoreState.scoreValueMap[letter.id]
 				val fontLevel = scoreState.scoredLetters[letter.id]?.level ?: 1
+				val font = letterFontRouter(fontLevel)
 
 				Box(
 					modifier = Modifier
@@ -107,8 +107,8 @@ internal fun ScoreLane(
 						OutlinedText(
 							text = "+$score",
 							textAlign = TextAlign.Center,
-							textStyle = letterFontRouter(fontLevel).copy(
-								fontSize = 25.sp
+							textStyle = font.copy(
+								fontSize = font.fontSize * 0.66
 							),
 							modifier = Modifier
 								.offset { IntOffset(shake.roundToInt(), 0) }

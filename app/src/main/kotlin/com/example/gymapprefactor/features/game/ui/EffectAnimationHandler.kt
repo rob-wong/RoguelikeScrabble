@@ -16,15 +16,46 @@ internal fun EffectAnimationHandler(
 	effectAnimations: List<EffectAnimationPayload>?,
 	effectState: EffectAnimationState,
 	scoreState: ScoreAnimationState,
+	onEffectAnimationStart: (effectId: String) -> Unit,
 	onEffectAnimationComplete: () -> Unit
 ) {
 	LaunchedEffect(effectAnimations) {
 		if (effectAnimations != null && effectAnimations.isNotEmpty()) {
-			// Process each effect animation in order
-			for (effectAnimation in effectAnimations) {
-				animateEffect(effectAnimation, effectState, scoreState)
-				delay(100) // Small delay between effects
+			// Longest animation duration (alpha animation: 200ms + 200ms + 150ms = 550ms)
+			val longestAnimationDuration = 550L
+			
+			coroutineScope {
+				for ((index, effectAnimation) in effectAnimations.withIndex()) {
+					launch {
+						when (index) {
+							0 -> {
+								// First animation: start immediately
+								onEffectAnimationStart(effectAnimation.effectId)
+								animateEffect(effectAnimation, effectState, scoreState)
+							}
+							in 1..3 -> {
+								// Indices 1-3: wait for previous animation to finish
+								// Each waits cumulative: index 1 waits 550ms, index 2 waits 1100ms, index 3 waits 1650ms
+								val delayMs = index * longestAnimationDuration
+								delay(delayMs)
+								onEffectAnimationStart(effectAnimation.effectId)
+								animateEffect(effectAnimation, effectState, scoreState)
+							}
+							else -> {
+								// Index 4+: progressive delay based on when previous started
+								// Calculate cumulative delay from start
+								val delayMs = calculateCumulativeDelay(index, longestAnimationDuration)
+								delay(delayMs)
+								onEffectAnimationStart(effectAnimation.effectId)
+								animateEffect(effectAnimation, effectState, scoreState)
+							}
+						}
+					}
+				}
 			}
+			
+			// Wait 1 second after all effect animations complete before triggering damage animation
+			delay(1000L)
 		}
 
 		onEffectAnimationComplete()
@@ -157,3 +188,38 @@ private suspend fun animateTotalScoreShake(
 	)
 }
 
+/**
+ * Calculates cumulative delay from the start for effect animations.
+ * 
+ * - Index 0: 0ms (starts immediately)
+ * - Index 1: waits for index 0 to finish (550ms), then starts
+ * - Index 2+: progressive delay based on when previous STARTED
+ *   - Index 2: starts 200ms after index 1 started (550ms + 200ms = 750ms)
+ *   - Index 3: starts 180ms after index 2 started (750ms + 180ms = 930ms)
+ *   - Index 4: starts 160ms after index 3 started (930ms + 160ms = 1090ms)
+ *   - ...decreasing by 20ms each time...
+ *   - Minimum 100ms between starts
+ * 
+ * @param index The animation index (0-based)
+ * @param longestAnimationDuration Duration of longest animation in ms (550ms)
+ * @return Cumulative delay from start in milliseconds
+ */
+private fun calculateCumulativeDelay(index: Int, longestAnimationDuration: Long): Long {
+	return when (index) {
+		0 -> 0L
+		in 1..3 -> index * longestAnimationDuration // Wait for previous to finish
+		else -> {
+			// Index 3 starts at 3 * longestAnimationDuration (1650ms)
+			// Index 4+ start based on when previous STARTED + progressive delay
+			// Index 4 starts at index 3 start time (1650ms) + 200ms = 1850ms
+			var previousStartTime = 3 * longestAnimationDuration // Index 3 start time (1650ms)
+			for (i in 4..index) {
+				// Progressive delay: starts at 200ms for index 4, decreases by 5ms, minimum 150ms
+				val stepDelay = 200L - (i - 4) * 5L
+				val delay = stepDelay.coerceAtLeast(150L)
+				previousStartTime += delay
+			}
+			previousStartTime
+		}
+	}
+}
