@@ -29,7 +29,7 @@ class DrawHandMapperImpl : DrawHandMapper {
 		 * Example: "CAT" will try to draw C, A, T from the deck.
 		 */
 		@JvmStatic
-		var DEBUG_HAND_STRING: String? = "BONUS"
+		var DEBUG_HAND_STRING: String? = "TRIPLE"
 	}
 
 	override fun map(param: Param): Output {

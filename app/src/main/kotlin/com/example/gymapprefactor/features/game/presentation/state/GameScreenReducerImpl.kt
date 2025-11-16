@@ -48,8 +48,13 @@ class GameScreenReducerImpl : GameScreenReducer {
 			roundsRemainingState = mapRoundsRemaining(action),
 			discardsRemainingState = mapDiscardsRemaining(action),
 			enemyHealthBarState = mapEnemyHealthBar(action),
-			effects = action.effects,
+			activeGameEffects = action.activeGameEffects,
+			currentRoundEffects = action.currentRoundEffects,
 			effectDescriptors = action.effectDescriptors,
+			needsEffectSelection = action.needsEffectSelection,
+			effectSelectionEffects = action.effectSelectionEffects,
+			onEffectSelected = action.onEffectSelected,
+			onEffectSelectionBackPressed = action.onEffectSelectionBackPressed,
 		)
 	}
 
