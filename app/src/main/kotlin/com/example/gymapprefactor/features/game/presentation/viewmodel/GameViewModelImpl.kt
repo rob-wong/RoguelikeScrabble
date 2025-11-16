@@ -2,6 +2,7 @@ package com.example.gymapprefactor.features.game.presentation.viewmodel
 
 import androidx.lifecycle.viewModelScope
 import com.example.gymapprefactor.app.util.dispatcher.DispatcherProvider
+import com.example.gymapprefactor.business.effects.domain.GetEffectDescriptorsUseCase
 import com.example.gymapprefactor.business.gameplayLoop.domain.GameplayBusinessMediator
 import com.example.gymapprefactor.business.gameplayLoop.domain.ScoredWordResult
 import com.example.gymapprefactor.business.gameplayLoop.domain.mappers.DiscardsRemainingMapper
@@ -39,6 +40,7 @@ class GameViewModelImpl @Inject constructor(
 	private val enemyLabelMapper: EnemyLabelMapper,
 	private val discardsRemainingMapper: DiscardsRemainingMapper,
 	private val effectAnimationPayloadMapper: EffectAnimationPayloadMapper,
+	private val getEffectDescriptorsUseCase: GetEffectDescriptorsUseCase,
 ) : GameViewModel() {
 	override val state = gameScreenReducer.state
 
@@ -75,6 +77,11 @@ class GameViewModelImpl @Inject constructor(
 		val discardsRemaining = discardsRemainingMapper.map(
 			DiscardsRemainingMapper.Param(game = activeGameState)
 		)
+
+		// probably shouldn't pass the entire list, but eventually it should be:
+		// just holds the effects seen in the game, reset every time
+		// when a word is played, make a backend call for the effect
+		val effectDescriptors = getEffectDescriptorsUseCase()
 		
 		gameScreenReducer.update(GameScreenAction.StartPlaying(
 			runesCount = 10,
@@ -92,6 +99,7 @@ class GameViewModelImpl @Inject constructor(
 			enemyMaxHealth = enemyMaxHealth,
 			enemyLabel = enemyLabel,
 			effects = activeGameState.currentRound.effects,
+			effectDescriptors = effectDescriptors,
 		))
 		
 		if (activeGameState.activeGameVariables.gameLost) {

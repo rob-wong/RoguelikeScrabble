@@ -325,6 +325,7 @@ private fun LetterBoardContent(
 		EffectsColumn(
 			effects = state.effects,
 			effectState = effectState,
+			effectDescriptors = state.effectDescriptors,
 			modifier = Modifier
 				.align(Alignment.TopStart)
 				.padding(top = 8.dp, start = 8.dp)
