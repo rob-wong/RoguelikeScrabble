@@ -15,6 +15,7 @@ import com.example.gymapprefactor.features.dialogs.presentation.models.DialogAct
 import com.example.gymapprefactor.features.dialogs.presentation.state.DialogReducer
 import com.example.gymapprefactor.features.game.presentation.models.EffectAnimationPayload
 import com.example.gymapprefactor.features.game.presentation.models.GameScreenAction
+import com.example.gymapprefactor.features.game.presentation.models.GlyphAnimationPayload
 import com.example.gymapprefactor.features.game.presentation.models.ScoreAnimationPayload
 import com.example.gymapprefactor.features.game.presentation.state.GameScreenReducer
 import com.example.gymapprefactor.features.navigation.presentation.models.NavigationAction
@@ -52,6 +53,8 @@ class GameViewModelImpl @Inject constructor(
 	val effectAnimationEvent = MutableSharedFlow<List<EffectAnimationPayload>>()
 	val effectAnimationComplete = MutableSharedFlow<Unit>()
 	val levelAdvanceShakeTrigger = MutableSharedFlow<Unit>()
+	val glyphAnimationEvent = MutableSharedFlow<GlyphAnimationPayload>()
+	val glyphAnimationComplete = MutableSharedFlow<Unit>()
 	private val mutex = Mutex()
 
 	init {
@@ -86,7 +89,7 @@ class GameViewModelImpl @Inject constructor(
 		
 		gameScreenReducer.update(GameScreenAction.StartPlaying(
 			runesCount = 10,
-			glyphCount = 30,
+			glyphCount = activeGameState.activeGameVariables.glyphCount,
 			onQuitPressed = ::onQuitPressed,
 			onWordPlayed = ::onWordPlayed,
 			onDiscardPressed = ::onDiscardPressed,
@@ -187,6 +190,13 @@ class GameViewModelImpl @Inject constructor(
 		}
 
 		if (processedResult.isWon) {
+			if (processedResult.glyphReward > 0) {
+				glyphAnimationEvent.emit(
+					GlyphAnimationPayload(
+						amount = processedResult.glyphReward
+					)
+				)
+			}
 			updateGame()
 			delay(500)
 			levelAdvanceShakeTrigger.emit(Unit)

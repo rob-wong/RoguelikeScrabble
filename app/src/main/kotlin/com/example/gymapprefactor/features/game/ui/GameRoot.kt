@@ -14,6 +14,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.gymapprefactor.features.game.presentation.models.EffectAnimationPayload
 import com.example.gymapprefactor.features.game.presentation.models.GameScreenState
 import com.example.gymapprefactor.features.game.presentation.models.GameScreenState.None
+import com.example.gymapprefactor.features.game.presentation.models.GlyphAnimationPayload
 import com.example.gymapprefactor.features.game.presentation.models.ScoreAnimationPayload
 import com.example.gymapprefactor.features.game.presentation.viewmodel.GameViewModelImpl
 import kotlinx.coroutines.CoroutineScope
@@ -41,11 +42,13 @@ fun GameRoot(
 		animationQueues.levelAdvanceShakeTrigger,
 		animationQueues.scoreQueue,
 		animationQueues.effectAnimationQueue,
+		animationQueues.glyphAnimationQueue,
 		coroutineScope,
 		viewModel
 	)
 	val activeScoreAnimation = animationQueues.scoreQueue.firstOrNull()
 	val activeEffectAnimations = animationQueues.effectAnimationQueue.firstOrNull()
+	val activeGlyphAnimation = animationQueues.glyphAnimationQueue.firstOrNull()
 
 	when (val state = screenState) {
 		is GameScreenState.Playing ->
@@ -61,6 +64,8 @@ fun GameRoot(
 				effectAnimations = activeEffectAnimations,
 				onEffectAnimationConsumed = callbacks.effectAnimationConsumed,
 				onEffectAnimationComplete = callbacks.effectAnimationComplete,
+				glyphAnimation = activeGlyphAnimation,
+				onGlyphAnimationComplete = callbacks.glyphAnimationComplete,
 				modifier = modifier
 			)
 		is None -> Unit
@@ -73,7 +78,8 @@ private data class AnimationCallbacks(
 	val scoreAnimationConsumed: () -> Unit,
 	val scoreAnimationComplete: () -> Unit,
 	val effectAnimationConsumed: () -> Unit,
-	val effectAnimationComplete: () -> Unit
+	val effectAnimationComplete: () -> Unit,
+	val glyphAnimationComplete: () -> Unit
 )
 
 @Composable
@@ -82,6 +88,7 @@ private fun createAnimationCallbacks(
 	levelAdvanceShakeTrigger: MutableState<Boolean>,
 	scoreQueue: MutableList<ScoreAnimationPayload>,
 	effectAnimationQueue: MutableList<List<EffectAnimationPayload>>,
+	glyphAnimationQueue: MutableList<com.example.gymapprefactor.features.game.presentation.models.GlyphAnimationPayload>,
 	coroutineScope: CoroutineScope,
 	viewModel: GameViewModelImpl
 ): AnimationCallbacks {
@@ -107,6 +114,14 @@ private fun createAnimationCallbacks(
 			coroutineScope.launch {
 				viewModel.effectAnimationComplete.emit(Unit)
 			}
+		},
+		glyphAnimationComplete = {
+			if (glyphAnimationQueue.isNotEmpty()) {
+				glyphAnimationQueue.removeAt(0)
+			}
+			coroutineScope.launch {
+				viewModel.glyphAnimationComplete.emit(Unit)
+			}
 		}
 	)
 }
@@ -115,7 +130,8 @@ private data class AnimationQueues(
 	val invalidWordTrigger: MutableState<Boolean>,
 	val levelAdvanceShakeTrigger: MutableState<Boolean>,
 	val scoreQueue: MutableList<ScoreAnimationPayload>,
-	val effectAnimationQueue: MutableList<List<EffectAnimationPayload>>
+	val effectAnimationQueue: MutableList<List<EffectAnimationPayload>>,
+	val glyphAnimationQueue: MutableList<GlyphAnimationPayload>
 )
 
 @Composable
@@ -124,7 +140,8 @@ private fun rememberAnimationQueues(): AnimationQueues {
 	val levelAdvanceShakeTrigger = remember { mutableStateOf(false) }
 	val scoreQueue = remember { mutableStateListOf<ScoreAnimationPayload>() }
 	val effectAnimationQueue = remember { mutableStateListOf<List<EffectAnimationPayload>>() }
-	return AnimationQueues(invalidWordTrigger, levelAdvanceShakeTrigger, scoreQueue, effectAnimationQueue)
+	val glyphAnimationQueue = remember { mutableStateListOf<GlyphAnimationPayload>() }
+	return AnimationQueues(invalidWordTrigger, levelAdvanceShakeTrigger, scoreQueue, effectAnimationQueue, glyphAnimationQueue)
 }
 
 @Composable
@@ -156,6 +173,13 @@ private fun setupEventCollectors(
 		viewModel.effectAnimationEvent.collectLatest { payload ->
 			println("GameRoot: received effect animation payload size=${payload.size}")
 			animationQueues.effectAnimationQueue.add(payload)
+		}
+	}
+
+	LaunchedEffect(Unit) {
+		viewModel.glyphAnimationEvent.collectLatest { payload ->
+			println("GameRoot: received glyph animation payload amount=${payload.amount}")
+			animationQueues.glyphAnimationQueue.add(payload)
 		}
 	}
 }
