@@ -11,6 +11,8 @@ import com.example.gymapprefactor.business.gameplayLoop.domain.mappers.EnemyCrea
 import com.example.gymapprefactor.business.gameplayLoop.domain.mappers.EnemyLabelMapper
 import com.example.gymapprefactor.business.models.ActiveGameState
 import com.example.gymapprefactor.business.models.Effect
+import com.example.gymapprefactor.common.components.buttons.presentation.IconButtonState
+import com.example.gymapprefactor.features.game.presentation.models.MidshopOption
 import com.example.gymapprefactor.features.dialogs.presentation.models.DialogAction
 import com.example.gymapprefactor.features.dialogs.presentation.state.DialogReducer
 import com.example.gymapprefactor.features.game.presentation.models.EffectAnimationPayload
@@ -56,6 +58,7 @@ class GameViewModelImpl @Inject constructor(
 	val glyphAnimationEvent = MutableSharedFlow<GlyphAnimationPayload>()
 	val glyphAnimationComplete = MutableSharedFlow<Unit>()
 	private val mutex = Mutex()
+	private var selectedMidshopOption: MidshopOption? = null
 
 	init {
 		initGame()
@@ -81,13 +84,29 @@ class GameViewModelImpl @Inject constructor(
 		val discardsRemaining = discardsRemainingMapper.map(
 			DiscardsRemainingMapper.Param(game = activeGameState)
 		)
-
-		// probably shouldn't pass the entire list, but eventually it should be:
-		// just holds the effects seen in the game, reset every time
-		// when a word is played, make a backend call for the effect
 		val effectDescriptors = getEffectDescriptorsUseCase()
 		
-		gameScreenReducer.update(GameScreenAction.StartPlaying(
+		val action = createStartPlayingAction(
+			enemyMaxHealth = enemyMaxHealth,
+			enemyLabel = enemyLabel,
+			discardsRemaining = discardsRemaining,
+			effectDescriptors = effectDescriptors
+		)
+		gameScreenReducer.update(action)
+		
+		if (activeGameState.activeGameVariables.gameLost) {
+			delay(300)
+			triggerGameLostDialog()
+		}
+	}
+	
+	private fun createStartPlayingAction(
+		enemyMaxHealth: Int,
+		enemyLabel: String,
+		discardsRemaining: Int,
+		effectDescriptors: Map<String, com.example.gymapprefactor.business.effects.templating.domain.EffectDescriptor>
+	): GameScreenAction.StartPlaying {
+		return GameScreenAction.StartPlaying(
 			runesCount = 10,
 			glyphCount = activeGameState.activeGameVariables.glyphCount,
 			onQuitPressed = ::onQuitPressed,
@@ -121,12 +140,29 @@ class GameViewModelImpl @Inject constructor(
 			} else {
 				null
 			},
-		))
-		
-		if (activeGameState.activeGameVariables.gameLost) {
-			delay(300)
-			triggerGameLostDialog()
-		}
+			needsMidshopSelection = activeGameState.activeGameVariables.needsMidshopSelection,
+			midshopOptions = if (activeGameState.activeGameVariables.needsMidshopSelection) {
+				generateMidshopOptions()
+			} else {
+				emptyList()
+			},
+			selectedMidshopOption = if (activeGameState.activeGameVariables.needsMidshopSelection) {
+				selectedMidshopOption
+			} else {
+				null
+			},
+			midshopConfirmButton = IconButtonState.None, // Will be mapped in reducer
+			onMidshopOptionSelected = if (activeGameState.activeGameVariables.needsMidshopSelection) {
+				::onMidshopOptionSelected
+			} else {
+				null
+			},
+			onMidshopConfirmed = if (activeGameState.activeGameVariables.needsMidshopSelection) {
+				::onMidshopConfirmed
+			} else {
+				null
+			},
+		)
 	}
 
 	private fun onQuitPressed() {
@@ -212,7 +248,39 @@ class GameViewModelImpl @Inject constructor(
 				effect = effect,
 				game = activeGameState
 			)
-			advanceToNextEnemy()
+			// After effect selection, show midshop instead of advancing immediately
+			updateGame()
+		}
+	}
+	
+	private fun generateMidshopOptions(): List<MidshopOption> {
+		// TEMP, will replace with actual midshop options
+		return (0..4).map { cost ->
+			MidshopOption(
+				id = "midshop_option_$cost",
+				cost = cost
+			)
+		}
+	}
+	
+	private fun onMidshopOptionSelected(option: MidshopOption) {
+		viewModelScope.launch(dispatcherProvider.default) {
+			selectedMidshopOption = option
+			updateGame()
+		}
+	}
+	
+	private fun onMidshopConfirmed() {
+		viewModelScope.launch(dispatcherProvider.default) {
+			val option = selectedMidshopOption
+			if (option != null) {
+				activeGameState = gameplayBusinessMediator.selectMidshopOptionAndAdvance(
+					midshopOption = option,
+					game = activeGameState
+				)
+				selectedMidshopOption = null
+				advanceToNextEnemy()
+			}
 		}
 	}
 

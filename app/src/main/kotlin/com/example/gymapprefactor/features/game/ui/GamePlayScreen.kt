@@ -104,20 +104,46 @@ fun GamePlayScreen(
 				.size(40.dp)
 		)
 		
-		// Show effect selection overlay when needed (with delay)
-		val shouldShowOverlay = showOverlay &&
-			state.needsEffectSelection &&
-			state.onEffectSelected != null &&
-			state.onEffectSelectionBackPressed != null
-		
-		if (shouldShowOverlay) {
-			EffectSelectionOverlay(
-				effects = state.effectSelectionEffects,
-				effectDescriptors = state.effectDescriptors,
-				onEffectSelected = state.onEffectSelected!!,
-				onBackPressed = state.onEffectSelectionBackPressed!!,
-			)
-		}
+		GameOverlays(
+			state = state,
+			showOverlay = showOverlay
+		)
+	}
+}
+
+@Composable
+private fun GameOverlays(
+	state: GameScreenState.Playing,
+	showOverlay: Boolean
+) {
+	// Show effect selection overlay when needed (with delay)
+	val shouldShowEffectOverlay = showOverlay &&
+		state.needsEffectSelection &&
+		state.onEffectSelected != null &&
+		state.onEffectSelectionBackPressed != null
+	
+	if (shouldShowEffectOverlay) {
+		EffectSelectionOverlay(
+			effects = state.effectSelectionEffects,
+			effectDescriptors = state.effectDescriptors,
+			onEffectSelected = state.onEffectSelected!!,
+			onBackPressed = state.onEffectSelectionBackPressed!!,
+		)
+	}
+	
+	// Show midshop overlay when needed
+	val shouldShowMidshopOverlay = state.needsMidshopSelection &&
+		state.midshopOptions.isNotEmpty() &&
+		state.onMidshopOptionSelected != null &&
+		state.onMidshopConfirmed != null
+	
+	if (shouldShowMidshopOverlay) {
+		MidshopSelectionOverlay(
+			options = state.midshopOptions,
+			selectedOption = state.selectedMidshopOption,
+			confirmButton = state.midshopConfirmButton,
+			onOptionSelected = state.onMidshopOptionSelected!!,
+		)
 	}
 }
 
@@ -215,6 +241,12 @@ private fun GamePlayScreenPreview() {
 			effectSelectionEffects = emptyList(),
 			onEffectSelected = null,
 			onEffectSelectionBackPressed = null,
+			needsMidshopSelection = false,
+			midshopOptions = emptyList(),
+			selectedMidshopOption = null,
+			midshopConfirmButton = IconButtonState.None,
+			onMidshopOptionSelected = null,
+			onMidshopConfirmed = null,
 		),
 		invalidWordTrigger = false,
 		onInvalidWordConsumed = { },

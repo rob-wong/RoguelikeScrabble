@@ -55,6 +55,12 @@ class GameScreenReducerImpl : GameScreenReducer {
 			effectSelectionEffects = action.effectSelectionEffects,
 			onEffectSelected = action.onEffectSelected,
 			onEffectSelectionBackPressed = action.onEffectSelectionBackPressed,
+			needsMidshopSelection = action.needsMidshopSelection,
+			midshopOptions = action.midshopOptions,
+			selectedMidshopOption = action.selectedMidshopOption,
+			midshopConfirmButton = mapMidshopConfirmButton(action),
+			onMidshopOptionSelected = action.onMidshopOptionSelected,
+			onMidshopConfirmed = action.onMidshopConfirmed,
 		)
 	}
 
@@ -121,5 +127,16 @@ class GameScreenReducerImpl : GameScreenReducer {
 			currentHealth = action.enemyHealth,
 			maxHealth = action.enemyMaxHealth
 		)
+	}
+	
+	private fun mapMidshopConfirmButton(action: GameScreenAction.StartPlaying): ButtonState {
+		return if (action.needsMidshopSelection && action.selectedMidshopOption != null) {
+			IconButtonState.Content(
+				onClick = action.onMidshopConfirmed ?: {},
+				image = ImageState.ConfirmIcon
+			)
+		} else {
+			IconButtonState.None
+		}
 	}
 }

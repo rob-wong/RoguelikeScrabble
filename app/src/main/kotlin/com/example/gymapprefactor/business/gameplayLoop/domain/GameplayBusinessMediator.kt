@@ -5,6 +5,7 @@ import com.example.gymapprefactor.business.models.ActiveGameState
 import com.example.gymapprefactor.business.models.Effect
 import com.example.gymapprefactor.business.models.GameState
 import com.example.gymapprefactor.business.models.Letter
+import com.example.gymapprefactor.features.game.presentation.models.MidshopOption
 
 class GameplayBusinessMediator(
 	private val getGameStateUseCase: GetGameStateUseCase,
@@ -142,7 +143,8 @@ class GameplayBusinessMediator(
 		val gameWithWinFlag = gameWithRewards.copy(
 			activeGameVariables = gameWithRewards.activeGameVariables.copy(
 				gameLost = false,
-				needsEffectSelection = needsSelection
+				needsEffectSelection = needsSelection,
+				needsMidshopSelection = !needsSelection // Show midshop if no effect selection needed
 			)
 		)
 		return Pair(saveGameState(gameWithWinFlag), glyphReward)
@@ -165,10 +167,26 @@ class GameplayBusinessMediator(
 		val gameWithEffect = addEffectToActiveGameValuesUseCase(effect, game)
 		val gameWithFlagCleared = gameWithEffect.copy(
 			activeGameVariables = gameWithEffect.activeGameVariables.copy(
-				needsEffectSelection = false
+				needsEffectSelection = false,
+				needsMidshopSelection = true
 			)
 		)
-		val savedGame = saveGameState(gameWithFlagCleared)
+		return saveGameState(gameWithFlagCleared)
+	}
+	
+	suspend fun selectMidshopOptionAndAdvance(
+		midshopOption: MidshopOption,
+		game: ActiveGameState
+	): ActiveGameState {
+		val currentGlyphCount = game.activeGameVariables.glyphCount
+		val newGlyphCount = (currentGlyphCount - midshopOption.cost).coerceAtLeast(0)
+		val gameWithGlyphsDeducted = game.copy(
+			activeGameVariables = game.activeGameVariables.copy(
+				glyphCount = newGlyphCount,
+				needsMidshopSelection = false
+			)
+		)
+		val savedGame = saveGameState(gameWithGlyphsDeducted)
 		val advancedGame = advanceToNextEnemyUseCase(savedGame)
 		return saveGameState(advancedGame)
 	}

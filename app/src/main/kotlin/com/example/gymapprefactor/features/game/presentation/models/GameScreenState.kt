@@ -30,6 +30,12 @@ sealed class GameScreenState : State {
 		val effectSelectionEffects: List<Effect>,
 		val onEffectSelected: ((Effect) -> Unit)?,
 		val onEffectSelectionBackPressed: (() -> Unit)?,
+		val needsMidshopSelection: Boolean,
+		val midshopOptions: List<MidshopOption>,
+		val selectedMidshopOption: MidshopOption?,
+		val midshopConfirmButton: ButtonState,
+		val onMidshopOptionSelected: ((MidshopOption) -> Unit)?,
+		val onMidshopConfirmed: (() -> Unit)?,
 	): GameScreenState()
 
 	data object None : GameScreenState()

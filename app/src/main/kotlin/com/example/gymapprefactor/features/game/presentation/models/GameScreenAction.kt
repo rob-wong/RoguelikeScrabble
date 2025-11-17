@@ -28,6 +28,12 @@ sealed class GameScreenAction : Action {
 		val effectSelectionEffects: List<Effect>,
 		val onEffectSelected: ((Effect) -> Unit)?,
 		val onEffectSelectionBackPressed: (() -> Unit)?,
+		val needsMidshopSelection: Boolean,
+		val midshopOptions: List<MidshopOption>,
+		val selectedMidshopOption: MidshopOption?,
+		val midshopConfirmButton: com.example.gymapprefactor.common.components.buttons.presentation.ButtonState,
+		val onMidshopOptionSelected: ((MidshopOption) -> Unit)?,
+		val onMidshopConfirmed: (() -> Unit)?,
 	) : GameScreenAction()
 
 	data object None : GameScreenAction()
