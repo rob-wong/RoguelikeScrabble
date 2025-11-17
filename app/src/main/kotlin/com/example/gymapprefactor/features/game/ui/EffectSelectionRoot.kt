@@ -69,7 +69,9 @@ private fun EffectSelectionContent(
 			) {
 				items(
 					items = effects,
-					key = { effect -> effect.id }
+					key = { effect ->
+						effect.id
+					}
 				) { effect ->
 					EffectSelectionOption(
 						effect = effect,

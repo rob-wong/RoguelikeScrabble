@@ -296,6 +296,12 @@ Recommended order of addressing (considering impact and dependencies):
    - All models updated with proper annotations
    - UserStorage refactored to use new serialization
 
+
+also
+- there are data class inside files (business mediator)
+- unnecessary comments
+- monolithic functions
+- composable naming sucks
 ================================================================================
 NOTES
 ================================================================================

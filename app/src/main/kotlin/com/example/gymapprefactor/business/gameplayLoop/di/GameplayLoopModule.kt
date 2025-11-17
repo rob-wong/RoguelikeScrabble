@@ -42,6 +42,10 @@ import com.example.gymapprefactor.business.gameplayLoop.domain.mappers.EffectAni
 import com.example.gymapprefactor.business.gameplayLoop.domain.mappers.EffectAnimationPayloadMapperImpl
 import com.example.gymapprefactor.business.gameplayLoop.domain.mappers.GlyphRewardMapper
 import com.example.gymapprefactor.business.gameplayLoop.domain.mappers.GlyphRewardMapperImpl
+import com.example.gymapprefactor.business.gameplayLoop.domain.mappers.MidshopOptionMapper
+import com.example.gymapprefactor.business.gameplayLoop.domain.mappers.MidshopOptionMapperImpl
+import com.example.gymapprefactor.business.gameplayLoop.domain.mappers.UpgradeMidshopOptionMapper
+import com.example.gymapprefactor.business.gameplayLoop.domain.mappers.UpgradeMidshopOptionMapperImpl
 import com.example.gymapprefactor.business.models.AppDataModel
 import com.example.gymapprefactor.business.user.domain.UserBusinessMediator
 import dagger.Module
@@ -208,6 +212,16 @@ object GameplayLoopModule {
 	}
 
 	@Provides
+	fun provideMidshopOptionMapper(): MidshopOptionMapper {
+		return MidshopOptionMapperImpl()
+	}
+
+	@Provides
+	fun provideUpgradeMidshopOptionMapper(): UpgradeMidshopOptionMapper {
+		return UpgradeMidshopOptionMapperImpl()
+	}
+
+	@Provides
 	fun provideGameRules(): GameRules {
 		return GameRulesImpl()
 	}
@@ -288,7 +302,8 @@ object GameplayLoopModule {
 		gameRules: GameRules,
 		advanceToNextEnemyUseCase: AdvanceToNextEnemyUseCase,
 		addEffectToActiveGameValuesUseCase: AddEffectToActiveGameValuesUseCase,
-		glyphRewardMapper: GlyphRewardMapper
+		glyphRewardMapper: GlyphRewardMapper,
+		upgradeMidshopOptionMapper: UpgradeMidshopOptionMapper
 	): GameplayBusinessMediator {
 		return GameplayBusinessMediator(
 			getGameStateUseCase = getGameStateUseCase,
@@ -302,7 +317,8 @@ object GameplayLoopModule {
 			gameRules = gameRules,
 			advanceToNextEnemyUseCase = advanceToNextEnemyUseCase,
 			addEffectToActiveGameValuesUseCase = addEffectToActiveGameValuesUseCase,
-			glyphRewardMapper = glyphRewardMapper
+			glyphRewardMapper = glyphRewardMapper,
+			upgradeMidshopOptionMapper = upgradeMidshopOptionMapper
 		)
 	}
 }

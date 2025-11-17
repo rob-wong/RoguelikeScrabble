@@ -1,11 +1,13 @@
 package com.example.gymapprefactor.business.gameplayLoop.domain
 
 import com.example.gymapprefactor.business.gameplayLoop.domain.mappers.GlyphRewardMapper
+import com.example.gymapprefactor.business.gameplayLoop.domain.mappers.UpgradeMidshopOptionMapper
 import com.example.gymapprefactor.business.models.ActiveGameState
 import com.example.gymapprefactor.business.models.Effect
 import com.example.gymapprefactor.business.models.GameState
 import com.example.gymapprefactor.business.models.Letter
 import com.example.gymapprefactor.features.game.presentation.models.MidshopOption
+import com.example.gymapprefactor.features.game.presentation.models.MidshopOptionType
 
 class GameplayBusinessMediator(
 	private val getGameStateUseCase: GetGameStateUseCase,
@@ -20,6 +22,7 @@ class GameplayBusinessMediator(
 	private val advanceToNextEnemyUseCase: AdvanceToNextEnemyUseCase,
 	private val addEffectToActiveGameValuesUseCase: AddEffectToActiveGameValuesUseCase,
 	private val glyphRewardMapper: GlyphRewardMapper,
+	private val upgradeMidshopOptionMapper: UpgradeMidshopOptionMapper,
 ) {
 	suspend fun fetchOrCreateActiveGame(): ActiveGameState {
 		return getGameState() as? ActiveGameState ?: createGameUseCase()
@@ -163,10 +166,11 @@ class GameplayBusinessMediator(
 		)
 	}
 
-	suspend fun selectEffectAndAdvance(effect: Effect, game: ActiveGameState): ActiveGameState {
-		val gameWithEffect = addEffectToActiveGameValuesUseCase(effect, game)
-		val gameWithFlagCleared = gameWithEffect.copy(
-			activeGameVariables = gameWithEffect.activeGameVariables.copy(
+	suspend fun selectEffect(game: ActiveGameState): ActiveGameState {
+		// Don't add the effect yet - just clear the selection flag and show midshop
+		// The effect will be added when midshop is confirmed
+		val gameWithFlagCleared = game.copy(
+			activeGameVariables = game.activeGameVariables.copy(
 				needsEffectSelection = false,
 				needsMidshopSelection = true
 			)
@@ -176,19 +180,72 @@ class GameplayBusinessMediator(
 	
 	suspend fun selectMidshopOptionAndAdvance(
 		midshopOption: MidshopOption,
+		selectedEffect: Effect?,
 		game: ActiveGameState
-	): ActiveGameState {
-		val currentGlyphCount = game.activeGameVariables.glyphCount
+	): MidshopOptionResult {
+		// First, add the selected effect to activeGameValues if one was selected
+		val gameWithEffect = if (selectedEffect != null) {
+			addEffectToActiveGameValuesUseCase(selectedEffect, game)
+		} else {
+			game
+		}
+		
+		val currentGlyphCount = gameWithEffect.activeGameVariables.glyphCount
 		val newGlyphCount = (currentGlyphCount - midshopOption.cost).coerceAtLeast(0)
-		val gameWithGlyphsDeducted = game.copy(
-			activeGameVariables = game.activeGameVariables.copy(
+		val gameWithGlyphsDeducted = gameWithEffect.copy(
+			activeGameVariables = gameWithEffect.activeGameVariables.copy(
 				glyphCount = newGlyphCount,
 				needsMidshopSelection = false
 			)
 		)
-		val savedGame = saveGameState(gameWithGlyphsDeducted)
+		
+		val (gameAfterOption, resultPayload) = executeMidshopOption(
+			midshopOption = midshopOption,
+			game = gameWithGlyphsDeducted
+		)
+		
+		val savedGame = saveGameState(gameAfterOption)
 		val advancedGame = advanceToNextEnemyUseCase(savedGame)
-		return saveGameState(advancedGame)
+		val finalGame = saveGameState(advancedGame)
+		return MidshopOptionResult(
+			gameState = finalGame,
+			resultPayload = resultPayload
+		)
+	}
+
+	private fun executeMidshopOption(
+		midshopOption: MidshopOption,
+		game: ActiveGameState
+	): Pair<ActiveGameState, com.example.gymapprefactor.features.game.presentation.models.MidshopResultPayload?> {
+		return when (midshopOption.type) {
+			is MidshopOptionType.Upgrade -> {
+				val upgradeResult = upgradeMidshopOptionMapper.map(
+					UpgradeMidshopOptionMapper.Param(game = game)
+				)
+				val payload = com.example.gymapprefactor.features.game.presentation.models.MidshopResultPayload.Upgrade(
+					originalLetters = upgradeResult.originalLetters,
+					upgradedLetters = upgradeResult.upgradedLetters,
+					glyphsGained = upgradeResult.glyphsGained
+				)
+				upgradeResult.gameState to payload
+			}
+			is MidshopOptionType.Awaken -> {
+				// TODO: Implement in future PR
+				game to null
+			}
+			is MidshopOptionType.Expunge -> {
+				// TODO: Implement in future PR
+				game to null
+			}
+			is MidshopOptionType.Perfectionism -> {
+				// TODO: Implement in future PR
+				game to null
+			}
+			is MidshopOptionType.Persistence -> {
+				// TODO: Implement in future PR
+				game to null
+			}
+		}
 	}
 
 	private suspend fun handleLossCondition(
@@ -224,3 +281,4 @@ data class ScoredWordResult(
 	val letters: List<Letter>,
 	val wordEffect: Effect
 )
+

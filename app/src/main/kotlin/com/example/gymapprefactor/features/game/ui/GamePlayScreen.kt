@@ -53,6 +53,8 @@ fun GamePlayScreen(
 	onEffectAnimationComplete: () -> Unit,
 	glyphAnimation: com.example.gymapprefactor.features.game.presentation.models.GlyphAnimationPayload?,
 	onGlyphAnimationComplete: () -> Unit,
+	midshopResult: com.example.gymapprefactor.features.game.presentation.models.MidshopResultPayload?,
+	onMidshopResultAnimationComplete: () -> Unit,
 	modifier: Modifier = Modifier,
 ) {
 	// Track whether to show overlay with delay
@@ -106,7 +108,9 @@ fun GamePlayScreen(
 		
 		GameOverlays(
 			state = state,
-			showOverlay = showOverlay
+			showOverlay = showOverlay,
+			midshopResult = midshopResult,
+			onMidshopResultAnimationComplete = onMidshopResultAnimationComplete
 		)
 	}
 }
@@ -114,7 +118,9 @@ fun GamePlayScreen(
 @Composable
 private fun GameOverlays(
 	state: GameScreenState.Playing,
-	showOverlay: Boolean
+	showOverlay: Boolean,
+	midshopResult: com.example.gymapprefactor.features.game.presentation.models.MidshopResultPayload?,
+	onMidshopResultAnimationComplete: () -> Unit
 ) {
 	// Show effect selection overlay when needed (with delay)
 	val shouldShowEffectOverlay = showOverlay &&
@@ -131,19 +137,26 @@ private fun GameOverlays(
 		)
 	}
 	
-	// Show midshop overlay when needed
-	val shouldShowMidshopOverlay = state.needsMidshopSelection &&
-		state.midshopOptions.isNotEmpty() &&
-		state.onMidshopOptionSelected != null &&
-		state.onMidshopConfirmed != null
-	
-	if (shouldShowMidshopOverlay) {
-		MidshopSelectionOverlay(
-			options = state.midshopOptions,
-			selectedOption = state.selectedMidshopOption,
-			confirmButton = state.midshopConfirmButton,
-			onOptionSelected = state.onMidshopOptionSelected!!,
-		)
+	// Show midshop result overlay when there's a result to display (replaces selection)
+	// Otherwise show midshop selection overlay when needed
+	when {
+		midshopResult != null -> {
+			MidshopResultOverlay(
+				result = midshopResult,
+				onAnimationComplete = onMidshopResultAnimationComplete
+			)
+		}
+		state.needsMidshopSelection &&
+			state.midshopOptions.isNotEmpty() &&
+			state.onMidshopOptionSelected != null &&
+			state.onMidshopConfirmed != null -> {
+			MidshopSelectionOverlay(
+				options = state.midshopOptions,
+				selectedOption = state.selectedMidshopOption,
+				confirmButton = state.midshopConfirmButton,
+				onOptionSelected = state.onMidshopOptionSelected!!,
+			)
+		}
 	}
 }
 
@@ -260,5 +273,7 @@ private fun GamePlayScreenPreview() {
 		onEffectAnimationComplete = { },
 		glyphAnimation = null,
 		onGlyphAnimationComplete = { },
+		midshopResult = null,
+		onMidshopResultAnimationComplete = { },
 	)
 }
