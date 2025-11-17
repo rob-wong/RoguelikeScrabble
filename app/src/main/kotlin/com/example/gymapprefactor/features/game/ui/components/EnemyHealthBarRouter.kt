@@ -111,7 +111,7 @@ private fun EnemyHealthBarContent(
 		OutlinedText(
 			text = state.label,
 			textAlign = TextAlign.Center,
-			textStyle = common.copy(fontSize = common.fontSize * 0.6f),
+			textStyle = common.copy(fontSize = common.fontSize * 0.8f),
 			outlineWidth = 3,
 			useGlow = false,
 		)

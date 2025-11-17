@@ -141,7 +141,14 @@ private fun rememberAnimationQueues(): AnimationQueues {
 	val scoreQueue = remember { mutableStateListOf<ScoreAnimationPayload>() }
 	val effectAnimationQueue = remember { mutableStateListOf<List<EffectAnimationPayload>>() }
 	val glyphAnimationQueue = remember { mutableStateListOf<GlyphAnimationPayload>() }
-	return AnimationQueues(invalidWordTrigger, levelAdvanceShakeTrigger, scoreQueue, effectAnimationQueue, glyphAnimationQueue)
+
+	return AnimationQueues(
+		invalidWordTrigger,
+		levelAdvanceShakeTrigger,
+		scoreQueue,
+		effectAnimationQueue,
+		glyphAnimationQueue
+	)
 }
 
 @Composable
