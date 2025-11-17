@@ -27,15 +27,20 @@ import com.example.gymapprefactor.common.components.presentation.LetterState
 import com.example.gymapprefactor.common.components.presentation.ResourceBarState
 import com.example.gymapprefactor.common.components.presentation.ResourceState
 import com.example.gymapprefactor.common.components.ui.ResourceBarRouter
-import com.example.gymapprefactor.features.game.presentation.models.EffectAnimationPayload
+import com.example.gymapprefactor.features.game.presentation.models.animation.EffectAnimationPayload
 import com.example.gymapprefactor.features.game.presentation.models.GameScreenState
 import com.example.gymapprefactor.features.game.presentation.models.GameScreenState.DraggableLetter
 import com.example.gymapprefactor.features.game.presentation.models.InputButtonState
-import com.example.gymapprefactor.features.game.presentation.models.ScoreAnimationPayload
+import com.example.gymapprefactor.features.game.presentation.models.animation.ScoreAnimationPayload
+import com.example.gymapprefactor.features.game.presentation.models.animation.GlyphAnimationPayload
 import com.example.gymapprefactor.features.game.presentation.models.components.DiscardsRemainingState
 import com.example.gymapprefactor.features.game.presentation.models.components.EnemyHealthBarState
 import com.example.gymapprefactor.features.game.presentation.models.components.RoundsRemainingState
 import com.example.gymapprefactor.features.game.ui.components.EnemyHealthBarRouter
+import com.example.gymapprefactor.features.game.ui.overlays.EffectSelectionOverlay
+import com.example.gymapprefactor.features.game.ui.overlays.GlyphAnimationOverlay
+import com.example.gymapprefactor.features.game.ui.overlays.MidshopResultOverlay
+import com.example.gymapprefactor.features.game.ui.overlays.MidshopSelectionOverlay
 import kotlinx.coroutines.delay
 
 @Composable
@@ -51,7 +56,7 @@ fun GamePlayScreen(
 	effectAnimations: List<EffectAnimationPayload>?,
 	onEffectAnimationConsumed: () -> Unit,
 	onEffectAnimationComplete: () -> Unit,
-	glyphAnimation: com.example.gymapprefactor.features.game.presentation.models.GlyphAnimationPayload?,
+	glyphAnimation: GlyphAnimationPayload?,
 	onGlyphAnimationComplete: () -> Unit,
 	midshopResult: com.example.gymapprefactor.features.game.presentation.models.MidshopResultPayload?,
 	onMidshopResultAnimationComplete: () -> Unit,
@@ -154,7 +159,7 @@ private fun GameOverlays(
 				options = state.midshopOptions,
 				selectedOption = state.selectedMidshopOption,
 				confirmButton = state.midshopConfirmButton,
-				onOptionSelected = state.onMidshopOptionSelected!!,
+				onOptionSelected = state.onMidshopOptionSelected,
 			)
 		}
 	}

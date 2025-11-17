@@ -11,12 +11,12 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import com.example.gymapprefactor.features.game.presentation.models.EffectAnimationPayload
+import com.example.gymapprefactor.features.game.presentation.models.animation.EffectAnimationPayload
 import com.example.gymapprefactor.features.game.presentation.models.GameScreenState
 import com.example.gymapprefactor.features.game.presentation.models.GameScreenState.None
-import com.example.gymapprefactor.features.game.presentation.models.GlyphAnimationPayload
+import com.example.gymapprefactor.features.game.presentation.models.animation.GlyphAnimationPayload
 import com.example.gymapprefactor.features.game.presentation.models.MidshopResultPayload
-import com.example.gymapprefactor.features.game.presentation.models.ScoreAnimationPayload
+import com.example.gymapprefactor.features.game.presentation.models.animation.ScoreAnimationPayload
 import com.example.gymapprefactor.features.game.presentation.viewmodel.GameViewModelImpl
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.collectLatest
@@ -94,7 +94,7 @@ private fun createAnimationCallbacks(
 	levelAdvanceShakeTrigger: MutableState<Boolean>,
 	scoreQueue: MutableList<ScoreAnimationPayload>,
 	effectAnimationQueue: MutableList<List<EffectAnimationPayload>>,
-	glyphAnimationQueue: MutableList<com.example.gymapprefactor.features.game.presentation.models.GlyphAnimationPayload>,
+	glyphAnimationQueue: MutableList<GlyphAnimationPayload>,
 	midshopResultQueue: MutableList<MidshopResultPayload>,
 	coroutineScope: CoroutineScope,
 	viewModel: GameViewModelImpl

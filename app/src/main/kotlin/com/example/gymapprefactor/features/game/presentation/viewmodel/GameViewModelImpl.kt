@@ -18,10 +18,10 @@ import com.example.gymapprefactor.features.game.presentation.models.MidshopOptio
 import com.example.gymapprefactor.features.game.presentation.models.MidshopResultPayload
 import com.example.gymapprefactor.features.dialogs.presentation.models.DialogAction
 import com.example.gymapprefactor.features.dialogs.presentation.state.DialogReducer
-import com.example.gymapprefactor.features.game.presentation.models.EffectAnimationPayload
+import com.example.gymapprefactor.features.game.presentation.models.animation.EffectAnimationPayload
 import com.example.gymapprefactor.features.game.presentation.models.GameScreenAction
-import com.example.gymapprefactor.features.game.presentation.models.GlyphAnimationPayload
-import com.example.gymapprefactor.features.game.presentation.models.ScoreAnimationPayload
+import com.example.gymapprefactor.features.game.presentation.models.animation.GlyphAnimationPayload
+import com.example.gymapprefactor.features.game.presentation.models.animation.ScoreAnimationPayload
 import com.example.gymapprefactor.features.game.presentation.state.GameScreenReducer
 import com.example.gymapprefactor.features.navigation.presentation.models.NavigationAction
 import com.example.gymapprefactor.features.navigation.presentation.models.NavigationPage

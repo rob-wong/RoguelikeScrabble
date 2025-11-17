@@ -19,7 +19,6 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.snapshots.SnapshotStateList
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
@@ -32,42 +31,13 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.zIndex
-import com.example.gymapprefactor.common.components.buttons.presentation.ButtonState
-import com.example.gymapprefactor.common.components.buttons.ui.ButtonRouter
-import com.example.gymapprefactor.common.components.presentation.BagState
-import com.example.gymapprefactor.common.components.ui.BagRouter
 import com.example.gymapprefactor.common.components.ui.LetterRouter
 import com.example.gymapprefactor.common.components.ui.OutlinedText
 import com.example.gymapprefactor.common.components.ui.letterFontRouter
 import com.example.gymapprefactor.features.game.presentation.models.GameScreenState
-import com.example.gymapprefactor.features.game.presentation.models.InputButtonState
-import com.example.gymapprefactor.features.game.presentation.models.components.DiscardsRemainingState
-import com.example.gymapprefactor.features.game.presentation.models.components.RoundsRemainingState
-import com.example.gymapprefactor.features.game.ui.components.DiscardsRemainingRouter
-import com.example.gymapprefactor.features.game.ui.components.RoundsRemainingRouter
+import com.example.gymapprefactor.features.game.ui.animation.EffectAnimationState
+import com.example.gymapprefactor.features.game.ui.animation.ScoreAnimationState
 import kotlin.math.roundToInt
-
-@Composable
-internal fun LetterBoardTopBar(
-	playButton: InputButtonState,
-	discardButton: ButtonState,
-	bag: BagState,
-	roundsRemainingState: RoundsRemainingState,
-	discardsRemainingState: DiscardsRemainingState,
-	playedLetters: SnapshotStateList<GameScreenState.DraggableLetter>
-) {
-	Column {
-		Row {
-			InputButtonRouter(playButton, playedLetters, Modifier)
-			ButtonRouter(discardButton)
-			BagRouter(bag)
-		}
-		Row {
-			RoundsRemainingRouter(state = roundsRemainingState)
-			DiscardsRemainingRouter(state = discardsRemainingState)
-		}
-	}
-}
 
 @Composable
 internal fun ScoreLane(
