@@ -46,3 +46,4 @@ private suspend fun fadeOutScore(
 	effectState.totalScore = null
 }
 
+
