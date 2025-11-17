@@ -1,6 +1,6 @@
 package com.example
 
-import com.example.gymapprefactor.business.gameplayLoop.domain.WordValidityMapperImpl
+import com.example.gymapprefactor.business.gameplayLoop.domain.mappers.WordValidityMapperImpl
 import com.example.gymapprefactor.business.models.DefaultLetter
 import com.example.gymapprefactor.business.models.Letter
 import kotlinx.coroutines.test.runTest

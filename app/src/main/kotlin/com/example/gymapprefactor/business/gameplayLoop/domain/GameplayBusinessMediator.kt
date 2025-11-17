@@ -1,7 +1,20 @@
 package com.example.gymapprefactor.business.gameplayLoop.domain
 
+import com.example.gymapprefactor.business.gameplayLoop.domain.mappers.EffectScoreMapper
+import com.example.gymapprefactor.business.gameplayLoop.domain.mappers.EffectScoreModification
 import com.example.gymapprefactor.business.gameplayLoop.domain.mappers.GlyphRewardMapper
+import com.example.gymapprefactor.business.gameplayLoop.domain.mappers.LetterScore
 import com.example.gymapprefactor.business.gameplayLoop.domain.mappers.UpgradeMidshopOptionMapper
+import com.example.gymapprefactor.business.gameplayLoop.domain.models.MidshopOptionResult
+import com.example.gymapprefactor.business.gameplayLoop.domain.usecases.AddEffectToActiveGameValuesUseCase
+import com.example.gymapprefactor.business.gameplayLoop.domain.usecases.AdvanceToNextEnemyUseCase
+import com.example.gymapprefactor.business.gameplayLoop.domain.usecases.ApplyScoreToEnemyUseCase
+import com.example.gymapprefactor.business.gameplayLoop.domain.usecases.CreateGameUseCase
+import com.example.gymapprefactor.business.gameplayLoop.domain.usecases.DrawHandUseCase
+import com.example.gymapprefactor.business.gameplayLoop.domain.usecases.EndGameUseCase
+import com.example.gymapprefactor.business.gameplayLoop.domain.usecases.GetGameStateUseCase
+import com.example.gymapprefactor.business.gameplayLoop.domain.usecases.PlayWordUseCase
+import com.example.gymapprefactor.business.gameplayLoop.domain.usecases.SaveGameStateUseCase
 import com.example.gymapprefactor.business.models.ActiveGameState
 import com.example.gymapprefactor.business.models.Effect
 import com.example.gymapprefactor.business.models.GameState
@@ -30,10 +43,6 @@ class GameplayBusinessMediator(
 
 	suspend fun getGameState(): GameState {
 		return getGameStateUseCase()
-	}
-
-	fun drawHand(drawnAmount: Int, game: ActiveGameState): ActiveGameState {
-		return drawHandUseCase(drawnAmount, game)
 	}
 
 	suspend fun onWordPlayed(list: List<Letter>, game: ActiveGameState): Result<ScoredWordResult> {

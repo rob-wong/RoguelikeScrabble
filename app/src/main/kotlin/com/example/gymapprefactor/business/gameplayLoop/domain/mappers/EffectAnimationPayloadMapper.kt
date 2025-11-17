@@ -1,8 +1,7 @@
 package com.example.gymapprefactor.business.gameplayLoop.domain.mappers
 
-import com.example.gymapprefactor.business.gameplayLoop.domain.EffectScoreModification
 import com.example.gymapprefactor.business.interfaces.Mapper
-import com.example.gymapprefactor.features.game.presentation.models.EffectAnimationPayload
+import com.example.gymapprefactor.features.game.presentation.models.animation.EffectAnimationPayload
 import javax.inject.Inject
 
 interface EffectAnimationPayloadMapper : Mapper<EffectAnimationPayloadMapper.Param, List<EffectAnimationPayload>> {

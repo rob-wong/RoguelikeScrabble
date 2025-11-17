@@ -37,13 +37,22 @@ import androidx.compose.ui.zIndex
 import com.example.gymapprefactor.common.components.buttons.ui.ButtonRouter
 import com.example.gymapprefactor.common.components.ui.BagRouter
 import com.example.gymapprefactor.common.components.ui.LetterRouter
-import com.example.gymapprefactor.features.game.presentation.models.EffectAnimationPayload
+import com.example.gymapprefactor.features.game.presentation.models.animation.EffectAnimationPayload
 import com.example.gymapprefactor.features.game.presentation.models.GameScreenState
-import com.example.gymapprefactor.features.game.presentation.models.ScoreAnimationPayload
+import com.example.gymapprefactor.features.game.presentation.models.animation.ScoreAnimationPayload
 import com.example.gymapprefactor.features.game.presentation.models.components.EnemyHealthBarState
 import com.example.gymapprefactor.features.game.presentation.models.components.RoundsRemainingState
+import com.example.gymapprefactor.features.game.ui.animation.AnimationHandler
+import com.example.gymapprefactor.features.game.ui.animation.EffectAnimationState
+import com.example.gymapprefactor.features.game.ui.animation.InvalidWordShakeHandler
+import com.example.gymapprefactor.features.game.ui.animation.LevelAdvanceShakeHandler
+import com.example.gymapprefactor.features.game.ui.animation.ScoreAnimationState
+import com.example.gymapprefactor.features.game.ui.animation.ScoreFadeOutOnDamageHandler
+import com.example.gymapprefactor.features.game.ui.animation.rememberEffectAnimationState
+import com.example.gymapprefactor.features.game.ui.animation.rememberScoreAnimationState
 import com.example.gymapprefactor.features.game.ui.components.DiscardsRemainingRouter
 import com.example.gymapprefactor.features.game.ui.components.EffectsColumn
+import com.example.gymapprefactor.features.game.ui.components.InputButtonRouter
 import com.example.gymapprefactor.features.game.ui.components.RoundsRemainingRouter
 import kotlinx.coroutines.sync.Mutex
 import kotlin.math.roundToInt
@@ -95,7 +104,7 @@ fun LetterBoard(
 
 	// Track which effect is currently animating for scrolling
 	val animatingEffectId = remember { mutableStateOf<String?>(null) }
-	
+
 	AnimationHandler(
 		scoreBreakdown = scoreBreakdown,
 		effectAnimations = effectAnimations,

@@ -26,7 +26,7 @@ import com.example.gymapprefactor.app.util.DeviceUtil
 import com.example.gymapprefactor.business.effects.templating.domain.EffectDescriptor
 import com.example.gymapprefactor.business.models.Effect
 import com.example.gymapprefactor.common.components.ui.OutlinedText
-import com.example.gymapprefactor.features.game.ui.EffectAnimationState
+import com.example.gymapprefactor.features.game.ui.animation.EffectAnimationState
 import com.example.gymapprefactor.ui.theme.common
 import com.example.gymapprefactor.ui.theme.rare
 import com.example.gymapprefactor.ui.theme.uncommon
