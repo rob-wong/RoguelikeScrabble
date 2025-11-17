@@ -73,7 +73,7 @@ internal fun LetterBoardTopBar(
 internal fun ScoreLane(
 	scoreState: ScoreAnimationState,
 	effectState: EffectAnimationState?,
-	modifier: Modifier = Modifier
+	modifier: Modifier = Modifier,
 ) {
 	Box(
 		modifier = modifier
@@ -89,7 +89,7 @@ internal fun ScoreLane(
 		) {
 			itemsIndexed(
 				items = scoreState.orderedScoredLetters,
-				key = { index, letter -> letter.id }
+				key = { _, letter -> letter.id }
 			) { index, letter ->
 				val shake = scoreState.scoreShakeMap[letter.id]?.value ?: 0f
 				val alpha = scoreState.scoreAlphaMap[letter.id]?.value ?: 0f
@@ -168,7 +168,6 @@ internal fun PlayedArea(
 		}
 		if (boardState.placeholderIndex == boardState.playedLetters.size) add(null)
 	}
-
 	LazyRow(
 		modifier = modifier
 			.offset { IntOffset(shakeOffset.value.roundToInt(), 0) }
@@ -184,7 +183,10 @@ internal fun PlayedArea(
 	) {
 		itemsIndexed(
 			items = renderedLetters,
-			key = { index, item -> item?.id ?: "placeholder-$index" }
+			key = { index, item ->
+				val key = item?.id ?: "placeholder-$index"
+				key
+			}
 		) { index, letter ->
 			if (letter == null) {
 				Box(

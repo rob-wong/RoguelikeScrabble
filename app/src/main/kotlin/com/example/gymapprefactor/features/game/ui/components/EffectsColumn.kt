@@ -60,7 +60,10 @@ fun EffectsColumn(
 		// Render activeGameEffects with stone pattern background
 		items(
 			items = activeGameEffects,
-			key = { effect -> effect.id }
+			key = { effect ->
+				val key = "active_${effect.id}"
+				key
+			}
 		) { effect ->
 			EffectItemWithBackground(
 				effect = effect,
@@ -73,7 +76,10 @@ fun EffectsColumn(
 		// Render currentRoundEffects without background
 		items(
 			items = currentRoundEffects,
-			key = { effect -> effect.id }
+			key = { effect ->
+				val key = "round_${effect.id}"
+				key
+			}
 		) { effect ->
 			EffectItemWithBackground(
 				effect = effect,
@@ -101,8 +107,7 @@ private suspend fun scrollToEffect(
 		else -> return // Effect not found, don't scroll
 	}
 	
-	// Scroll to make the effect the first visible item (scrollOffset = 0)
-	// This will scroll until it reaches the top or can't scroll anymore
+	// Scroll to make the effect the first visible item
 	listState.animateScrollToItem(
 		index = targetIndex,
 		scrollOffset = 0

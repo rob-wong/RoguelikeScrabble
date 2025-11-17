@@ -15,6 +15,7 @@ import com.example.gymapprefactor.features.game.presentation.models.EffectAnimat
 import com.example.gymapprefactor.features.game.presentation.models.GameScreenState
 import com.example.gymapprefactor.features.game.presentation.models.GameScreenState.None
 import com.example.gymapprefactor.features.game.presentation.models.GlyphAnimationPayload
+import com.example.gymapprefactor.features.game.presentation.models.MidshopResultPayload
 import com.example.gymapprefactor.features.game.presentation.models.ScoreAnimationPayload
 import com.example.gymapprefactor.features.game.presentation.viewmodel.GameViewModelImpl
 import kotlinx.coroutines.CoroutineScope
@@ -43,12 +44,14 @@ fun GameRoot(
 		animationQueues.scoreQueue,
 		animationQueues.effectAnimationQueue,
 		animationQueues.glyphAnimationQueue,
+		animationQueues.midshopResultQueue,
 		coroutineScope,
 		viewModel
 	)
 	val activeScoreAnimation = animationQueues.scoreQueue.firstOrNull()
 	val activeEffectAnimations = animationQueues.effectAnimationQueue.firstOrNull()
 	val activeGlyphAnimation = animationQueues.glyphAnimationQueue.firstOrNull()
+	val activeMidshopResult = animationQueues.midshopResultQueue.firstOrNull()
 
 	when (val state = screenState) {
 		is GameScreenState.Playing ->
@@ -66,6 +69,8 @@ fun GameRoot(
 				onEffectAnimationComplete = callbacks.effectAnimationComplete,
 				glyphAnimation = activeGlyphAnimation,
 				onGlyphAnimationComplete = callbacks.glyphAnimationComplete,
+				midshopResult = activeMidshopResult,
+				onMidshopResultAnimationComplete = callbacks.midshopResultAnimationComplete,
 				modifier = modifier
 			)
 		is None -> Unit
@@ -79,7 +84,8 @@ private data class AnimationCallbacks(
 	val scoreAnimationComplete: () -> Unit,
 	val effectAnimationConsumed: () -> Unit,
 	val effectAnimationComplete: () -> Unit,
-	val glyphAnimationComplete: () -> Unit
+	val glyphAnimationComplete: () -> Unit,
+	val midshopResultAnimationComplete: () -> Unit
 )
 
 @Composable
@@ -89,6 +95,7 @@ private fun createAnimationCallbacks(
 	scoreQueue: MutableList<ScoreAnimationPayload>,
 	effectAnimationQueue: MutableList<List<EffectAnimationPayload>>,
 	glyphAnimationQueue: MutableList<com.example.gymapprefactor.features.game.presentation.models.GlyphAnimationPayload>,
+	midshopResultQueue: MutableList<MidshopResultPayload>,
 	coroutineScope: CoroutineScope,
 	viewModel: GameViewModelImpl
 ): AnimationCallbacks {
@@ -122,6 +129,14 @@ private fun createAnimationCallbacks(
 			coroutineScope.launch {
 				viewModel.glyphAnimationComplete.emit(Unit)
 			}
+		},
+		midshopResultAnimationComplete = {
+			if (midshopResultQueue.isNotEmpty()) {
+				midshopResultQueue.removeAt(0)
+			}
+			coroutineScope.launch {
+				viewModel.midshopResultAnimationComplete.emit(Unit)
+			}
 		}
 	)
 }
@@ -131,7 +146,8 @@ private data class AnimationQueues(
 	val levelAdvanceShakeTrigger: MutableState<Boolean>,
 	val scoreQueue: MutableList<ScoreAnimationPayload>,
 	val effectAnimationQueue: MutableList<List<EffectAnimationPayload>>,
-	val glyphAnimationQueue: MutableList<GlyphAnimationPayload>
+	val glyphAnimationQueue: MutableList<GlyphAnimationPayload>,
+	val midshopResultQueue: MutableList<MidshopResultPayload>
 )
 
 @Composable
@@ -141,13 +157,15 @@ private fun rememberAnimationQueues(): AnimationQueues {
 	val scoreQueue = remember { mutableStateListOf<ScoreAnimationPayload>() }
 	val effectAnimationQueue = remember { mutableStateListOf<List<EffectAnimationPayload>>() }
 	val glyphAnimationQueue = remember { mutableStateListOf<GlyphAnimationPayload>() }
+	val midshopResultQueue = remember { mutableStateListOf<MidshopResultPayload>() }
 
 	return AnimationQueues(
 		invalidWordTrigger,
 		levelAdvanceShakeTrigger,
 		scoreQueue,
 		effectAnimationQueue,
-		glyphAnimationQueue
+		glyphAnimationQueue,
+		midshopResultQueue
 	)
 }
 
@@ -187,6 +205,13 @@ private fun setupEventCollectors(
 		viewModel.glyphAnimationEvent.collectLatest { payload ->
 			println("GameRoot: received glyph animation payload amount=${payload.amount}")
 			animationQueues.glyphAnimationQueue.add(payload)
+		}
+	}
+
+	LaunchedEffect(Unit) {
+		viewModel.midshopResultEvent.collectLatest { payload ->
+			println("GameRoot: received midshop result payload")
+			animationQueues.midshopResultQueue.add(payload)
 		}
 	}
 }

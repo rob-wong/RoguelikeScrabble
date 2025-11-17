@@ -12,7 +12,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -121,10 +121,13 @@ private fun MidshopOptionsGrid(
 		verticalArrangement = Arrangement.spacedBy(8.dp),
 		horizontalAlignment = Alignment.CenterHorizontally
 	) {
-		items(
+		itemsIndexed(
 			items = rows,
-			key = { row -> row.first().id }
-		) { row ->
+			key = { index, row ->
+				val key = index
+				key
+			}
+		) { index, row ->
 			MidshopOptionRow(
 				row = row,
 				columns = columns,

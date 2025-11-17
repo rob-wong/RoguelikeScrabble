@@ -3,16 +3,19 @@ package com.example.gymapprefactor.features.game.presentation.viewmodel
 import androidx.lifecycle.viewModelScope
 import com.example.gymapprefactor.app.util.dispatcher.DispatcherProvider
 import com.example.gymapprefactor.business.effects.domain.GetEffectDescriptorsUseCase
+import com.example.gymapprefactor.business.effects.templating.domain.EffectDescriptor
 import com.example.gymapprefactor.business.gameplayLoop.domain.GameplayBusinessMediator
 import com.example.gymapprefactor.business.gameplayLoop.domain.ScoredWordResult
 import com.example.gymapprefactor.business.gameplayLoop.domain.mappers.DiscardsRemainingMapper
 import com.example.gymapprefactor.business.gameplayLoop.domain.mappers.EffectAnimationPayloadMapper
 import com.example.gymapprefactor.business.gameplayLoop.domain.mappers.EnemyCreationMapper
 import com.example.gymapprefactor.business.gameplayLoop.domain.mappers.EnemyLabelMapper
+import com.example.gymapprefactor.business.gameplayLoop.domain.mappers.MidshopOptionMapper
 import com.example.gymapprefactor.business.models.ActiveGameState
 import com.example.gymapprefactor.business.models.Effect
 import com.example.gymapprefactor.common.components.buttons.presentation.IconButtonState
 import com.example.gymapprefactor.features.game.presentation.models.MidshopOption
+import com.example.gymapprefactor.features.game.presentation.models.MidshopResultPayload
 import com.example.gymapprefactor.features.dialogs.presentation.models.DialogAction
 import com.example.gymapprefactor.features.dialogs.presentation.state.DialogReducer
 import com.example.gymapprefactor.features.game.presentation.models.EffectAnimationPayload
@@ -45,6 +48,7 @@ class GameViewModelImpl @Inject constructor(
 	private val discardsRemainingMapper: DiscardsRemainingMapper,
 	private val effectAnimationPayloadMapper: EffectAnimationPayloadMapper,
 	private val getEffectDescriptorsUseCase: GetEffectDescriptorsUseCase,
+	private val midshopOptionMapper: MidshopOptionMapper,
 ) : GameViewModel() {
 	override val state = gameScreenReducer.state
 
@@ -57,8 +61,11 @@ class GameViewModelImpl @Inject constructor(
 	val levelAdvanceShakeTrigger = MutableSharedFlow<Unit>()
 	val glyphAnimationEvent = MutableSharedFlow<GlyphAnimationPayload>()
 	val glyphAnimationComplete = MutableSharedFlow<Unit>()
+	val midshopResultEvent = MutableSharedFlow<MidshopResultPayload>()
+	val midshopResultAnimationComplete = MutableSharedFlow<Unit>()
 	private val mutex = Mutex()
 	private var selectedMidshopOption: MidshopOption? = null
+	private var selectedEffect: Effect? = null
 
 	init {
 		initGame()
@@ -99,12 +106,13 @@ class GameViewModelImpl @Inject constructor(
 			triggerGameLostDialog()
 		}
 	}
-	
+
+	@SuppressWarnings("LongMethod")
 	private fun createStartPlayingAction(
 		enemyMaxHealth: Int,
 		enemyLabel: String,
 		discardsRemaining: Int,
-		effectDescriptors: Map<String, com.example.gymapprefactor.business.effects.templating.domain.EffectDescriptor>
+		effectDescriptors: Map<String, EffectDescriptor>
 	): GameScreenAction.StartPlaying {
 		return GameScreenAction.StartPlaying(
 			runesCount = 10,
@@ -142,7 +150,9 @@ class GameViewModelImpl @Inject constructor(
 			},
 			needsMidshopSelection = activeGameState.activeGameVariables.needsMidshopSelection,
 			midshopOptions = if (activeGameState.activeGameVariables.needsMidshopSelection) {
-				generateMidshopOptions()
+				midshopOptionMapper.map(
+					MidshopOptionMapper.Param(game = activeGameState)
+				)
 			} else {
 				emptyList()
 			},
@@ -244,22 +254,12 @@ class GameViewModelImpl @Inject constructor(
 
 	private fun onEffectSelected(effect: Effect) {
 		viewModelScope.launch(dispatcherProvider.default) {
-			activeGameState = gameplayBusinessMediator.selectEffectAndAdvance(
-				effect = effect,
+			selectedEffect = effect
+			activeGameState = gameplayBusinessMediator.selectEffect(
 				game = activeGameState
 			)
 			// After effect selection, show midshop instead of advancing immediately
 			updateGame()
-		}
-	}
-	
-	private fun generateMidshopOptions(): List<MidshopOption> {
-		// TEMP, will replace with actual midshop options
-		return (0..4).map { cost ->
-			MidshopOption(
-				id = "midshop_option_$cost",
-				cost = cost
-			)
 		}
 	}
 	
@@ -274,11 +274,21 @@ class GameViewModelImpl @Inject constructor(
 		viewModelScope.launch(dispatcherProvider.default) {
 			val option = selectedMidshopOption
 			if (option != null) {
-				activeGameState = gameplayBusinessMediator.selectMidshopOptionAndAdvance(
+				val result = gameplayBusinessMediator.selectMidshopOptionAndAdvance(
 					midshopOption = option,
+					selectedEffect = selectedEffect,
 					game = activeGameState
 				)
+				activeGameState = result.gameState
 				selectedMidshopOption = null
+				selectedEffect = null
+				
+				// Emit result payload if present
+				if (result.resultPayload != null) {
+					midshopResultEvent.emit(result.resultPayload)
+					midshopResultAnimationComplete.first()
+				}
+				
 				advanceToNextEnemy()
 			}
 		}
