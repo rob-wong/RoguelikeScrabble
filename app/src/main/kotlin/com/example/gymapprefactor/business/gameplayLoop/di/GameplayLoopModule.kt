@@ -40,6 +40,8 @@ import com.example.gymapprefactor.business.gameplayLoop.domain.mappers.DiscardsR
 import com.example.gymapprefactor.business.gameplayLoop.domain.mappers.DiscardsRemainingMapperImpl
 import com.example.gymapprefactor.business.gameplayLoop.domain.mappers.EffectAnimationPayloadMapper
 import com.example.gymapprefactor.business.gameplayLoop.domain.mappers.EffectAnimationPayloadMapperImpl
+import com.example.gymapprefactor.business.gameplayLoop.domain.mappers.GlyphRewardMapper
+import com.example.gymapprefactor.business.gameplayLoop.domain.mappers.GlyphRewardMapperImpl
 import com.example.gymapprefactor.business.models.AppDataModel
 import com.example.gymapprefactor.business.user.domain.UserBusinessMediator
 import dagger.Module
@@ -201,6 +203,11 @@ object GameplayLoopModule {
 	}
 
 	@Provides
+	fun provideGlyphRewardMapper(): GlyphRewardMapper {
+		return GlyphRewardMapperImpl()
+	}
+
+	@Provides
 	fun provideGameRules(): GameRules {
 		return GameRulesImpl()
 	}
@@ -280,7 +287,8 @@ object GameplayLoopModule {
 		effectScoreMapper: EffectScoreMapper,
 		gameRules: GameRules,
 		advanceToNextEnemyUseCase: AdvanceToNextEnemyUseCase,
-		addEffectToActiveGameValuesUseCase: AddEffectToActiveGameValuesUseCase
+		addEffectToActiveGameValuesUseCase: AddEffectToActiveGameValuesUseCase,
+		glyphRewardMapper: GlyphRewardMapper
 	): GameplayBusinessMediator {
 		return GameplayBusinessMediator(
 			getGameStateUseCase = getGameStateUseCase,
@@ -293,7 +301,8 @@ object GameplayLoopModule {
 			effectScoreMapper = effectScoreMapper,
 			gameRules = gameRules,
 			advanceToNextEnemyUseCase = advanceToNextEnemyUseCase,
-			addEffectToActiveGameValuesUseCase = addEffectToActiveGameValuesUseCase
+			addEffectToActiveGameValuesUseCase = addEffectToActiveGameValuesUseCase,
+			glyphRewardMapper = glyphRewardMapper
 		)
 	}
 }

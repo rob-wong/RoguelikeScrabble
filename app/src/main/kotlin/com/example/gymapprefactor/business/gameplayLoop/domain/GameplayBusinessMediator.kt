@@ -1,5 +1,6 @@
 package com.example.gymapprefactor.business.gameplayLoop.domain
 
+import com.example.gymapprefactor.business.gameplayLoop.domain.mappers.GlyphRewardMapper
 import com.example.gymapprefactor.business.models.ActiveGameState
 import com.example.gymapprefactor.business.models.Effect
 import com.example.gymapprefactor.business.models.GameState
@@ -17,6 +18,7 @@ class GameplayBusinessMediator(
 	private val gameRules: GameRules,
 	private val advanceToNextEnemyUseCase: AdvanceToNextEnemyUseCase,
 	private val addEffectToActiveGameValuesUseCase: AddEffectToActiveGameValuesUseCase,
+	private val glyphRewardMapper: GlyphRewardMapper,
 ) {
 	suspend fun fetchOrCreateActiveGame(): ActiveGameState {
 		return getGameState() as? ActiveGameState ?: createGameUseCase()
@@ -67,10 +69,15 @@ class GameplayBusinessMediator(
 		
 		val gameConditions = checkGameConditions(gameState)
 		
-		gameState = when {
-			gameConditions.isWon -> handleWinCondition(gameState)
-			gameConditions.isLost -> handleLossCondition(gameState)
-			else -> gameState
+		val glyphReward = if (gameConditions.isWon) {
+			val (updatedGameState, reward) = handleWinCondition(gameState)
+			gameState = updatedGameState
+			reward
+		} else if (gameConditions.isLost) {
+			gameState = handleLossCondition(gameState)
+			0
+		} else {
+			0
 		}
 
 		return ProcessedWordResult(
@@ -79,7 +86,8 @@ class GameplayBusinessMediator(
 			finalScore = finalScore,
 			effectModifications = effectModifications,
 			isWon = gameConditions.isWon,
-			isLost = gameConditions.isLost
+			isLost = gameConditions.isLost,
+			glyphReward = glyphReward
 		)
 	}
 
@@ -127,15 +135,30 @@ class GameplayBusinessMediator(
 		return GameConditions(isWon, isLost)
 	}
 
-	private suspend fun handleWinCondition(gameState: ActiveGameState): ActiveGameState {
+	private suspend fun handleWinCondition(gameState: ActiveGameState): Pair<ActiveGameState, Int> {
 		val needsSelection = gameState.currentRound.effects.isNotEmpty()
-		val gameWithWinFlag = gameState.copy(
-			activeGameVariables = gameState.activeGameVariables.copy(
+		val glyphReward = calculateGlyphReward(gameState)
+		val gameWithRewards = applyGlyphReward(gameState, glyphReward)
+		val gameWithWinFlag = gameWithRewards.copy(
+			activeGameVariables = gameWithRewards.activeGameVariables.copy(
 				gameLost = false,
 				needsEffectSelection = needsSelection
 			)
 		)
-		return saveGameState(gameWithWinFlag)
+		return Pair(saveGameState(gameWithWinFlag), glyphReward)
+	}
+
+	private fun calculateGlyphReward(gameState: ActiveGameState): Int {
+		return glyphRewardMapper.map(GlyphRewardMapper.Param(game = gameState))
+	}
+
+	private fun applyGlyphReward(gameState: ActiveGameState, reward: Int): ActiveGameState {
+		val currentGlyphCount = gameState.activeGameVariables.glyphCount
+		return gameState.copy(
+			activeGameVariables = gameState.activeGameVariables.copy(
+				glyphCount = currentGlyphCount + reward
+			)
+		)
 	}
 
 	suspend fun selectEffectAndAdvance(effect: Effect, game: ActiveGameState): ActiveGameState {
@@ -173,7 +196,8 @@ data class ProcessedWordResult(
 	val finalScore: Int,
 	val effectModifications: List<EffectScoreModification>,
 	val isWon: Boolean,
-	val isLost: Boolean
+	val isLost: Boolean,
+	val glyphReward: Int
 )
 
 data class ScoredWordResult(

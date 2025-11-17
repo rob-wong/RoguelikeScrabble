@@ -16,7 +16,6 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import kotlinx.coroutines.delay
 import com.example.gymapprefactor.app.util.DevicePreviews
 import com.example.gymapprefactor.business.models.DefaultEffect
 import com.example.gymapprefactor.common.components.buttons.presentation.IconButtonState
@@ -37,6 +36,7 @@ import com.example.gymapprefactor.features.game.presentation.models.components.D
 import com.example.gymapprefactor.features.game.presentation.models.components.EnemyHealthBarState
 import com.example.gymapprefactor.features.game.presentation.models.components.RoundsRemainingState
 import com.example.gymapprefactor.features.game.ui.components.EnemyHealthBarRouter
+import kotlinx.coroutines.delay
 
 @Composable
 fun GamePlayScreen(
@@ -51,6 +51,8 @@ fun GamePlayScreen(
 	effectAnimations: List<EffectAnimationPayload>?,
 	onEffectAnimationConsumed: () -> Unit,
 	onEffectAnimationComplete: () -> Unit,
+	glyphAnimation: com.example.gymapprefactor.features.game.presentation.models.GlyphAnimationPayload?,
+	onGlyphAnimationComplete: () -> Unit,
 	modifier: Modifier = Modifier,
 ) {
 	// Track whether to show overlay with delay
@@ -87,6 +89,14 @@ fun GamePlayScreen(
 				)
 			}
 		}
+		
+		// Glyph drop animation overlay - centered on screen, above main content
+		GlyphAnimationOverlay(
+			glyphAnimation = glyphAnimation,
+			onGlyphAnimationComplete = onGlyphAnimationComplete,
+			modifier = Modifier
+		)
+		
 		ButtonRouter(
 			state.quitButton, Modifier
 				.padding(top = 10.dp, end = 10.dp)
@@ -216,5 +226,7 @@ private fun GamePlayScreenPreview() {
 		effectAnimations = null,
 		onEffectAnimationConsumed = { },
 		onEffectAnimationComplete = { },
+		glyphAnimation = null,
+		onGlyphAnimationComplete = { },
 	)
 }
