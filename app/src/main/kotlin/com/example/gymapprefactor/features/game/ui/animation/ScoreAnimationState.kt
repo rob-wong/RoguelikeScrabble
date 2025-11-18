@@ -23,10 +23,15 @@ internal class ScoreAnimationState(
 	val scoredLetters: MutableMap<String, Letter>,
 	val orderedScoredLetters: SnapshotStateList<GameScreenState.DraggableLetter>,
 	val scoreLetterPositions: MutableMap<String, Offset>,
+	val totalFontLevelState: MutableState<Int>,
 ) {
 	var totalScore: Int?
 		get() = totalScoreState.value
 		set(value) { totalScoreState.value = value }
+
+	var totalFontLevel: Int
+		get() = totalFontLevelState.value
+		set(value) { totalFontLevelState.value = value }
 
 	suspend fun clear() {
 		scoreValueMap.clear()
@@ -38,6 +43,7 @@ internal class ScoreAnimationState(
 		scoredLetters.clear()
 		orderedScoredLetters.clear()
 		scoreLetterPositions.clear()
+		totalFontLevelState.value = 1
 	}
 }
 
@@ -52,6 +58,7 @@ internal fun rememberScoreAnimationState(): ScoreAnimationState {
 	val scoredLetters = remember { mutableStateMapOf<String, Letter>() }
 	val orderedScoredLetters = remember { mutableStateListOf<GameScreenState.DraggableLetter>() }
 	val scoreLetterPositions = remember { mutableStateMapOf<String, Offset>() }
+	val totalFontLevelState = remember { mutableStateOf(1) }
 
 	return remember {
 		ScoreAnimationState(
@@ -63,7 +70,8 @@ internal fun rememberScoreAnimationState(): ScoreAnimationState {
 			totalScoreShake = totalScoreShake,
 			scoredLetters = scoredLetters,
 			orderedScoredLetters = orderedScoredLetters,
-			scoreLetterPositions = scoreLetterPositions
+			scoreLetterPositions = scoreLetterPositions,
+			totalFontLevelState = totalFontLevelState
 		)
 	}
 }
