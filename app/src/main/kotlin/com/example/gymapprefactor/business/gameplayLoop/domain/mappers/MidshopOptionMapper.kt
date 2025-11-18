@@ -14,13 +14,16 @@ interface MidshopOptionMapper : Mapper<MidshopOptionMapper.Param, List<MidshopOp
 
 class MidshopOptionMapperImpl @Inject constructor() : MidshopOptionMapper {
 	override fun map(param: MidshopOptionMapper.Param): List<MidshopOption> {
-		// For now, return one free Upgrade option
-		// This will be expanded to include other types in future PRs
 		return listOf(
 			MidshopOption(
 				id = "midshop_upgrade",
 				cost = 0,
 				type = MidshopOptionType.Upgrade
+			),
+			MidshopOption(
+				id = "midshop_awaken",
+				cost = 2,
+				type = MidshopOptionType.Awaken
 			)
 		)
 	}

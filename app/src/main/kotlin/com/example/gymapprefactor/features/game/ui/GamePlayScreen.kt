@@ -31,15 +31,18 @@ import com.example.gymapprefactor.features.game.presentation.models.animation.Ef
 import com.example.gymapprefactor.features.game.presentation.models.GameScreenState
 import com.example.gymapprefactor.features.game.presentation.models.GameScreenState.DraggableLetter
 import com.example.gymapprefactor.features.game.presentation.models.InputButtonState
+import com.example.gymapprefactor.features.game.presentation.models.MidshopResultPayload
 import com.example.gymapprefactor.features.game.presentation.models.animation.ScoreAnimationPayload
 import com.example.gymapprefactor.features.game.presentation.models.animation.GlyphAnimationPayload
 import com.example.gymapprefactor.features.game.presentation.models.components.DiscardsRemainingState
 import com.example.gymapprefactor.features.game.presentation.models.components.EnemyHealthBarState
 import com.example.gymapprefactor.features.game.presentation.models.components.RoundsRemainingState
+import com.example.gymapprefactor.business.models.Letter
+import com.example.gymapprefactor.common.components.buttons.presentation.ButtonState
 import com.example.gymapprefactor.features.game.ui.components.EnemyHealthBarRouter
 import com.example.gymapprefactor.features.game.ui.overlays.EffectSelectionOverlay
 import com.example.gymapprefactor.features.game.ui.overlays.GlyphAnimationOverlay
-import com.example.gymapprefactor.features.game.ui.overlays.MidshopResultOverlay
+import com.example.gymapprefactor.features.game.ui.overlays.midshopresults.MidshopResultOverlay
 import com.example.gymapprefactor.features.game.ui.overlays.MidshopSelectionOverlay
 import kotlinx.coroutines.delay
 
@@ -58,7 +61,7 @@ fun GamePlayScreen(
 	onEffectAnimationComplete: () -> Unit,
 	glyphAnimation: GlyphAnimationPayload?,
 	onGlyphAnimationComplete: () -> Unit,
-	midshopResult: com.example.gymapprefactor.features.game.presentation.models.MidshopResultPayload?,
+	midshopResult: MidshopResultPayload?,
 	onMidshopResultAnimationComplete: () -> Unit,
 	modifier: Modifier = Modifier,
 ) {
@@ -124,45 +127,125 @@ fun GamePlayScreen(
 private fun GameOverlays(
 	state: GameScreenState.Playing,
 	showOverlay: Boolean,
-	midshopResult: com.example.gymapprefactor.features.game.presentation.models.MidshopResultPayload?,
+	midshopResult: MidshopResultPayload?,
 	onMidshopResultAnimationComplete: () -> Unit
 ) {
-	// Show effect selection overlay when needed (with delay)
-	val shouldShowEffectOverlay = showOverlay &&
+	EffectSelectionOverlayIfNeeded(
+		state = state,
+		showOverlay = showOverlay
+	)
+	
+	MidshopOverlays(
+		state = state,
+		midshopResult = midshopResult,
+		onMidshopResultAnimationComplete = onMidshopResultAnimationComplete
+	)
+}
+
+@Composable
+private fun EffectSelectionOverlayIfNeeded(
+	state: GameScreenState.Playing,
+	showOverlay: Boolean
+) {
+	if (!shouldShowEffectSelectionOverlay(state, showOverlay)) {
+		return
+	}
+	
+	EffectSelectionOverlay(
+		effects = state.effectSelectionEffects,
+		effectDescriptors = state.effectDescriptors,
+		onEffectSelected = requireNotNull(state.onEffectSelected),
+		onBackPressed = requireNotNull(state.onEffectSelectionBackPressed),
+	)
+}
+
+private fun shouldShowEffectSelectionOverlay(
+	state: GameScreenState.Playing,
+	showOverlay: Boolean
+): Boolean {
+	return showOverlay &&
 		state.needsEffectSelection &&
 		state.onEffectSelected != null &&
 		state.onEffectSelectionBackPressed != null
-	
-	if (shouldShowEffectOverlay) {
-		EffectSelectionOverlay(
-			effects = state.effectSelectionEffects,
-			effectDescriptors = state.effectDescriptors,
-			onEffectSelected = state.onEffectSelected!!,
-			onBackPressed = state.onEffectSelectionBackPressed!!,
+}
+
+@Composable
+private fun MidshopOverlays(
+	state: GameScreenState.Playing,
+	midshopResult: MidshopResultPayload?,
+	onMidshopResultAnimationComplete: () -> Unit
+) {
+	if (midshopResult != null) {
+		MidshopResultOverlayContent(
+			result = midshopResult,
+			state = state,
+			onAnimationComplete = onMidshopResultAnimationComplete
 		)
+	} else if (shouldShowMidshopSelectionOverlay(state)) {
+		MidshopSelectionOverlayContent(state = state)
+	}
+}
+
+@Composable
+private fun MidshopResultOverlayContent(
+	result: MidshopResultPayload,
+	state: GameScreenState.Playing,
+	onAnimationComplete: () -> Unit
+) {
+	val awakenProps = extractAwakenPropsIfNeeded(result, state)
+	
+	MidshopResultOverlay(
+		result = result,
+		onAnimationComplete = onAnimationComplete,
+		selectedAwakenLetter = awakenProps?.selectedLetter,
+		awakenConfirmButton = awakenProps?.confirmButton,
+		onAwakenLetterSelected = awakenProps?.onLetterSelected,
+		onAwakenConfirmed = awakenProps?.onConfirmed
+	)
+}
+
+private data class AwakenProps(
+	val selectedLetter: Letter?,
+	val confirmButton: ButtonState,
+	val onLetterSelected: ((Letter) -> Unit)?,
+	val onConfirmed: (() -> Unit)?
+)
+
+private fun extractAwakenPropsIfNeeded(
+	result: MidshopResultPayload,
+	state: GameScreenState.Playing
+): AwakenProps? {
+	if (result !is MidshopResultPayload.Awaken) {
+		return null
 	}
 	
-	// Show midshop result overlay when there's a result to display (replaces selection)
-	// Otherwise show midshop selection overlay when needed
-	when {
-		midshopResult != null -> {
-			MidshopResultOverlay(
-				result = midshopResult,
-				onAnimationComplete = onMidshopResultAnimationComplete
-			)
-		}
-		state.needsMidshopSelection &&
-			state.midshopOptions.isNotEmpty() &&
-			state.onMidshopOptionSelected != null &&
-			state.onMidshopConfirmed != null -> {
-			MidshopSelectionOverlay(
-				options = state.midshopOptions,
-				selectedOption = state.selectedMidshopOption,
-				confirmButton = state.midshopConfirmButton,
-				onOptionSelected = state.onMidshopOptionSelected,
-			)
-		}
-	}
+	return AwakenProps(
+		selectedLetter = state.selectedAwakenLetter,
+		confirmButton = state.awakenConfirmButton,
+		onLetterSelected = state.onAwakenLetterSelected,
+		onConfirmed = state.onAwakenConfirmed
+	)
+}
+
+@Composable
+private fun MidshopSelectionOverlayContent(
+	state: GameScreenState.Playing
+) {
+	MidshopSelectionOverlay(
+		options = state.midshopOptions,
+		selectedOption = state.selectedMidshopOption,
+		confirmButton = state.midshopConfirmButton,
+		onOptionSelected = requireNotNull(state.onMidshopOptionSelected),
+	)
+}
+
+private fun shouldShowMidshopSelectionOverlay(
+	state: GameScreenState.Playing
+): Boolean {
+	return state.needsMidshopSelection &&
+		state.midshopOptions.isNotEmpty() &&
+		state.onMidshopOptionSelected != null &&
+		state.onMidshopConfirmed != null
 }
 
 @SuppressWarnings("LongMethod")
@@ -265,6 +348,12 @@ private fun GamePlayScreenPreview() {
 			midshopConfirmButton = IconButtonState.None,
 			onMidshopOptionSelected = null,
 			onMidshopConfirmed = null,
+			needsAwakenLetterSelection = false,
+			awakenLetters = emptyList(),
+			selectedAwakenLetter = null,
+			awakenConfirmButton = IconButtonState.None,
+			onAwakenLetterSelected = null,
+			onAwakenConfirmed = null,
 		),
 		invalidWordTrigger = false,
 		onInvalidWordConsumed = { },

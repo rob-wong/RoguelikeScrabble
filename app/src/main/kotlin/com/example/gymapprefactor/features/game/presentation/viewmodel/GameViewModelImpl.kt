@@ -14,6 +14,7 @@ import com.example.gymapprefactor.business.gameplayLoop.domain.mappers.MidshopOp
 import com.example.gymapprefactor.business.models.ActiveGameState
 import com.example.gymapprefactor.business.models.Effect
 import com.example.gymapprefactor.common.components.buttons.presentation.IconButtonState
+import com.example.gymapprefactor.business.models.Letter
 import com.example.gymapprefactor.features.game.presentation.models.MidshopOption
 import com.example.gymapprefactor.features.game.presentation.models.MidshopResultPayload
 import com.example.gymapprefactor.features.dialogs.presentation.models.DialogAction
@@ -66,6 +67,8 @@ class GameViewModelImpl @Inject constructor(
 	private val mutex = Mutex()
 	private var selectedMidshopOption: MidshopOption? = null
 	private var selectedEffect: Effect? = null
+	private var selectedAwakenLetter: Letter? = null
+	private var awakenLetters: List<Letter> = emptyList()
 
 	init {
 		initGame()
@@ -169,6 +172,20 @@ class GameViewModelImpl @Inject constructor(
 			},
 			onMidshopConfirmed = if (activeGameState.activeGameVariables.needsMidshopSelection) {
 				::onMidshopConfirmed
+			} else {
+				null
+			},
+			needsAwakenLetterSelection = awakenLetters.isNotEmpty(),
+			awakenLetters = awakenLetters,
+			selectedAwakenLetter = selectedAwakenLetter,
+			awakenConfirmButton = IconButtonState.None, // Will be mapped in reducer
+			onAwakenLetterSelected = if (awakenLetters.isNotEmpty()) {
+				::onAwakenLetterSelected
+			} else {
+				null
+			},
+			onAwakenConfirmed = if (awakenLetters.isNotEmpty()) {
+				::onAwakenConfirmed
 			} else {
 				null
 			},
@@ -280,15 +297,61 @@ class GameViewModelImpl @Inject constructor(
 					game = activeGameState
 				)
 				activeGameState = result.gameState
+
+				when (result.resultPayload) {
+					is MidshopResultPayload.Awaken -> {
+						awakenLetters = result.resultPayload.generatedLetters
+						selectedAwakenLetter = null
+						selectedMidshopOption = null
+
+						updateGame()
+						delay(50)
+
+						midshopResultEvent.emit(result.resultPayload)
+					}
+					else -> {
+						selectedMidshopOption = null
+						selectedEffect = null
+
+						if (result.resultPayload != null) {
+							midshopResultEvent.emit(result.resultPayload)
+							midshopResultAnimationComplete.first()
+						}
+						
+						advanceToNextEnemy()
+					}
+				}
+			}
+		}
+	}
+	
+	private fun onAwakenLetterSelected(letter: Letter) {
+		viewModelScope.launch(dispatcherProvider.default) {
+			selectedAwakenLetter = letter
+			updateGame()
+		}
+	}
+	
+	private fun onAwakenConfirmed() {
+		viewModelScope.launch(dispatcherProvider.default) {
+			val letter = selectedAwakenLetter
+			if (letter != null) {
+				// Add letter to deck and advance to next enemy
+				activeGameState = gameplayBusinessMediator.confirmAwakenLetterSelection(
+					selectedLetter = letter,
+					game = activeGameState
+				)
+				
+				// Clear state
+				selectedAwakenLetter = null
+				awakenLetters = emptyList()
 				selectedMidshopOption = null
 				selectedEffect = null
 				
-				// Emit result payload if present
-				if (result.resultPayload != null) {
-					midshopResultEvent.emit(result.resultPayload)
-					midshopResultAnimationComplete.first()
-				}
+				// Clear the midshop result so the overlay disappears
+				midshopResultAnimationComplete.emit(Unit)
 				
+				// Update game state (advancement already happened in confirmAwakenLetterSelection)
 				advanceToNextEnemy()
 			}
 		}
