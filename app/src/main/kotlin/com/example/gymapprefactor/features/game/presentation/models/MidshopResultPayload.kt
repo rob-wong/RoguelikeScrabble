@@ -9,8 +9,7 @@ sealed class MidshopResultPayload {
 		val glyphsGained: Int
 	) : MidshopResultPayload()
 	
-	// Future types will be added here:
-	// data class Awaken(...) : MidshopResultPayload()
-	// data class Expunge(...) : MidshopResultPayload()
-	// etc.
+	data class Awaken(
+		val generatedLetters: List<Letter>
+	) : MidshopResultPayload()
 }

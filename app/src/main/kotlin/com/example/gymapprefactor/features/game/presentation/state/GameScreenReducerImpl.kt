@@ -61,6 +61,12 @@ class GameScreenReducerImpl : GameScreenReducer {
 			midshopConfirmButton = mapMidshopConfirmButton(action),
 			onMidshopOptionSelected = action.onMidshopOptionSelected,
 			onMidshopConfirmed = action.onMidshopConfirmed,
+			needsAwakenLetterSelection = action.needsAwakenLetterSelection,
+			awakenLetters = action.awakenLetters,
+			selectedAwakenLetter = action.selectedAwakenLetter,
+			awakenConfirmButton = mapAwakenConfirmButton(action),
+			onAwakenLetterSelected = action.onAwakenLetterSelected,
+			onAwakenConfirmed = action.onAwakenConfirmed,
 		)
 	}
 
@@ -133,6 +139,17 @@ class GameScreenReducerImpl : GameScreenReducer {
 		return if (action.needsMidshopSelection && action.selectedMidshopOption != null) {
 			IconButtonState.Content(
 				onClick = action.onMidshopConfirmed ?: {},
+				image = ImageState.ConfirmIcon
+			)
+		} else {
+			IconButtonState.None
+		}
+	}
+	
+	private fun mapAwakenConfirmButton(action: GameScreenAction.StartPlaying): ButtonState {
+		return if (action.needsAwakenLetterSelection && action.selectedAwakenLetter != null) {
+			IconButtonState.Content(
+				onClick = action.onAwakenConfirmed ?: {},
 				image = ImageState.ConfirmIcon
 			)
 		} else {

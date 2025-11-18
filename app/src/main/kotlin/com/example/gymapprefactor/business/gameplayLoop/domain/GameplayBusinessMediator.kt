@@ -4,7 +4,6 @@ import com.example.gymapprefactor.business.gameplayLoop.domain.mappers.EffectSco
 import com.example.gymapprefactor.business.gameplayLoop.domain.mappers.EffectScoreModification
 import com.example.gymapprefactor.business.gameplayLoop.domain.mappers.GlyphRewardMapper
 import com.example.gymapprefactor.business.gameplayLoop.domain.mappers.LetterScore
-import com.example.gymapprefactor.business.gameplayLoop.domain.mappers.UpgradeMidshopOptionMapper
 import com.example.gymapprefactor.business.gameplayLoop.domain.models.MidshopOptionResult
 import com.example.gymapprefactor.business.gameplayLoop.domain.usecases.AddEffectToActiveGameValuesUseCase
 import com.example.gymapprefactor.business.gameplayLoop.domain.usecases.AdvanceToNextEnemyUseCase
@@ -20,7 +19,6 @@ import com.example.gymapprefactor.business.models.Effect
 import com.example.gymapprefactor.business.models.GameState
 import com.example.gymapprefactor.business.models.Letter
 import com.example.gymapprefactor.features.game.presentation.models.MidshopOption
-import com.example.gymapprefactor.features.game.presentation.models.MidshopOptionType
 
 class GameplayBusinessMediator(
 	private val getGameStateUseCase: GetGameStateUseCase,
@@ -35,7 +33,7 @@ class GameplayBusinessMediator(
 	private val advanceToNextEnemyUseCase: AdvanceToNextEnemyUseCase,
 	private val addEffectToActiveGameValuesUseCase: AddEffectToActiveGameValuesUseCase,
 	private val glyphRewardMapper: GlyphRewardMapper,
-	private val upgradeMidshopOptionMapper: UpgradeMidshopOptionMapper,
+	private val midshopBusinessMediator: MidshopBusinessMediator,
 ) {
 	suspend fun fetchOrCreateActiveGame(): ActiveGameState {
 		return getGameState() as? ActiveGameState ?: createGameUseCase()
@@ -208,53 +206,37 @@ class GameplayBusinessMediator(
 			)
 		)
 		
-		val (gameAfterOption, resultPayload) = executeMidshopOption(
+		val executionResult = midshopBusinessMediator.executeMidshopOption(
 			midshopOption = midshopOption,
 			game = gameWithGlyphsDeducted
 		)
 		
-		val savedGame = saveGameState(gameAfterOption)
-		val advancedGame = advanceToNextEnemyUseCase(savedGame)
-		val finalGame = saveGameState(advancedGame)
+		val savedGame = saveGameState(executionResult.gameState)
+		
+		val finalGame = if (executionResult.shouldAdvance) {
+			val advancedGame = advanceToNextEnemyUseCase(savedGame)
+			saveGameState(advancedGame)
+		} else {
+			savedGame
+		}
+		
 		return MidshopOptionResult(
 			gameState = finalGame,
-			resultPayload = resultPayload
+			resultPayload = executionResult.resultPayload
 		)
 	}
 
-	private fun executeMidshopOption(
-		midshopOption: MidshopOption,
+	suspend fun confirmAwakenLetterSelection(
+		selectedLetter: Letter,
 		game: ActiveGameState
-	): Pair<ActiveGameState, com.example.gymapprefactor.features.game.presentation.models.MidshopResultPayload?> {
-		return when (midshopOption.type) {
-			is MidshopOptionType.Upgrade -> {
-				val upgradeResult = upgradeMidshopOptionMapper.map(
-					UpgradeMidshopOptionMapper.Param(game = game)
-				)
-				val payload = com.example.gymapprefactor.features.game.presentation.models.MidshopResultPayload.Upgrade(
-					originalLetters = upgradeResult.originalLetters,
-					upgradedLetters = upgradeResult.upgradedLetters,
-					glyphsGained = upgradeResult.glyphsGained
-				)
-				upgradeResult.gameState to payload
-			}
-			is MidshopOptionType.Awaken -> {
-				// TODO: Implement in future PR
-				game to null
-			}
-			is MidshopOptionType.Expunge -> {
-				// TODO: Implement in future PR
-				game to null
-			}
-			is MidshopOptionType.Perfectionism -> {
-				// TODO: Implement in future PR
-				game to null
-			}
-			is MidshopOptionType.Persistence -> {
-				// TODO: Implement in future PR
-				game to null
-			}
-		}
+	): ActiveGameState {
+		val gameWithLetter = midshopBusinessMediator.confirmAwakenLetterSelection(
+			selectedLetter = selectedLetter,
+			game = game
+		)
+		val savedGame = saveGameState(gameWithLetter)
+		val advancedGame = advanceToNextEnemyUseCase(savedGame)
+		return saveGameState(advancedGame)
 	}
 
 	private suspend fun handleLossCondition(

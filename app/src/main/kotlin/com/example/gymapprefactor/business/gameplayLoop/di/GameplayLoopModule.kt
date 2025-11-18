@@ -44,8 +44,14 @@ import com.example.gymapprefactor.business.gameplayLoop.domain.mappers.GlyphRewa
 import com.example.gymapprefactor.business.gameplayLoop.domain.mappers.GlyphRewardMapperImpl
 import com.example.gymapprefactor.business.gameplayLoop.domain.mappers.MidshopOptionMapper
 import com.example.gymapprefactor.business.gameplayLoop.domain.mappers.MidshopOptionMapperImpl
+import com.example.gymapprefactor.business.gameplayLoop.domain.handlers.AwakenOptionHandler
+import com.example.gymapprefactor.business.gameplayLoop.domain.handlers.MidshopOptionHandlerRegistry
+import com.example.gymapprefactor.business.gameplayLoop.domain.handlers.UpgradeOptionHandler
+import com.example.gymapprefactor.business.gameplayLoop.domain.mappers.AwakenMidshopOptionMapper
+import com.example.gymapprefactor.business.gameplayLoop.domain.mappers.AwakenMidshopOptionMapperImpl
 import com.example.gymapprefactor.business.gameplayLoop.domain.mappers.UpgradeMidshopOptionMapper
 import com.example.gymapprefactor.business.gameplayLoop.domain.mappers.UpgradeMidshopOptionMapperImpl
+import com.example.gymapprefactor.business.gameplayLoop.domain.MidshopBusinessMediator
 import com.example.gymapprefactor.business.models.AppDataModel
 import com.example.gymapprefactor.business.user.domain.UserBusinessMediator
 import dagger.Module
@@ -222,6 +228,49 @@ object GameplayLoopModule {
 	}
 
 	@Provides
+	fun provideAwakenMidshopOptionMapper(): AwakenMidshopOptionMapper {
+		return AwakenMidshopOptionMapperImpl()
+	}
+
+	@Provides
+	fun provideUpgradeOptionHandler(
+		upgradeMidshopOptionMapper: UpgradeMidshopOptionMapper
+	): UpgradeOptionHandler {
+		return UpgradeOptionHandler(
+			upgradeMidshopOptionMapper = upgradeMidshopOptionMapper
+		)
+	}
+
+	@Provides
+	fun provideAwakenOptionHandler(
+		awakenMidshopOptionMapper: AwakenMidshopOptionMapper
+	): AwakenOptionHandler {
+		return AwakenOptionHandler(
+			awakenMidshopOptionMapper = awakenMidshopOptionMapper
+		)
+	}
+
+	@Provides
+	fun provideMidshopOptionHandlerRegistry(
+		upgradeHandler: UpgradeOptionHandler,
+		awakenHandler: AwakenOptionHandler
+	): MidshopOptionHandlerRegistry {
+		return MidshopOptionHandlerRegistry(
+			upgradeHandler = upgradeHandler,
+			awakenHandler = awakenHandler
+		)
+	}
+
+	@Provides
+	fun provideMidshopBusinessMediator(
+		handlerRegistry: MidshopOptionHandlerRegistry
+	): MidshopBusinessMediator {
+		return MidshopBusinessMediator(
+			handlerRegistry = handlerRegistry
+		)
+	}
+
+	@Provides
 	fun provideGameRules(): GameRules {
 		return GameRulesImpl()
 	}
@@ -303,7 +352,7 @@ object GameplayLoopModule {
 		advanceToNextEnemyUseCase: AdvanceToNextEnemyUseCase,
 		addEffectToActiveGameValuesUseCase: AddEffectToActiveGameValuesUseCase,
 		glyphRewardMapper: GlyphRewardMapper,
-		upgradeMidshopOptionMapper: UpgradeMidshopOptionMapper
+		midshopBusinessMediator: MidshopBusinessMediator
 	): GameplayBusinessMediator {
 		return GameplayBusinessMediator(
 			getGameStateUseCase = getGameStateUseCase,
@@ -318,7 +367,7 @@ object GameplayLoopModule {
 			advanceToNextEnemyUseCase = advanceToNextEnemyUseCase,
 			addEffectToActiveGameValuesUseCase = addEffectToActiveGameValuesUseCase,
 			glyphRewardMapper = glyphRewardMapper,
-			upgradeMidshopOptionMapper = upgradeMidshopOptionMapper
+			midshopBusinessMediator = midshopBusinessMediator
 		)
 	}
 }

@@ -4,6 +4,7 @@ import androidx.compose.ui.geometry.Offset
 import com.example.gymapprefactor.business.effects.templating.domain.EffectDescriptor
 import com.example.gymapprefactor.business.interfaces.State
 import com.example.gymapprefactor.business.models.Effect
+import com.example.gymapprefactor.business.models.Letter
 import com.example.gymapprefactor.common.components.buttons.presentation.ButtonState
 import com.example.gymapprefactor.common.components.presentation.BagState
 import com.example.gymapprefactor.common.components.presentation.LetterState
@@ -36,6 +37,12 @@ sealed class GameScreenState : State {
 		val midshopConfirmButton: ButtonState,
 		val onMidshopOptionSelected: ((MidshopOption) -> Unit)?,
 		val onMidshopConfirmed: (() -> Unit)?,
+		val needsAwakenLetterSelection: Boolean,
+		val awakenLetters: List<Letter>,
+		val selectedAwakenLetter: Letter?,
+		val awakenConfirmButton: ButtonState,
+		val onAwakenLetterSelected: ((Letter) -> Unit)?,
+		val onAwakenConfirmed: (() -> Unit)?,
 	): GameScreenState()
 
 	data object None : GameScreenState()

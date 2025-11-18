@@ -34,6 +34,12 @@ sealed class GameScreenAction : Action {
 		val midshopConfirmButton: com.example.gymapprefactor.common.components.buttons.presentation.ButtonState,
 		val onMidshopOptionSelected: ((MidshopOption) -> Unit)?,
 		val onMidshopConfirmed: (() -> Unit)?,
+		val needsAwakenLetterSelection: Boolean,
+		val awakenLetters: List<Letter>,
+		val selectedAwakenLetter: Letter?,
+		val awakenConfirmButton: com.example.gymapprefactor.common.components.buttons.presentation.ButtonState,
+		val onAwakenLetterSelected: ((Letter) -> Unit)?,
+		val onAwakenConfirmed: (() -> Unit)?,
 	) : GameScreenAction()
 
 	data object None : GameScreenAction()
