@@ -45,6 +45,11 @@ internal fun ScoreAnimationHandler(
 		}
 
 		animateLetterScores(filteredScores, scoreState)
+		// Calculate and store max font level before clearing letters
+		val maxFontLevel = scoreState.orderedScoredLetters.maxOfOrNull {
+			scoreState.scoredLetters[it.id]?.level ?: 1
+		} ?: 1
+		scoreState.totalFontLevel = maxFontLevel
 		animateTotalScore(scoreState)
 		// Don't clear totalScore - let it persist for effect animations
 		clearLetterScoreState(scoreState)

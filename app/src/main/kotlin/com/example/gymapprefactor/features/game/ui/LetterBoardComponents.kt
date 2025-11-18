@@ -105,9 +105,7 @@ private fun BoxScope.TotalScoreDisplay(
 	scoreState: ScoreAnimationState,
 	effectState: EffectAnimationState?
 ) {
-	val totalFontLevel = scoreState.orderedScoredLetters.maxOfOrNull {
-		scoreState.scoredLetters[it.id]?.level ?: 1
-	} ?: 1
+	val totalFontLevel = scoreState.totalFontLevel
 	val shakeOffset = effectState?.totalScoreShake?.value ?: scoreState.totalScoreShake.value
 	// Always use scoreState's alpha - it's kept at 1f after initial animation and during effects
 	val alpha = scoreState.totalScoreAlpha.value
