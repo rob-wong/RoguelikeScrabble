@@ -31,7 +31,7 @@ import com.example.gymapprefactor.features.game.presentation.models.animation.Ef
 import com.example.gymapprefactor.features.game.presentation.models.GameScreenState
 import com.example.gymapprefactor.features.game.presentation.models.GameScreenState.DraggableLetter
 import com.example.gymapprefactor.features.game.presentation.models.InputButtonState
-import com.example.gymapprefactor.features.game.presentation.models.MidshopResultPayload
+import com.example.gymapprefactor.features.game.presentation.models.midshop.MidshopResultPayload
 import com.example.gymapprefactor.features.game.presentation.models.animation.ScoreAnimationPayload
 import com.example.gymapprefactor.features.game.presentation.models.animation.GlyphAnimationPayload
 import com.example.gymapprefactor.features.game.presentation.models.components.DiscardsRemainingState
@@ -193,6 +193,7 @@ private fun MidshopResultOverlayContent(
 	onAnimationComplete: () -> Unit
 ) {
 	val awakenProps = extractAwakenPropsIfNeeded(result, state)
+	val expungeProps = extractExpungePropsIfNeeded(result, state)
 	
 	MidshopResultOverlay(
 		result = result,
@@ -200,7 +201,11 @@ private fun MidshopResultOverlayContent(
 		selectedAwakenLetter = awakenProps?.selectedLetter,
 		awakenConfirmButton = awakenProps?.confirmButton,
 		onAwakenLetterSelected = awakenProps?.onLetterSelected,
-		onAwakenConfirmed = awakenProps?.onConfirmed
+		onAwakenConfirmed = awakenProps?.onConfirmed,
+		selectedExpungeLetter = expungeProps?.selectedLetter,
+		expungeConfirmButton = expungeProps?.confirmButton,
+		onExpungeLetterSelected = expungeProps?.onLetterSelected,
+		onExpungeConfirmed = expungeProps?.onConfirmed
 	)
 }
 
@@ -224,6 +229,31 @@ private fun extractAwakenPropsIfNeeded(
 		confirmButton = state.awakenConfirmButton,
 		onLetterSelected = state.onAwakenLetterSelected,
 		onConfirmed = state.onAwakenConfirmed
+	)
+}
+
+private data class ExpungeProps(
+	val selectedLetter: Letter?,
+	val confirmButton: ButtonState,
+	val onLetterSelected: ((Letter) -> Unit)?,
+	val onConfirmed: (() -> Unit)?
+)
+
+private fun extractExpungePropsIfNeeded(
+	result: MidshopResultPayload,
+	state: GameScreenState.Playing
+): ExpungeProps? {
+	if (result !is MidshopResultPayload.Expunge) {
+		return null
+	}
+	
+	val expungeState = state.expungeLetterSelection ?: return null
+	
+	return ExpungeProps(
+		selectedLetter = expungeState.selectedLetter,
+		confirmButton = expungeState.confirmButton,
+		onLetterSelected = expungeState.onLetterSelected,
+		onConfirmed = expungeState.onConfirmed
 	)
 }
 
@@ -354,6 +384,7 @@ private fun GamePlayScreenPreview() {
 			awakenConfirmButton = IconButtonState.None,
 			onAwakenLetterSelected = null,
 			onAwakenConfirmed = null,
+			expungeLetterSelection = null,
 		),
 		invalidWordTrigger = false,
 		onInvalidWordConsumed = { },

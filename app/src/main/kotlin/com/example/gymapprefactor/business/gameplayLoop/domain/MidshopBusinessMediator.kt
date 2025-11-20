@@ -4,8 +4,8 @@ import com.example.gymapprefactor.business.gameplayLoop.domain.handlers.MidshopO
 import com.example.gymapprefactor.business.gameplayLoop.domain.handlers.MidshopOptionHandlerRegistry
 import com.example.gymapprefactor.business.models.ActiveGameState
 import com.example.gymapprefactor.business.models.Letter
-import com.example.gymapprefactor.features.game.presentation.models.MidshopOption
-import com.example.gymapprefactor.features.game.presentation.models.MidshopOptionType
+import com.example.gymapprefactor.features.game.presentation.models.midshop.MidshopOption
+import com.example.gymapprefactor.features.game.presentation.models.midshop.MidshopOptionType
 import javax.inject.Inject
 
 class MidshopBusinessMediator @Inject constructor(
@@ -30,6 +30,16 @@ class MidshopBusinessMediator @Inject constructor(
 		game: ActiveGameState
 	): ActiveGameState {
 		val handler = handlerRegistry.getHandler(MidshopOptionType.Awaken)
+			?: return game
+		
+		return handler.confirmSelection(selectedLetter, game) ?: game
+	}
+
+	fun confirmExpungeLetterSelection(
+		selectedLetter: Letter,
+		game: ActiveGameState
+	): ActiveGameState {
+		val handler = handlerRegistry.getHandler(MidshopOptionType.Expunge)
 			?: return game
 		
 		return handler.confirmSelection(selectedLetter, game) ?: game

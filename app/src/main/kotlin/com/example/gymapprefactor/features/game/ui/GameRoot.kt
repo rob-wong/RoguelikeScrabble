@@ -15,7 +15,7 @@ import com.example.gymapprefactor.features.game.presentation.models.animation.Ef
 import com.example.gymapprefactor.features.game.presentation.models.GameScreenState
 import com.example.gymapprefactor.features.game.presentation.models.GameScreenState.None
 import com.example.gymapprefactor.features.game.presentation.models.animation.GlyphAnimationPayload
-import com.example.gymapprefactor.features.game.presentation.models.MidshopResultPayload
+import com.example.gymapprefactor.features.game.presentation.models.midshop.MidshopResultPayload
 import com.example.gymapprefactor.features.game.presentation.models.animation.ScoreAnimationPayload
 import com.example.gymapprefactor.features.game.presentation.viewmodel.GameViewModelImpl
 import kotlinx.coroutines.CoroutineScope

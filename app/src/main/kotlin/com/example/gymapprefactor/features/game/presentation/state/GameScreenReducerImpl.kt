@@ -67,6 +67,11 @@ class GameScreenReducerImpl : GameScreenReducer {
 			awakenConfirmButton = mapAwakenConfirmButton(action),
 			onAwakenLetterSelected = action.onAwakenLetterSelected,
 			onAwakenConfirmed = action.onAwakenConfirmed,
+			expungeLetterSelection = action.expungeLetterSelection?.let { expungeState ->
+				expungeState.copy(
+					confirmButton = mapExpungeConfirmButton(expungeState)
+				)
+			},
 		)
 	}
 
@@ -150,6 +155,17 @@ class GameScreenReducerImpl : GameScreenReducer {
 		return if (action.needsAwakenLetterSelection && action.selectedAwakenLetter != null) {
 			IconButtonState.Content(
 				onClick = action.onAwakenConfirmed ?: {},
+				image = ImageState.ConfirmIcon
+			)
+		} else {
+			IconButtonState.None
+		}
+	}
+	
+	private fun mapExpungeConfirmButton(expungeState: com.example.gymapprefactor.features.game.presentation.models.midshop.MidshopLetterSelectionState): ButtonState {
+		return if (expungeState.needsSelection && expungeState.selectedLetter != null) {
+			IconButtonState.Content(
+				onClick = expungeState.onConfirmed ?: {},
 				image = ImageState.ConfirmIcon
 			)
 		} else {

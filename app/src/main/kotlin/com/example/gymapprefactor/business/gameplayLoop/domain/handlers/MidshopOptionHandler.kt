@@ -1,8 +1,8 @@
 package com.example.gymapprefactor.business.gameplayLoop.domain.handlers
 
 import com.example.gymapprefactor.business.models.ActiveGameState
-import com.example.gymapprefactor.features.game.presentation.models.MidshopOption
-import com.example.gymapprefactor.features.game.presentation.models.MidshopResultPayload
+import com.example.gymapprefactor.features.game.presentation.models.midshop.MidshopOption
+import com.example.gymapprefactor.features.game.presentation.models.midshop.MidshopResultPayload
 
 data class MidshopOptionExecutionResult(
 	val gameState: ActiveGameState,

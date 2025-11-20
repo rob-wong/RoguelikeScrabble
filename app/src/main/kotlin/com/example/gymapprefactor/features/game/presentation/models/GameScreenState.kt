@@ -12,6 +12,8 @@ import com.example.gymapprefactor.common.components.presentation.ResourceBarStat
 import com.example.gymapprefactor.features.game.presentation.models.components.DiscardsRemainingState
 import com.example.gymapprefactor.features.game.presentation.models.components.EnemyHealthBarState
 import com.example.gymapprefactor.features.game.presentation.models.components.RoundsRemainingState
+import com.example.gymapprefactor.features.game.presentation.models.midshop.MidshopOption
+import com.example.gymapprefactor.features.game.presentation.models.midshop.MidshopLetterSelectionState
 
 sealed class GameScreenState : State {
 	data class Playing(
@@ -43,6 +45,7 @@ sealed class GameScreenState : State {
 		val awakenConfirmButton: ButtonState,
 		val onAwakenLetterSelected: ((Letter) -> Unit)?,
 		val onAwakenConfirmed: (() -> Unit)?,
+		val expungeLetterSelection: MidshopLetterSelectionState?,
 	): GameScreenState()
 
 	data object None : GameScreenState()
