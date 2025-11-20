@@ -18,7 +18,7 @@ import com.example.gymapprefactor.business.models.ActiveGameState
 import com.example.gymapprefactor.business.models.Effect
 import com.example.gymapprefactor.business.models.GameState
 import com.example.gymapprefactor.business.models.Letter
-import com.example.gymapprefactor.features.game.presentation.models.MidshopOption
+import com.example.gymapprefactor.features.game.presentation.models.midshop.MidshopOption
 
 class GameplayBusinessMediator(
 	private val getGameStateUseCase: GetGameStateUseCase,
@@ -235,6 +235,19 @@ class GameplayBusinessMediator(
 			game = game
 		)
 		val savedGame = saveGameState(gameWithLetter)
+		val advancedGame = advanceToNextEnemyUseCase(savedGame)
+		return saveGameState(advancedGame)
+	}
+
+	suspend fun confirmExpungeLetterSelection(
+		selectedLetter: Letter,
+		game: ActiveGameState
+	): ActiveGameState {
+		val gameWithDeletedLetter = midshopBusinessMediator.confirmExpungeLetterSelection(
+			selectedLetter = selectedLetter,
+			game = game
+		)
+		val savedGame = saveGameState(gameWithDeletedLetter)
 		val advancedGame = advanceToNextEnemyUseCase(savedGame)
 		return saveGameState(advancedGame)
 	}

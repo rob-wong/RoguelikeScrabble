@@ -15,8 +15,9 @@ import com.example.gymapprefactor.business.models.ActiveGameState
 import com.example.gymapprefactor.business.models.Effect
 import com.example.gymapprefactor.common.components.buttons.presentation.IconButtonState
 import com.example.gymapprefactor.business.models.Letter
-import com.example.gymapprefactor.features.game.presentation.models.MidshopOption
-import com.example.gymapprefactor.features.game.presentation.models.MidshopResultPayload
+import com.example.gymapprefactor.features.game.presentation.models.midshop.MidshopOption
+import com.example.gymapprefactor.features.game.presentation.models.midshop.MidshopResultPayload
+import com.example.gymapprefactor.features.game.presentation.models.midshop.MidshopLetterSelectionState
 import com.example.gymapprefactor.features.dialogs.presentation.models.DialogAction
 import com.example.gymapprefactor.features.dialogs.presentation.state.DialogReducer
 import com.example.gymapprefactor.features.game.presentation.models.animation.EffectAnimationPayload
@@ -69,6 +70,8 @@ class GameViewModelImpl @Inject constructor(
 	private var selectedEffect: Effect? = null
 	private var selectedAwakenLetter: Letter? = null
 	private var awakenLetters: List<Letter> = emptyList()
+	private var selectedExpungeLetter: Letter? = null
+	private var expungeLetters: List<Letter> = emptyList()
 
 	init {
 		initGame()
@@ -175,17 +178,27 @@ class GameViewModelImpl @Inject constructor(
 			} else {
 				null
 			},
-			needsAwakenLetterSelection = awakenLetters.isNotEmpty(),
-			awakenLetters = awakenLetters,
-			selectedAwakenLetter = selectedAwakenLetter,
-			awakenConfirmButton = IconButtonState.None, // Will be mapped in reducer
-			onAwakenLetterSelected = if (awakenLetters.isNotEmpty()) {
-				::onAwakenLetterSelected
+			awakenLetterSelection = if (awakenLetters.isNotEmpty()) {
+				MidshopLetterSelectionState(
+					needsSelection = true,
+					letters = awakenLetters,
+					selectedLetter = selectedAwakenLetter,
+					confirmButton = IconButtonState.None, // Will be mapped in reducer
+					onLetterSelected = ::onAwakenLetterSelected,
+					onConfirmed = ::onAwakenConfirmed
+				)
 			} else {
 				null
 			},
-			onAwakenConfirmed = if (awakenLetters.isNotEmpty()) {
-				::onAwakenConfirmed
+			expungeLetterSelection = if (expungeLetters.isNotEmpty()) {
+				MidshopLetterSelectionState(
+					needsSelection = true,
+					letters = expungeLetters,
+					selectedLetter = selectedExpungeLetter,
+					confirmButton = IconButtonState.None, // Will be mapped in reducer
+					onLetterSelected = ::onExpungeLetterSelected,
+					onConfirmed = ::onExpungeConfirmed
+				)
 			} else {
 				null
 			},
@@ -309,6 +322,16 @@ class GameViewModelImpl @Inject constructor(
 
 						midshopResultEvent.emit(result.resultPayload)
 					}
+					is MidshopResultPayload.Expunge -> {
+						expungeLetters = result.resultPayload.lettersToChooseFrom
+						selectedExpungeLetter = null
+						selectedMidshopOption = null
+
+						updateGame()
+						delay(50)
+
+						midshopResultEvent.emit(result.resultPayload)
+					}
 					else -> {
 						selectedMidshopOption = null
 						selectedEffect = null
@@ -352,6 +375,38 @@ class GameViewModelImpl @Inject constructor(
 				midshopResultAnimationComplete.emit(Unit)
 				
 				// Update game state (advancement already happened in confirmAwakenLetterSelection)
+				advanceToNextEnemy()
+			}
+		}
+	}
+
+	private fun onExpungeLetterSelected(letter: Letter) {
+		viewModelScope.launch(dispatcherProvider.default) {
+			selectedExpungeLetter = letter
+			updateGame()
+		}
+	}
+	
+	private fun onExpungeConfirmed() {
+		viewModelScope.launch(dispatcherProvider.default) {
+			val letter = selectedExpungeLetter
+			if (letter != null) {
+				// Delete letter from deck and advance to next enemy
+				activeGameState = gameplayBusinessMediator.confirmExpungeLetterSelection(
+					selectedLetter = letter,
+					game = activeGameState
+				)
+				
+				// Clear state
+				selectedExpungeLetter = null
+				expungeLetters = emptyList()
+				selectedMidshopOption = null
+				selectedEffect = null
+				
+				// Clear the midshop result so the overlay disappears
+				midshopResultAnimationComplete.emit(Unit)
+				
+				// Update game state (advancement already happened in confirmExpungeLetterSelection)
 				advanceToNextEnemy()
 			}
 		}

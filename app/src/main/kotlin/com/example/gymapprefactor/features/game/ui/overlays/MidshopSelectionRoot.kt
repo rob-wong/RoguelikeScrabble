@@ -27,7 +27,7 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import com.example.gymapprefactor.common.components.buttons.presentation.ButtonState
 import com.example.gymapprefactor.common.components.buttons.ui.ButtonRouter
-import com.example.gymapprefactor.features.game.presentation.models.MidshopOption
+import com.example.gymapprefactor.features.game.presentation.models.midshop.MidshopOption
 import com.example.gymapprefactor.features.game.ui.components.MidshopOptionItem
 
 @Composable

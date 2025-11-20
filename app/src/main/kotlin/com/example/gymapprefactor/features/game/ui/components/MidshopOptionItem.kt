@@ -14,7 +14,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.example.gymapprefactor.common.components.ui.OutlinedText
-import com.example.gymapprefactor.features.game.presentation.models.MidshopOption
+import com.example.gymapprefactor.features.game.presentation.models.midshop.MidshopOption
 import com.example.gymapprefactor.ui.theme.common
 
 @Composable

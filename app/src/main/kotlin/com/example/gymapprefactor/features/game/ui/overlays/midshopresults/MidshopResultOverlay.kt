@@ -8,7 +8,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import com.example.gymapprefactor.business.models.Letter
 import com.example.gymapprefactor.common.components.buttons.presentation.ButtonState
-import com.example.gymapprefactor.features.game.presentation.models.MidshopResultPayload
+import com.example.gymapprefactor.features.game.presentation.models.midshop.MidshopResultPayload
 
 @Composable
 internal fun MidshopResultOverlay(
@@ -19,6 +19,10 @@ internal fun MidshopResultOverlay(
 	awakenConfirmButton: ButtonState? = null,
 	onAwakenLetterSelected: ((Letter) -> Unit)? = null,
 	onAwakenConfirmed: (() -> Unit)? = null,
+	selectedExpungeLetter: Letter? = null,
+	expungeConfirmButton: ButtonState? = null,
+	onExpungeLetterSelected: ((Letter) -> Unit)? = null,
+	onExpungeConfirmed: (() -> Unit)? = null,
 ) {
 	if (result == null) {
 		return
@@ -55,6 +59,23 @@ internal fun MidshopResultOverlay(
 					onConfirmClicked = {
 						onAnimationComplete()
 						onAwakenConfirmed()
+					}
+				)
+			}
+		}
+		is MidshopResultPayload.Expunge -> {
+			if (onExpungeLetterSelected != null &&
+				onExpungeConfirmed != null &&
+				expungeConfirmButton != null
+				) {
+				ExpungeLetterSelectionOverlay(
+					letters = result.lettersToChooseFrom,
+					selectedLetter = selectedExpungeLetter,
+					confirmButton = expungeConfirmButton,
+					onLetterSelected = onExpungeLetterSelected,
+					onConfirmClicked = {
+						onAnimationComplete()
+						onExpungeConfirmed()
 					}
 				)
 			}

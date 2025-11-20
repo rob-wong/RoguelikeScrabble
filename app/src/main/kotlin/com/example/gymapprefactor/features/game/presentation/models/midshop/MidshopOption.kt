@@ -1,4 +1,4 @@
-package com.example.gymapprefactor.features.game.presentation.models
+package com.example.gymapprefactor.features.game.presentation.models.midshop
 
 data class MidshopOption(
 	val id: String,

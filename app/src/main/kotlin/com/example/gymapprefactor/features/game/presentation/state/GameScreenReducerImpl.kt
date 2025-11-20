@@ -15,6 +15,7 @@ import com.example.gymapprefactor.features.game.presentation.models.GameScreenSt
 import com.example.gymapprefactor.features.game.presentation.models.components.DiscardsRemainingState
 import com.example.gymapprefactor.features.game.presentation.models.components.EnemyHealthBarState
 import com.example.gymapprefactor.features.game.presentation.models.components.RoundsRemainingState
+import com.example.gymapprefactor.features.game.presentation.models.midshop.MidshopLetterSelectionState
 import kotlinx.coroutines.flow.MutableStateFlow
 
 class GameScreenReducerImpl : GameScreenReducer {
@@ -61,12 +62,16 @@ class GameScreenReducerImpl : GameScreenReducer {
 			midshopConfirmButton = mapMidshopConfirmButton(action),
 			onMidshopOptionSelected = action.onMidshopOptionSelected,
 			onMidshopConfirmed = action.onMidshopConfirmed,
-			needsAwakenLetterSelection = action.needsAwakenLetterSelection,
-			awakenLetters = action.awakenLetters,
-			selectedAwakenLetter = action.selectedAwakenLetter,
-			awakenConfirmButton = mapAwakenConfirmButton(action),
-			onAwakenLetterSelected = action.onAwakenLetterSelected,
-			onAwakenConfirmed = action.onAwakenConfirmed,
+			awakenLetterSelection = action.awakenLetterSelection?.let { awakenState ->
+				awakenState.copy(
+					confirmButton = mapAwakenConfirmButton(awakenState)
+				)
+			},
+			expungeLetterSelection = action.expungeLetterSelection?.let { expungeState ->
+				expungeState.copy(
+					confirmButton = mapExpungeConfirmButton(expungeState)
+				)
+			},
 		)
 	}
 
@@ -146,10 +151,21 @@ class GameScreenReducerImpl : GameScreenReducer {
 		}
 	}
 	
-	private fun mapAwakenConfirmButton(action: GameScreenAction.StartPlaying): ButtonState {
-		return if (action.needsAwakenLetterSelection && action.selectedAwakenLetter != null) {
+	private fun mapAwakenConfirmButton(awakenState: MidshopLetterSelectionState): ButtonState {
+		return if (awakenState.needsSelection && awakenState.selectedLetter != null) {
 			IconButtonState.Content(
-				onClick = action.onAwakenConfirmed ?: {},
+				onClick = awakenState.onConfirmed ?: {},
+				image = ImageState.ConfirmIcon
+			)
+		} else {
+			IconButtonState.None
+		}
+	}
+	
+	private fun mapExpungeConfirmButton(expungeState: MidshopLetterSelectionState): ButtonState {
+		return if (expungeState.needsSelection && expungeState.selectedLetter != null) {
+			IconButtonState.Content(
+				onClick = expungeState.onConfirmed ?: {},
 				image = ImageState.ConfirmIcon
 			)
 		} else {

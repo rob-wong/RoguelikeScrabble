@@ -1,4 +1,4 @@
-package com.example.gymapprefactor.features.game.presentation.models
+package com.example.gymapprefactor.features.game.presentation.models.midshop
 
 import com.example.gymapprefactor.business.models.Letter
 
@@ -11,5 +11,9 @@ sealed class MidshopResultPayload {
 	
 	data class Awaken(
 		val generatedLetters: List<Letter>
+	) : MidshopResultPayload()
+	
+	data class Expunge(
+		val lettersToChooseFrom: List<Letter>
 	) : MidshopResultPayload()
 }

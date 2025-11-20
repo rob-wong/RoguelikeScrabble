@@ -45,10 +45,13 @@ import com.example.gymapprefactor.business.gameplayLoop.domain.mappers.GlyphRewa
 import com.example.gymapprefactor.business.gameplayLoop.domain.mappers.MidshopOptionMapper
 import com.example.gymapprefactor.business.gameplayLoop.domain.mappers.MidshopOptionMapperImpl
 import com.example.gymapprefactor.business.gameplayLoop.domain.handlers.AwakenOptionHandler
+import com.example.gymapprefactor.business.gameplayLoop.domain.handlers.ExpungeOptionHandler
 import com.example.gymapprefactor.business.gameplayLoop.domain.handlers.MidshopOptionHandlerRegistry
 import com.example.gymapprefactor.business.gameplayLoop.domain.handlers.UpgradeOptionHandler
 import com.example.gymapprefactor.business.gameplayLoop.domain.mappers.AwakenMidshopOptionMapper
 import com.example.gymapprefactor.business.gameplayLoop.domain.mappers.AwakenMidshopOptionMapperImpl
+import com.example.gymapprefactor.business.gameplayLoop.domain.mappers.ExpungeMidshopOptionMapper
+import com.example.gymapprefactor.business.gameplayLoop.domain.mappers.ExpungeMidshopOptionMapperImpl
 import com.example.gymapprefactor.business.gameplayLoop.domain.mappers.UpgradeMidshopOptionMapper
 import com.example.gymapprefactor.business.gameplayLoop.domain.mappers.UpgradeMidshopOptionMapperImpl
 import com.example.gymapprefactor.business.gameplayLoop.domain.MidshopBusinessMediator
@@ -233,6 +236,11 @@ object GameplayLoopModule {
 	}
 
 	@Provides
+	fun provideExpungeMidshopOptionMapper(): ExpungeMidshopOptionMapper {
+		return ExpungeMidshopOptionMapperImpl()
+	}
+
+	@Provides
 	fun provideUpgradeOptionHandler(
 		upgradeMidshopOptionMapper: UpgradeMidshopOptionMapper
 	): UpgradeOptionHandler {
@@ -251,13 +259,24 @@ object GameplayLoopModule {
 	}
 
 	@Provides
+	fun provideExpungeOptionHandler(
+		expungeMidshopOptionMapper: ExpungeMidshopOptionMapper
+	): ExpungeOptionHandler {
+		return ExpungeOptionHandler(
+			expungeMidshopOptionMapper = expungeMidshopOptionMapper
+		)
+	}
+
+	@Provides
 	fun provideMidshopOptionHandlerRegistry(
 		upgradeHandler: UpgradeOptionHandler,
-		awakenHandler: AwakenOptionHandler
+		awakenHandler: AwakenOptionHandler,
+		expungeHandler: ExpungeOptionHandler
 	): MidshopOptionHandlerRegistry {
 		return MidshopOptionHandlerRegistry(
 			upgradeHandler = upgradeHandler,
-			awakenHandler = awakenHandler
+			awakenHandler = awakenHandler,
+			expungeHandler = expungeHandler
 		)
 	}
 

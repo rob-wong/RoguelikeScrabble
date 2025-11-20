@@ -2,8 +2,8 @@ package com.example.gymapprefactor.business.gameplayLoop.domain.mappers
 
 import com.example.gymapprefactor.business.interfaces.Mapper
 import com.example.gymapprefactor.business.models.ActiveGameState
-import com.example.gymapprefactor.features.game.presentation.models.MidshopOption
-import com.example.gymapprefactor.features.game.presentation.models.MidshopOptionType
+import com.example.gymapprefactor.features.game.presentation.models.midshop.MidshopOption
+import com.example.gymapprefactor.features.game.presentation.models.midshop.MidshopOptionType
 import javax.inject.Inject
 
 interface MidshopOptionMapper : Mapper<MidshopOptionMapper.Param, List<MidshopOption>> {
@@ -24,6 +24,11 @@ class MidshopOptionMapperImpl @Inject constructor() : MidshopOptionMapper {
 				id = "midshop_awaken",
 				cost = 2,
 				type = MidshopOptionType.Awaken
+			),
+			MidshopOption(
+				id = "midshop_expunge",
+				cost = 5,
+				type = MidshopOptionType.Expunge
 			)
 		)
 	}

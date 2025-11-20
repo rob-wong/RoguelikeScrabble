@@ -31,7 +31,7 @@ import com.example.gymapprefactor.features.game.presentation.models.animation.Ef
 import com.example.gymapprefactor.features.game.presentation.models.GameScreenState
 import com.example.gymapprefactor.features.game.presentation.models.GameScreenState.DraggableLetter
 import com.example.gymapprefactor.features.game.presentation.models.InputButtonState
-import com.example.gymapprefactor.features.game.presentation.models.MidshopResultPayload
+import com.example.gymapprefactor.features.game.presentation.models.midshop.MidshopResultPayload
 import com.example.gymapprefactor.features.game.presentation.models.animation.ScoreAnimationPayload
 import com.example.gymapprefactor.features.game.presentation.models.animation.GlyphAnimationPayload
 import com.example.gymapprefactor.features.game.presentation.models.components.DiscardsRemainingState
@@ -192,39 +192,48 @@ private fun MidshopResultOverlayContent(
 	state: GameScreenState.Playing,
 	onAnimationComplete: () -> Unit
 ) {
-	val awakenProps = extractAwakenPropsIfNeeded(result, state)
+	val letterSelectionProps = extractLetterSelectionProps(result, state)
+	val isAwaken = result is MidshopResultPayload.Awaken
 	
 	MidshopResultOverlay(
 		result = result,
 		onAnimationComplete = onAnimationComplete,
-		selectedAwakenLetter = awakenProps?.selectedLetter,
-		awakenConfirmButton = awakenProps?.confirmButton,
-		onAwakenLetterSelected = awakenProps?.onLetterSelected,
-		onAwakenConfirmed = awakenProps?.onConfirmed
+		selectedAwakenLetter = if (isAwaken) letterSelectionProps?.selectedLetter else null,
+		awakenConfirmButton = if (isAwaken) letterSelectionProps?.confirmButton else null,
+		onAwakenLetterSelected = if (isAwaken) letterSelectionProps?.onLetterSelected else null,
+		onAwakenConfirmed = if (isAwaken) letterSelectionProps?.onConfirmed else null,
+		selectedExpungeLetter = if (!isAwaken) letterSelectionProps?.selectedLetter else null,
+		expungeConfirmButton = if (!isAwaken) letterSelectionProps?.confirmButton else null,
+		onExpungeLetterSelected = if (!isAwaken) letterSelectionProps?.onLetterSelected else null,
+		onExpungeConfirmed = if (!isAwaken) letterSelectionProps?.onConfirmed else null
 	)
 }
 
-private data class AwakenProps(
+private data class LetterSelectionProps(
 	val selectedLetter: Letter?,
 	val confirmButton: ButtonState,
 	val onLetterSelected: ((Letter) -> Unit)?,
 	val onConfirmed: (() -> Unit)?
 )
 
-private fun extractAwakenPropsIfNeeded(
+private fun extractLetterSelectionProps(
 	result: MidshopResultPayload,
 	state: GameScreenState.Playing
-): AwakenProps? {
-	if (result !is MidshopResultPayload.Awaken) {
-		return null
+): LetterSelectionProps? {
+	val selectionState = when (result) {
+		is MidshopResultPayload.Awaken -> state.awakenLetterSelection
+		is MidshopResultPayload.Expunge -> state.expungeLetterSelection
+		else -> null
 	}
 	
-	return AwakenProps(
-		selectedLetter = state.selectedAwakenLetter,
-		confirmButton = state.awakenConfirmButton,
-		onLetterSelected = state.onAwakenLetterSelected,
-		onConfirmed = state.onAwakenConfirmed
-	)
+	return selectionState?.let {
+		LetterSelectionProps(
+			selectedLetter = it.selectedLetter,
+			confirmButton = it.confirmButton,
+			onLetterSelected = it.onLetterSelected,
+			onConfirmed = it.onConfirmed
+		)
+	}
 }
 
 @Composable
@@ -348,12 +357,8 @@ private fun GamePlayScreenPreview() {
 			midshopConfirmButton = IconButtonState.None,
 			onMidshopOptionSelected = null,
 			onMidshopConfirmed = null,
-			needsAwakenLetterSelection = false,
-			awakenLetters = emptyList(),
-			selectedAwakenLetter = null,
-			awakenConfirmButton = IconButtonState.None,
-			onAwakenLetterSelected = null,
-			onAwakenConfirmed = null,
+			awakenLetterSelection = null,
+			expungeLetterSelection = null,
 		),
 		invalidWordTrigger = false,
 		onInvalidWordConsumed = { },
