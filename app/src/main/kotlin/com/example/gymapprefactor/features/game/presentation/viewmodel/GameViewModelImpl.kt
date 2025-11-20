@@ -178,17 +178,15 @@ class GameViewModelImpl @Inject constructor(
 			} else {
 				null
 			},
-			needsAwakenLetterSelection = awakenLetters.isNotEmpty(),
-			awakenLetters = awakenLetters,
-			selectedAwakenLetter = selectedAwakenLetter,
-			awakenConfirmButton = IconButtonState.None, // Will be mapped in reducer
-			onAwakenLetterSelected = if (awakenLetters.isNotEmpty()) {
-				::onAwakenLetterSelected
-			} else {
-				null
-			},
-			onAwakenConfirmed = if (awakenLetters.isNotEmpty()) {
-				::onAwakenConfirmed
+			awakenLetterSelection = if (awakenLetters.isNotEmpty()) {
+				MidshopLetterSelectionState(
+					needsSelection = true,
+					letters = awakenLetters,
+					selectedLetter = selectedAwakenLetter,
+					confirmButton = IconButtonState.None, // Will be mapped in reducer
+					onLetterSelected = ::onAwakenLetterSelected,
+					onConfirmed = ::onAwakenConfirmed
+				)
 			} else {
 				null
 			},
