@@ -34,6 +34,11 @@ class MidshopOptionMapperImpl @Inject constructor() : MidshopOptionMapper {
 				id = "midshop_perfectionism",
 				cost = 8,
 				type = MidshopOptionType.Perfectionism
+			),
+			MidshopOption(
+				id = "midshop_persistence",
+				cost = 10,
+				type = MidshopOptionType.Persistence
 			)
 		)
 	}
