@@ -6,14 +6,15 @@ import javax.inject.Inject
 class MidshopOptionHandlerRegistry @Inject constructor(
 	private val upgradeHandler: UpgradeOptionHandler,
 	private val awakenHandler: AwakenOptionHandler,
-	private val expungeHandler: ExpungeOptionHandler
+	private val expungeHandler: ExpungeOptionHandler,
+	private val perfectionismHandler: PerfectionismOptionHandler
 ) {
 	fun getHandler(optionType: MidshopOptionType): MidshopOptionHandler? {
 		return when (optionType) {
 			is MidshopOptionType.Upgrade -> upgradeHandler
 			is MidshopOptionType.Awaken -> awakenHandler
 			is MidshopOptionType.Expunge -> expungeHandler
-			is MidshopOptionType.Perfectionism -> null // TODO: Implement in future PR
+			is MidshopOptionType.Perfectionism -> perfectionismHandler
 			is MidshopOptionType.Persistence -> null // TODO: Implement in future PR
 		}
 	}

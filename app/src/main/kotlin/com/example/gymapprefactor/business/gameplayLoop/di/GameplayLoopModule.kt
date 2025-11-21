@@ -47,11 +47,14 @@ import com.example.gymapprefactor.business.gameplayLoop.domain.mappers.MidshopOp
 import com.example.gymapprefactor.business.gameplayLoop.domain.handlers.AwakenOptionHandler
 import com.example.gymapprefactor.business.gameplayLoop.domain.handlers.ExpungeOptionHandler
 import com.example.gymapprefactor.business.gameplayLoop.domain.handlers.MidshopOptionHandlerRegistry
+import com.example.gymapprefactor.business.gameplayLoop.domain.handlers.PerfectionismOptionHandler
 import com.example.gymapprefactor.business.gameplayLoop.domain.handlers.UpgradeOptionHandler
 import com.example.gymapprefactor.business.gameplayLoop.domain.mappers.AwakenMidshopOptionMapper
 import com.example.gymapprefactor.business.gameplayLoop.domain.mappers.AwakenMidshopOptionMapperImpl
 import com.example.gymapprefactor.business.gameplayLoop.domain.mappers.ExpungeMidshopOptionMapper
 import com.example.gymapprefactor.business.gameplayLoop.domain.mappers.ExpungeMidshopOptionMapperImpl
+import com.example.gymapprefactor.business.gameplayLoop.domain.mappers.PerfectionismMidshopOptionMapper
+import com.example.gymapprefactor.business.gameplayLoop.domain.mappers.PerfectionismMidshopOptionMapperImpl
 import com.example.gymapprefactor.business.gameplayLoop.domain.mappers.UpgradeMidshopOptionMapper
 import com.example.gymapprefactor.business.gameplayLoop.domain.mappers.UpgradeMidshopOptionMapperImpl
 import com.example.gymapprefactor.business.gameplayLoop.domain.MidshopBusinessMediator
@@ -241,6 +244,11 @@ object GameplayLoopModule {
 	}
 
 	@Provides
+	fun providePerfectionismMidshopOptionMapper(): PerfectionismMidshopOptionMapper {
+		return PerfectionismMidshopOptionMapperImpl()
+	}
+
+	@Provides
 	fun provideUpgradeOptionHandler(
 		upgradeMidshopOptionMapper: UpgradeMidshopOptionMapper
 	): UpgradeOptionHandler {
@@ -268,15 +276,26 @@ object GameplayLoopModule {
 	}
 
 	@Provides
+	fun providePerfectionismOptionHandler(
+		perfectionismMidshopOptionMapper: PerfectionismMidshopOptionMapper
+	): PerfectionismOptionHandler {
+		return PerfectionismOptionHandler(
+			perfectionismMidshopOptionMapper = perfectionismMidshopOptionMapper
+		)
+	}
+
+	@Provides
 	fun provideMidshopOptionHandlerRegistry(
 		upgradeHandler: UpgradeOptionHandler,
 		awakenHandler: AwakenOptionHandler,
-		expungeHandler: ExpungeOptionHandler
+		expungeHandler: ExpungeOptionHandler,
+		perfectionismHandler: PerfectionismOptionHandler
 	): MidshopOptionHandlerRegistry {
 		return MidshopOptionHandlerRegistry(
 			upgradeHandler = upgradeHandler,
 			awakenHandler = awakenHandler,
-			expungeHandler = expungeHandler
+			expungeHandler = expungeHandler,
+			perfectionismHandler = perfectionismHandler
 		)
 	}
 
