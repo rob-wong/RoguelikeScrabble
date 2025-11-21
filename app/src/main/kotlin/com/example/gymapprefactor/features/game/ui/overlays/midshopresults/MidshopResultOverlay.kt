@@ -115,5 +115,12 @@ private fun MidshopResultContent(
 				onAnimationComplete = onAnimationComplete
 			)
 		}
+		is MidshopResultPayload.Persistence -> {
+			PersistenceResultContent(
+				oldMaxRounds = result.oldMaxRounds,
+				newMaxRounds = result.newMaxRounds,
+				onAnimationComplete = onAnimationComplete
+			)
+		}
 	}
 }

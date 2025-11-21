@@ -48,6 +48,7 @@ import com.example.gymapprefactor.business.gameplayLoop.domain.handlers.AwakenOp
 import com.example.gymapprefactor.business.gameplayLoop.domain.handlers.ExpungeOptionHandler
 import com.example.gymapprefactor.business.gameplayLoop.domain.handlers.MidshopOptionHandlerRegistry
 import com.example.gymapprefactor.business.gameplayLoop.domain.handlers.PerfectionismOptionHandler
+import com.example.gymapprefactor.business.gameplayLoop.domain.handlers.PersistenceOptionHandler
 import com.example.gymapprefactor.business.gameplayLoop.domain.handlers.UpgradeOptionHandler
 import com.example.gymapprefactor.business.gameplayLoop.domain.mappers.AwakenMidshopOptionMapper
 import com.example.gymapprefactor.business.gameplayLoop.domain.mappers.AwakenMidshopOptionMapperImpl
@@ -55,6 +56,8 @@ import com.example.gymapprefactor.business.gameplayLoop.domain.mappers.ExpungeMi
 import com.example.gymapprefactor.business.gameplayLoop.domain.mappers.ExpungeMidshopOptionMapperImpl
 import com.example.gymapprefactor.business.gameplayLoop.domain.mappers.PerfectionismMidshopOptionMapper
 import com.example.gymapprefactor.business.gameplayLoop.domain.mappers.PerfectionismMidshopOptionMapperImpl
+import com.example.gymapprefactor.business.gameplayLoop.domain.mappers.PersistenceMidshopOptionMapper
+import com.example.gymapprefactor.business.gameplayLoop.domain.mappers.PersistenceMidshopOptionMapperImpl
 import com.example.gymapprefactor.business.gameplayLoop.domain.mappers.UpgradeMidshopOptionMapper
 import com.example.gymapprefactor.business.gameplayLoop.domain.mappers.UpgradeMidshopOptionMapperImpl
 import com.example.gymapprefactor.business.gameplayLoop.domain.MidshopBusinessMediator
@@ -249,6 +252,11 @@ object GameplayLoopModule {
 	}
 
 	@Provides
+	fun providePersistenceMidshopOptionMapper(): PersistenceMidshopOptionMapper {
+		return PersistenceMidshopOptionMapperImpl()
+	}
+
+	@Provides
 	fun provideUpgradeOptionHandler(
 		upgradeMidshopOptionMapper: UpgradeMidshopOptionMapper
 	): UpgradeOptionHandler {
@@ -285,17 +293,28 @@ object GameplayLoopModule {
 	}
 
 	@Provides
+	fun providePersistenceOptionHandler(
+		persistenceMidshopOptionMapper: PersistenceMidshopOptionMapper
+	): PersistenceOptionHandler {
+		return PersistenceOptionHandler(
+			persistenceMidshopOptionMapper = persistenceMidshopOptionMapper
+		)
+	}
+
+	@Provides
 	fun provideMidshopOptionHandlerRegistry(
 		upgradeHandler: UpgradeOptionHandler,
 		awakenHandler: AwakenOptionHandler,
 		expungeHandler: ExpungeOptionHandler,
-		perfectionismHandler: PerfectionismOptionHandler
+		perfectionismHandler: PerfectionismOptionHandler,
+		persistenceHandler: PersistenceOptionHandler
 	): MidshopOptionHandlerRegistry {
 		return MidshopOptionHandlerRegistry(
 			upgradeHandler = upgradeHandler,
 			awakenHandler = awakenHandler,
 			expungeHandler = expungeHandler,
-			perfectionismHandler = perfectionismHandler
+			perfectionismHandler = perfectionismHandler,
+			persistenceHandler = persistenceHandler
 		)
 	}
 

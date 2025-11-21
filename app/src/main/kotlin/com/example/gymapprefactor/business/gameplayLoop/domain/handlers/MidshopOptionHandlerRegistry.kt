@@ -7,7 +7,8 @@ class MidshopOptionHandlerRegistry @Inject constructor(
 	private val upgradeHandler: UpgradeOptionHandler,
 	private val awakenHandler: AwakenOptionHandler,
 	private val expungeHandler: ExpungeOptionHandler,
-	private val perfectionismHandler: PerfectionismOptionHandler
+	private val perfectionismHandler: PerfectionismOptionHandler,
+	private val persistenceHandler: PersistenceOptionHandler
 ) {
 	fun getHandler(optionType: MidshopOptionType): MidshopOptionHandler? {
 		return when (optionType) {
@@ -15,7 +16,7 @@ class MidshopOptionHandlerRegistry @Inject constructor(
 			is MidshopOptionType.Awaken -> awakenHandler
 			is MidshopOptionType.Expunge -> expungeHandler
 			is MidshopOptionType.Perfectionism -> perfectionismHandler
-			is MidshopOptionType.Persistence -> null // TODO: Implement in future PR
+			is MidshopOptionType.Persistence -> persistenceHandler
 		}
 	}
 }

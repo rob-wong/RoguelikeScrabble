@@ -21,4 +21,9 @@ sealed class MidshopResultPayload {
 		val oldMaxDiscards: Int,
 		val newMaxDiscards: Int
 	) : MidshopResultPayload()
+	
+	data class Persistence(
+		val oldMaxRounds: Int,
+		val newMaxRounds: Int
+	) : MidshopResultPayload()
 }
