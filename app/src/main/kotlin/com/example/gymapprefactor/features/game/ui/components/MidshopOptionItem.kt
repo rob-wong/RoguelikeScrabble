@@ -5,6 +5,7 @@ import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.aspectRatio
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.runtime.Composable
@@ -16,6 +17,19 @@ import androidx.compose.ui.unit.dp
 import com.example.gymapprefactor.common.components.ui.OutlinedText
 import com.example.gymapprefactor.features.game.presentation.models.midshop.MidshopOption
 import com.example.gymapprefactor.ui.theme.common
+
+private fun Modifier.midshopClickable(
+	isEnabled: Boolean,
+	onClick: () -> Unit
+): Modifier {
+	return this.then(
+		if (isEnabled) {
+			Modifier.clickable(onClick = onClick)
+		} else {
+			Modifier
+		}
+	)
+}
 
 @Composable
 fun MidshopOptionItem(
@@ -41,7 +55,10 @@ fun MidshopOptionItem(
 				color = borderColor,
 				shape = RoundedCornerShape(12.dp)
 			)
-			.clickable(onClick = onClick)
+			.midshopClickable(
+				isEnabled = option.isEnabled,
+				onClick = onClick
+			)
 			.padding(16.dp),
 		contentAlignment = Alignment.Center
 	) {
@@ -52,6 +69,18 @@ fun MidshopOptionItem(
 			outlineWidth = 5,
 			useGlow = false
 		)
+		
+		// Grey overlay when disabled
+		if (!option.isEnabled) {
+			Box(
+				modifier = Modifier
+					.fillMaxSize()
+					.background(
+						color = Color.Black.copy(alpha = 0.5f),
+						shape = RoundedCornerShape(12.dp)
+					)
+			)
+		}
 	}
 }
 

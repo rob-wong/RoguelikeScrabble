@@ -161,7 +161,11 @@ private fun MidshopOptionRow(
 			MidshopOptionItem(
 				option = option,
 				isSelected = selectedOption?.id == option.id,
-				onClick = { onOptionSelected(option) },
+				onClick = {
+					if (option.isEnabled) {
+						onOptionSelected(option)
+					}
+				},
 				modifier = modifier
 			)
 		}
