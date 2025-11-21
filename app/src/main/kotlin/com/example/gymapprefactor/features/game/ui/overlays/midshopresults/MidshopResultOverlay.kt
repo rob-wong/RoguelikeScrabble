@@ -38,19 +38,47 @@ internal fun MidshopResultOverlay(
 				.background(Color.Black.copy(alpha = 0.7f))
 		)
 		
-		when (result) {
-			is MidshopResultPayload.Upgrade -> {
-				UpgradeResultContent(
-					originalLetters = result.originalLetters,
-					upgradedLetters = result.upgradedLetters,
-					onAnimationComplete = onAnimationComplete
-				)
-			}
+		MidshopResultContent(
+			result = result,
+			onAnimationComplete = onAnimationComplete,
+			selectedAwakenLetter = selectedAwakenLetter,
+			awakenConfirmButton = awakenConfirmButton,
+			onAwakenLetterSelected = onAwakenLetterSelected,
+			onAwakenConfirmed = onAwakenConfirmed,
+			selectedExpungeLetter = selectedExpungeLetter,
+			expungeConfirmButton = expungeConfirmButton,
+			onExpungeLetterSelected = onExpungeLetterSelected,
+			onExpungeConfirmed = onExpungeConfirmed
+		)
+	}
+}
+
+@Composable
+private fun MidshopResultContent(
+	result: MidshopResultPayload,
+	onAnimationComplete: () -> Unit,
+	selectedAwakenLetter: Letter?,
+	awakenConfirmButton: ButtonState?,
+	onAwakenLetterSelected: ((Letter) -> Unit)?,
+	onAwakenConfirmed: (() -> Unit)?,
+	selectedExpungeLetter: Letter?,
+	expungeConfirmButton: ButtonState?,
+	onExpungeLetterSelected: ((Letter) -> Unit)?,
+	onExpungeConfirmed: (() -> Unit)?
+) {
+	when (result) {
+		is MidshopResultPayload.Upgrade -> {
+			UpgradeResultContent(
+				originalLetters = result.originalLetters,
+				upgradedLetters = result.upgradedLetters,
+				onAnimationComplete = onAnimationComplete
+			)
+		}
 		is MidshopResultPayload.Awaken -> {
 			if (onAwakenLetterSelected != null &&
 				onAwakenConfirmed != null &&
 				awakenConfirmButton != null
-				) {
+			) {
 				AwakenLetterSelectionOverlay(
 					letters = result.generatedLetters,
 					selectedLetter = selectedAwakenLetter,
@@ -67,7 +95,7 @@ internal fun MidshopResultOverlay(
 			if (onExpungeLetterSelected != null &&
 				onExpungeConfirmed != null &&
 				expungeConfirmButton != null
-				) {
+			) {
 				ExpungeLetterSelectionOverlay(
 					letters = result.lettersToChooseFrom,
 					selectedLetter = selectedExpungeLetter,
@@ -80,6 +108,12 @@ internal fun MidshopResultOverlay(
 				)
 			}
 		}
-	}
+		is MidshopResultPayload.Perfectionism -> {
+			PerfectionismResultContent(
+				oldMaxDiscards = result.oldMaxDiscards,
+				newMaxDiscards = result.newMaxDiscards,
+				onAnimationComplete = onAnimationComplete
+			)
+		}
 	}
 }

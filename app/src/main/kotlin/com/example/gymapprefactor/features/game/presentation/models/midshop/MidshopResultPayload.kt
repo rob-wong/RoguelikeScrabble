@@ -16,4 +16,9 @@ sealed class MidshopResultPayload {
 	data class Expunge(
 		val lettersToChooseFrom: List<Letter>
 	) : MidshopResultPayload()
+	
+	data class Perfectionism(
+		val oldMaxDiscards: Int,
+		val newMaxDiscards: Int
+	) : MidshopResultPayload()
 }
