@@ -7,7 +7,6 @@ import com.example.gymapprefactor.business.effects.templating.domain.EffectDescr
 import com.example.gymapprefactor.business.gameplayLoop.domain.GameplayBusinessMediator
 import com.example.gymapprefactor.business.gameplayLoop.domain.ScoredWordResult
 import com.example.gymapprefactor.business.gameplayLoop.domain.mappers.DiscardsRemainingMapper
-import com.example.gymapprefactor.business.user.domain.UserBusinessMediator
 import com.example.gymapprefactor.business.gameplayLoop.domain.mappers.EffectAnimationPayloadMapper
 import com.example.gymapprefactor.business.gameplayLoop.domain.mappers.EnemyCreationMapper
 import com.example.gymapprefactor.business.gameplayLoop.domain.mappers.EnemyLabelMapper
@@ -52,7 +51,6 @@ class GameViewModelImpl @Inject constructor(
 	private val effectAnimationPayloadMapper: EffectAnimationPayloadMapper,
 	private val getEffectDescriptorsUseCase: GetEffectDescriptorsUseCase,
 	private val midshopOptionMapper: MidshopOptionMapper,
-	private val userBusinessMediator: UserBusinessMediator,
 ) : GameViewModel() {
 	override val state = gameScreenReducer.state
 
@@ -122,9 +120,8 @@ class GameViewModelImpl @Inject constructor(
 		discardsRemaining: Int,
 		effectDescriptors: Map<String, EffectDescriptor>
 	): GameScreenAction.StartPlaying {
-		val user = userBusinessMediator.getUser()
 		return GameScreenAction.StartPlaying(
-			runesCount = user.runesCount,
+			runesCount = activeGameState.activeGameVariables.runesCount,
 			glyphCount = activeGameState.activeGameVariables.glyphCount,
 			onQuitPressed = ::onQuitPressed,
 			onWordPlayed = ::onWordPlayed,
