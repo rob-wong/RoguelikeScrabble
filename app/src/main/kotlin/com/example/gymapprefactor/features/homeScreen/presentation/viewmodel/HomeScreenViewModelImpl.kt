@@ -2,6 +2,7 @@ package com.example.gymapprefactor.features.homeScreen.presentation.viewmodel
 
 import androidx.lifecycle.viewModelScope
 import com.example.gymapprefactor.app.util.dispatcher.DispatcherProvider
+import com.example.gymapprefactor.business.user.domain.UserBusinessMediator
 import com.example.gymapprefactor.features.homeScreen.presentation.models.HomeScreenAction
 import com.example.gymapprefactor.features.homeScreen.presentation.state.HomeScreenReducer
 import com.example.gymapprefactor.features.navigation.presentation.models.NavigationAction
@@ -16,6 +17,7 @@ class HomeScreenViewModelImpl @Inject constructor(
     private val homeScreenReducer: HomeScreenReducer,
     private val navigationReducer: NavigationReducer,
     private val dispatcherProvider: DispatcherProvider,
+    private val userBusinessMediator: UserBusinessMediator,
 ) : HomeScreenViewModel() {
     override val state = homeScreenReducer.state
 
@@ -25,8 +27,9 @@ class HomeScreenViewModelImpl @Inject constructor(
 
     private fun setContent() {
         viewModelScope.launch(dispatcherProvider.default) {
+            val user = userBusinessMediator.getUser()
             homeScreenReducer.update(HomeScreenAction.SetContent(
-                runesCount = 30, // TODO use a data model
+                runesCount = user.runesCount,
                 navigateToShop = ::navigateToShop,
                 navigateToUpgrade = ::navigateToUpgrade,
                 navigateToGame = ::navigateToGame,

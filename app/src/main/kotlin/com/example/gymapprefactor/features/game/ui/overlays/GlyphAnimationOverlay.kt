@@ -54,22 +54,35 @@ internal fun GlyphAnimationOverlay(
 			val screenHeight = maxHeight
 			val screenWidth = maxWidth
 			val baseOffset = screenHeight * 0.33f
+			val screenWidthValue = screenWidth.value
 			
-			// Random horizontal offset: +/- 10% of screen width
-			val horizontalOffset = remember(glyphAnimation) {
-				val randomOffset = (Random.nextFloat() - 0.5f) * 2f // -1.0 to 1.0
-				screenWidth * 0.1f * randomOffset
+			// Random horizontal offsets: +/- 10% of screen width, rerolled for each currency
+			val glyphHorizontalOffset = remember(glyphAnimation.glyphAmount, glyphAnimation.runeAmount) {
+				if (glyphAnimation.glyphAmount > 0) {
+					val randomOffset = (Random.nextFloat() - 0.5f) * 2f // -1.0 to 1.0
+					screenWidthValue * 0.1f * randomOffset
+				} else {
+					0f
+				}
+			}
+			
+			val runeHorizontalOffset = remember(glyphAnimation.glyphAmount, glyphAnimation.runeAmount) {
+				if (glyphAnimation.runeAmount > 0) {
+					val randomOffset = (Random.nextFloat() - 0.5f) * 2f // -1.0 to 1.0
+					screenWidthValue * 0.1f * randomOffset
+				} else {
+					0f
+				}
 			}
 
 			GlyphDropAnimation(
 				glyphAnimation = glyphAnimation,
 				alpha = alpha,
+				glyphHorizontalOffset = glyphHorizontalOffset,
+				runeHorizontalOffset = runeHorizontalOffset,
 				modifier = Modifier
 					.align(Alignment.TopCenter)
-					.offset(
-						x = horizontalOffset,
-						y = baseOffset + verticalOffset.dp
-					)
+					.offset(y = baseOffset + verticalOffset.dp)
 			)
 		}
 	}

@@ -69,6 +69,14 @@ private fun DialogContent(
 					modifier = Modifier.fillMaxWidth(),
 					textAlign = TextAlign.Center
 				)
+				if (state.message != null) {
+					Text(
+						text = state.message,
+						style = Typography.bodySmall,
+						modifier = Modifier.fillMaxWidth(),
+						textAlign = TextAlign.Center
+					)
+				}
 				ButtonRouter(state.confirmState, Modifier.fillMaxWidth())
 				ButtonRouter(state.dismissState, Modifier.fillMaxWidth())
 			}
@@ -91,9 +99,10 @@ private fun dialogWidthRouter(): Dp {
 private fun DialogPreview() {
 	DialogContent(
 		DialogState.Content(
-			{ },
-			"DIALOG TITLE",
-			IconButtonState.Content(
+			onDismissRequest = { },
+			title = "DIALOG TITLE",
+			message = "Sample message",
+			confirmState = IconButtonState.Content(
 				onClick = { },
 				image = ImageState.ConfirmIcon
 			),

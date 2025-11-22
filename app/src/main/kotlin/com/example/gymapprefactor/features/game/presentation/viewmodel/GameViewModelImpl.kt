@@ -7,6 +7,7 @@ import com.example.gymapprefactor.business.effects.templating.domain.EffectDescr
 import com.example.gymapprefactor.business.gameplayLoop.domain.GameplayBusinessMediator
 import com.example.gymapprefactor.business.gameplayLoop.domain.ScoredWordResult
 import com.example.gymapprefactor.business.gameplayLoop.domain.mappers.DiscardsRemainingMapper
+import com.example.gymapprefactor.business.user.domain.UserBusinessMediator
 import com.example.gymapprefactor.business.gameplayLoop.domain.mappers.EffectAnimationPayloadMapper
 import com.example.gymapprefactor.business.gameplayLoop.domain.mappers.EnemyCreationMapper
 import com.example.gymapprefactor.business.gameplayLoop.domain.mappers.EnemyLabelMapper
@@ -51,6 +52,7 @@ class GameViewModelImpl @Inject constructor(
 	private val effectAnimationPayloadMapper: EffectAnimationPayloadMapper,
 	private val getEffectDescriptorsUseCase: GetEffectDescriptorsUseCase,
 	private val midshopOptionMapper: MidshopOptionMapper,
+	private val userBusinessMediator: UserBusinessMediator,
 ) : GameViewModel() {
 	override val state = gameScreenReducer.state
 
@@ -114,14 +116,15 @@ class GameViewModelImpl @Inject constructor(
 	}
 
 	@SuppressWarnings("LongMethod")
-	private fun createStartPlayingAction(
+	private suspend fun createStartPlayingAction(
 		enemyMaxHealth: Int,
 		enemyLabel: String,
 		discardsRemaining: Int,
 		effectDescriptors: Map<String, EffectDescriptor>
 	): GameScreenAction.StartPlaying {
+		val user = userBusinessMediator.getUser()
 		return GameScreenAction.StartPlaying(
-			runesCount = 10,
+			runesCount = user.runesCount,
 			glyphCount = activeGameState.activeGameVariables.glyphCount,
 			onQuitPressed = ::onQuitPressed,
 			onWordPlayed = ::onWordPlayed,
@@ -266,10 +269,11 @@ class GameViewModelImpl @Inject constructor(
 		}
 
 		if (processedResult.isWon) {
-			if (processedResult.glyphReward > 0) {
+			if (processedResult.glyphReward > 0 || processedResult.runeReward > 0) {
 				glyphAnimationEvent.emit(
 					GlyphAnimationPayload(
-						amount = processedResult.glyphReward
+						glyphAmount = processedResult.glyphReward,
+						runeAmount = processedResult.runeReward
 					)
 				)
 			}
@@ -418,7 +422,8 @@ class GameViewModelImpl @Inject constructor(
 
 	private fun quitGame() {
 		viewModelScope.launch(dispatcherProvider.default) {
-			gameplayBusinessMediator.endGame(game = activeGameState, saveProgression = false)
+			val shouldSaveProgression = activeGameState.activeGameVariables.gameLost
+			gameplayBusinessMediator.endGame(game = activeGameState, saveProgression = shouldSaveProgression)
 			navigationReducer.update(NavigationAction.GoTo(NavigationPage.HomeScreen))
 		}
 	}
@@ -435,10 +440,17 @@ class GameViewModelImpl @Inject constructor(
 
 	private suspend fun triggerGameLostDialog() {
 		withContext(dispatcherProvider.main) {
+			val runesCount = activeGameState.activeGameVariables.runesCount
+			val message = if (runesCount > 0) {
+				"Runes earned: $runesCount"
+			} else {
+				null
+			}
 			dialogReducer.update(
 				DialogAction.TriggerDialog(
 					onDismiss = { dialogReducer.onDefaultDismiss() },
 					title = "Game Lost",
+					message = message,
 					showDismissButton = false,
 					confirmState = DialogAction.ConfirmState.Content(
 						onConfirm = { quitGame() }

@@ -203,7 +203,10 @@ private fun setupEventCollectors(
 
 	LaunchedEffect(Unit) {
 		viewModel.glyphAnimationEvent.collectLatest { payload ->
-			println("GameRoot: received glyph animation payload amount=${payload.amount}")
+			println(
+				"GameRoot: received glyph animation payload " +
+				"glyphAmount=${payload.glyphAmount}, runeAmount=${payload.runeAmount}"
+			)
 			animationQueues.glyphAnimationQueue.add(payload)
 		}
 	}
