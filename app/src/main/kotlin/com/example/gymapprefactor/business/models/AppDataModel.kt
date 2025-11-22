@@ -2,6 +2,9 @@ package com.example.gymapprefactor.business.models
 
 import com.example.gymapprefactor.app.util.dispatcher.DispatcherProvider
 import com.example.gymapprefactor.business.network.UserStorage
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.withContext
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -12,11 +15,14 @@ class AppDataModel @Inject constructor(
     private val dispatcherProvider: DispatcherProvider,
 ) {
     private lateinit var user: User
+    private val _userFlow = MutableStateFlow<User?>(null)
+    val userFlow: StateFlow<User?> = _userFlow.asStateFlow()
 
     fun getCurrentUser() = user
 
     suspend fun saveUser(savedUser: User): User {
         user = userStorage.saveUser(savedUser)
+        _userFlow.value = user
         return user
     }
 
@@ -29,6 +35,7 @@ class AppDataModel @Inject constructor(
             } else {
                 user = createDefaultUser()
             }
+            _userFlow.value = user
         }
     }
 

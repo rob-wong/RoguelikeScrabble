@@ -22,19 +22,38 @@ class HomeScreenViewModelImpl @Inject constructor(
     override val state = homeScreenReducer.state
 
     init {
-        setContent()
+        startObservingUserUpdates()
+        loadInitialUserContent()
     }
 
-    private fun setContent() {
+    private fun startObservingUserUpdates() {
+        viewModelScope.launch(dispatcherProvider.main) {
+            userBusinessMediator.getUserFlow().collect { user ->
+                handleUserUpdate(user)
+            }
+        }
+    }
+
+    private suspend fun handleUserUpdate(user: com.example.gymapprefactor.business.models.User?) {
+        if (user != null) {
+            updateContentWithUser(user)
+        }
+    }
+
+    private fun loadInitialUserContent() {
         viewModelScope.launch(dispatcherProvider.default) {
             val user = userBusinessMediator.getUser()
-            homeScreenReducer.update(HomeScreenAction.SetContent(
-                runesCount = user.runesCount,
-                navigateToShop = ::navigateToShop,
-                navigateToUpgrade = ::navigateToUpgrade,
-                navigateToGame = ::navigateToGame,
-            ))
+            updateContentWithUser(user)
         }
+    }
+
+    private suspend fun updateContentWithUser(user: com.example.gymapprefactor.business.models.User) {
+        homeScreenReducer.update(HomeScreenAction.SetContent(
+            runesCount = user.runesCount,
+            navigateToShop = ::navigateToShop,
+            navigateToUpgrade = ::navigateToUpgrade,
+            navigateToGame = ::navigateToGame,
+        ))
     }
 
     private fun navigateToShop() = navigateToScreen(NavigationPage.ShopScreen)

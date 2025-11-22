@@ -4,6 +4,7 @@ import com.example.gymapprefactor.business.interfaces.DataSource
 import com.example.gymapprefactor.business.models.AppDataModel
 import com.example.gymapprefactor.business.models.User
 import com.example.gymapprefactor.business.user.domain.UserRepository
+import kotlinx.coroutines.flow.Flow
 import javax.inject.Inject
 
 class UserRepositoryImpl(
@@ -16,6 +17,10 @@ class UserRepositoryImpl(
     override suspend fun saveUser(user: User) {
         dataSource.saveUser(user)
     }
+
+    override fun getUserFlow(): Flow<User?> {
+        return dataSource.getUserFlow()
+    }
 }
 
 class UserDataSource @Inject constructor(
@@ -27,5 +32,9 @@ class UserDataSource @Inject constructor(
     
     suspend fun saveUser(user: User) {
         appDataModel.saveUser(user)
+    }
+
+    fun getUserFlow(): Flow<User?> {
+        return appDataModel.userFlow
     }
 }

@@ -13,6 +13,7 @@ import com.example.gymapprefactor.features.upgrade.presentation.models.UpgradeSc
 import com.example.gymapprefactor.features.upgrade.presentation.state.UpgradeLetterStateMapper
 import com.example.gymapprefactor.features.upgrade.presentation.state.UpgradeScreenReducer
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -29,17 +30,49 @@ class UpgradeScreenViewModelImpl @Inject constructor(
 	override val state = upgradeScreenReducer.state
 
 	init {
-		setContent()
+		startObservingUserUpdates()
+		loadInitialUserContent()
 	}
 
-	private fun setContent() {
+	private fun startObservingUserUpdates() {
+		viewModelScope.launch(dispatcherProvider.main) {
+			userBusinessMediator.getUserFlow().collect { user ->
+				handleUserUpdate(user)
+			}
+		}
+	}
+
+	private suspend fun handleUserUpdate(user: com.example.gymapprefactor.business.models.User?) {
+		if (user != null) {
+			updateRunesCount(user.runesCount)
+		}
+	}
+
+	private fun loadInitialUserContent() {
 		viewModelScope.launch(dispatcherProvider.default) {
 			val user = userBusinessMediator.getUser()
+			setContent(user)
+		}
+	}
+
+	private suspend fun setContent(user: com.example.gymapprefactor.business.models.User) {
+		upgradeScreenReducer.update(
+			UpgradeScreenAction.SetContent(
+				runesCount = user.runesCount,
+				onBackPressed = ::onBackPressed,
+				upgradeLetters = getUpgradeLetterStates(),
+			)
+		)
+	}
+
+	private suspend fun updateRunesCount(runesCount: Int) {
+		val currentState = state.first()
+		if (currentState is com.example.gymapprefactor.features.upgrade.presentation.models.UpgradeScreenState.Content) {
 			upgradeScreenReducer.update(
 				UpgradeScreenAction.SetContent(
-					runesCount = user.runesCount,
+					runesCount = runesCount,
 					onBackPressed = ::onBackPressed,
-					upgradeLetters = getUpgradeLetterStates(),
+					upgradeLetters = currentState.letters,
 				)
 			)
 		}
@@ -63,7 +96,8 @@ class UpgradeScreenViewModelImpl @Inject constructor(
 	private fun onUpgradeLetter(letter: Letter) {
 		viewModelScope.launch(dispatcherProvider.default) {
 			userBusinessMediator.upgradeLetter(deck = currentDeck, letter = letter)
-			setContent()
+			val user = userBusinessMediator.getUser()
+			setContent(user)
 		}
 	}
 
