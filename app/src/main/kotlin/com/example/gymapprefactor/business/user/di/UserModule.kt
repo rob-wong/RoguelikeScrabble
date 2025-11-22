@@ -57,11 +57,13 @@ object UserModule {
         getDecksUseCase: GetDecksUseCase,
         getUserUseCase: GetUserUseCase,
         saveUserUseCase: SaveUserUseCase,
+        userRepository: UserRepository,
     ): UserBusinessMediator {
         return UserBusinessMediator(
             getUserUseCase = getUserUseCase,
             getDecksUseCase = getDecksUseCase,
             saveUserUseCase = saveUserUseCase,
+            userRepository = userRepository,
         )
     }
 }

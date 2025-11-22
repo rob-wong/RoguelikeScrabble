@@ -5,11 +5,13 @@ import com.example.gymapprefactor.business.models.Letter
 import com.example.gymapprefactor.business.models.NoneUser
 import com.example.gymapprefactor.business.models.User
 import com.example.gymapprefactor.business.models.copy
+import kotlinx.coroutines.flow.Flow
 
 class UserBusinessMediator(
 	private val getDecksUseCase: GetDecksUseCase,
 	private val getUserUseCase: GetUserUseCase,
 	private val saveUserUseCase: SaveUserUseCase,
+	private val userRepository: UserRepository,
 ) {
 	suspend fun getDecks(): List<Deck> {
 		return getDecksUseCase().fold(
@@ -23,6 +25,10 @@ class UserBusinessMediator(
 			onSuccess = { it },
 			onFailure = { NoneUser } // error dialog
 		)
+	}
+
+	fun getUserFlow(): Flow<User?> {
+		return userRepository.getUserFlow()
 	}
 
 	suspend fun upgradeLetter(deck: Deck, letter: Letter) {

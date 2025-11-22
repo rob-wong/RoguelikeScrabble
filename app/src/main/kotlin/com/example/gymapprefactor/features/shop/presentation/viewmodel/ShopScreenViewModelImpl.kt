@@ -21,19 +21,38 @@ class ShopScreenViewModelImpl @Inject constructor(
 	override val state = shopScreenReducer.state
 
 	init {
-		setContent()
+		startObservingUserUpdates()
+		loadInitialUserContent()
 	}
 
-	private fun setContent() {
+	private fun startObservingUserUpdates() {
+		viewModelScope.launch(dispatcherProvider.main) {
+			userBusinessMediator.getUserFlow().collect { user ->
+				handleUserUpdate(user)
+			}
+		}
+	}
+
+	private suspend fun handleUserUpdate(user: com.example.gymapprefactor.business.models.User?) {
+		if (user != null) {
+			updateContentWithUser(user)
+		}
+	}
+
+	private fun loadInitialUserContent() {
 		viewModelScope.launch(dispatcherProvider.default) {
 			val user = userBusinessMediator.getUser()
-			shopScreenReducer.update(
-				ShopScreenAction.SetContent(
-					runesCount = user.runesCount,
-					onBackPressed = ::onBackPressed
-				)
-			)
+			updateContentWithUser(user)
 		}
+	}
+
+	private suspend fun updateContentWithUser(user: com.example.gymapprefactor.business.models.User) {
+		shopScreenReducer.update(
+			ShopScreenAction.SetContent(
+				runesCount = user.runesCount,
+				onBackPressed = ::onBackPressed
+			)
+		)
 	}
 
 	private fun onBackPressed() {
