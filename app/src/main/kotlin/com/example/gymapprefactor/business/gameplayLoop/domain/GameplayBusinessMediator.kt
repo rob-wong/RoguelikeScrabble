@@ -1,5 +1,6 @@
 package com.example.gymapprefactor.business.gameplayLoop.domain
 
+import com.example.gymapprefactor.business.gameplayLoop.domain.handlers.MidshopOptionExecutionResult
 import com.example.gymapprefactor.business.gameplayLoop.domain.mappers.EffectScoreMapper
 import com.example.gymapprefactor.business.gameplayLoop.domain.mappers.EffectScoreModification
 import com.example.gymapprefactor.business.gameplayLoop.domain.mappers.GlyphRewardMapper
@@ -190,40 +191,80 @@ class GameplayBusinessMediator(
 		selectedEffect: Effect?,
 		game: ActiveGameState
 	): MidshopOptionResult {
-		// First, add the selected effect to activeGameValues if one was selected
-		val gameWithEffect = if (selectedEffect != null) {
-			addEffectToActiveGameValuesUseCase(selectedEffect, game)
-		} else {
-			game
-		}
+		val gameWithEffect = addSelectedEffectToGame(selectedEffect, game)
 		
-		val currentGlyphCount = gameWithEffect.activeGameVariables.glyphCount
-		val newGlyphCount = (currentGlyphCount - midshopOption.cost).coerceAtLeast(0)
-		val gameWithGlyphsDeducted = gameWithEffect.copy(
-			activeGameVariables = gameWithEffect.activeGameVariables.copy(
-				glyphCount = newGlyphCount,
-				needsMidshopSelection = false
+		if (!canAffordMidshopOption(midshopOption, gameWithEffect)) {
+			return MidshopOptionResult(
+				gameState = gameWithEffect,
+				resultPayload = null
 			)
-		)
-		
-		val executionResult = midshopBusinessMediator.executeMidshopOption(
-			midshopOption = midshopOption,
-			game = gameWithGlyphsDeducted
-		)
-		
-		val savedGame = saveGameState(executionResult.gameState)
-		
-		val finalGame = if (executionResult.shouldAdvance) {
-			val advancedGame = advanceToNextEnemyUseCase(savedGame)
-			saveGameState(advancedGame)
-		} else {
-			savedGame
 		}
+		
+		val gameWithGlyphsDeducted = deductGlyphsForMidshopOption(midshopOption, gameWithEffect)
+		val executionResult = executeMidshopOptionAndSave(midshopOption, gameWithGlyphsDeducted)
+		val finalGame = advanceToNextEnemyIfNeeded(executionResult)
 		
 		return MidshopOptionResult(
 			gameState = finalGame,
 			resultPayload = executionResult.resultPayload
 		)
+	}
+	
+	private fun addSelectedEffectToGame(
+		selectedEffect: Effect?,
+		game: ActiveGameState
+	): ActiveGameState {
+		return if (selectedEffect != null) {
+			addEffectToActiveGameValuesUseCase(selectedEffect, game)
+		} else {
+			game
+		}
+	}
+	
+	private fun canAffordMidshopOption(
+		midshopOption: MidshopOption,
+		game: ActiveGameState
+	): Boolean {
+		val currentGlyphCount = game.activeGameVariables.glyphCount
+		return currentGlyphCount >= midshopOption.cost
+	}
+	
+	private fun deductGlyphsForMidshopOption(
+		midshopOption: MidshopOption,
+		game: ActiveGameState
+	): ActiveGameState {
+		val currentGlyphCount = game.activeGameVariables.glyphCount
+		val newGlyphCount = currentGlyphCount - midshopOption.cost
+		
+		return game.copy(
+			activeGameVariables = game.activeGameVariables.copy(
+				glyphCount = newGlyphCount,
+				needsMidshopSelection = false
+			)
+		)
+	}
+	
+	private suspend fun executeMidshopOptionAndSave(
+		midshopOption: MidshopOption,
+		game: ActiveGameState
+	): MidshopOptionExecutionResult {
+		val executionResult = midshopBusinessMediator.executeMidshopOption(
+			midshopOption = midshopOption,
+			game = game
+		)
+		val savedGame = saveGameState(executionResult.gameState)
+		return executionResult.copy(gameState = savedGame)
+	}
+	
+	private suspend fun advanceToNextEnemyIfNeeded(
+		executionResult: MidshopOptionExecutionResult
+	): ActiveGameState {
+		return if (executionResult.shouldAdvance) {
+			val advancedGame = advanceToNextEnemyUseCase(executionResult.gameState)
+			saveGameState(advancedGame)
+		} else {
+			executionResult.gameState
+		}
 	}
 
 	suspend fun confirmAwakenLetterSelection(

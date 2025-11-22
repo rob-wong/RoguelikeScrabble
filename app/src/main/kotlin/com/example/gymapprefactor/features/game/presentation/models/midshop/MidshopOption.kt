@@ -4,6 +4,7 @@ data class MidshopOption(
 	val id: String,
 	val cost: Int,
 	val type: MidshopOptionType,
+	val isEnabled: Boolean = true,
 )
 
 sealed class MidshopOptionType {
