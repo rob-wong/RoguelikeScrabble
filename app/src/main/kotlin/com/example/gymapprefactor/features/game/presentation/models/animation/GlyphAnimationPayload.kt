@@ -1,5 +1,6 @@
 package com.example.gymapprefactor.features.game.presentation.models.animation
 
 data class GlyphAnimationPayload(
-	val amount: Int
+	val glyphAmount: Int = 0,
+	val runeAmount: Int = 0
 )

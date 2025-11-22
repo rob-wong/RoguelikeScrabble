@@ -81,15 +81,15 @@ class GameplayBusinessMediator(
 		
 		val gameConditions = checkGameConditions(gameState)
 		
-		val glyphReward = if (gameConditions.isWon) {
-			val (updatedGameState, reward) = handleWinCondition(gameState)
+		val (glyphReward, runeReward) = if (gameConditions.isWon) {
+			val (updatedGameState, glyphRewardValue, runeRewardValue) = handleWinCondition(gameState)
 			gameState = updatedGameState
-			reward
+			Pair(glyphRewardValue, runeRewardValue)
 		} else if (gameConditions.isLost) {
 			gameState = handleLossCondition(gameState)
-			0
+			Pair(0, 0)
 		} else {
-			0
+			Pair(0, 0)
 		}
 
 		return ProcessedWordResult(
@@ -99,7 +99,8 @@ class GameplayBusinessMediator(
 			effectModifications = effectModifications,
 			isWon = gameConditions.isWon,
 			isLost = gameConditions.isLost,
-			glyphReward = glyphReward
+			glyphReward = glyphReward,
+			runeReward = runeReward
 		)
 	}
 
@@ -147,10 +148,12 @@ class GameplayBusinessMediator(
 		return GameConditions(isWon, isLost)
 	}
 
-	private suspend fun handleWinCondition(gameState: ActiveGameState): Pair<ActiveGameState, Int> {
+	private suspend fun handleWinCondition(gameState: ActiveGameState): Triple<ActiveGameState, Int, Int> {
 		val needsSelection = gameState.currentRound.effects.isNotEmpty()
 		val glyphReward = calculateGlyphReward(gameState)
-		val gameWithRewards = applyGlyphReward(gameState, glyphReward)
+		val gameWithGlyphReward = applyGlyphReward(gameState, glyphReward)
+		val runeReward = calculateRuneReward(gameWithGlyphReward)
+		val gameWithRewards = applyRuneReward(gameWithGlyphReward, runeReward)
 		val gameWithWinFlag = gameWithRewards.copy(
 			activeGameVariables = gameWithRewards.activeGameVariables.copy(
 				gameLost = false,
@@ -158,7 +161,7 @@ class GameplayBusinessMediator(
 				needsMidshopSelection = !needsSelection // Show midshop if no effect selection needed
 			)
 		)
-		return Pair(saveGameState(gameWithWinFlag), glyphReward)
+		return Triple(saveGameState(gameWithWinFlag), glyphReward, runeReward)
 	}
 
 	private fun calculateGlyphReward(gameState: ActiveGameState): Int {
@@ -170,6 +173,28 @@ class GameplayBusinessMediator(
 		return gameState.copy(
 			activeGameVariables = gameState.activeGameVariables.copy(
 				glyphCount = currentGlyphCount + reward
+			)
+		)
+	}
+
+	private fun calculateRuneReward(gameState: ActiveGameState): Int {
+		return if (isBossLevel(gameState.activeGameVariables.level)) {
+			1
+		} else {
+			0
+		}
+	}
+
+	private fun isBossLevel(level: Int): Boolean {
+		val bossLevelThreshold = 4
+		return level >= bossLevelThreshold
+	}
+
+	private fun applyRuneReward(gameState: ActiveGameState, reward: Int): ActiveGameState {
+		val currentRuneCount = gameState.activeGameVariables.runesCount
+		return gameState.copy(
+			activeGameVariables = gameState.activeGameVariables.copy(
+				runesCount = currentRuneCount + reward
 			)
 		)
 	}
@@ -317,7 +342,8 @@ data class ProcessedWordResult(
 	val effectModifications: List<EffectScoreModification>,
 	val isWon: Boolean,
 	val isLost: Boolean,
-	val glyphReward: Int
+	val glyphReward: Int,
+	val runeReward: Int
 )
 
 data class ScoredWordResult(

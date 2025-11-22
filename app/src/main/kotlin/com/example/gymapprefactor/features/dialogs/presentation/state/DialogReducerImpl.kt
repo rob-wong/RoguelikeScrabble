@@ -31,6 +31,7 @@ class DialogReducerImpl : DialogReducer {
 			DialogState.Content(
 				onDismissRequest = onDismiss,
 				title = title,
+				message = message,
 				confirmState = mapConfirmButton(action),
 				dismissState = mapDismissButton(action)
 			)

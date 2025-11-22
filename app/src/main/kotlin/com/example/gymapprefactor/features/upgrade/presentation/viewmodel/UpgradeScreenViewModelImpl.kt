@@ -34,9 +34,10 @@ class UpgradeScreenViewModelImpl @Inject constructor(
 
 	private fun setContent() {
 		viewModelScope.launch(dispatcherProvider.default) {
+			val user = userBusinessMediator.getUser()
 			upgradeScreenReducer.update(
 				UpgradeScreenAction.SetContent(
-					runesCount = 10,
+					runesCount = user.runesCount,
 					onBackPressed = ::onBackPressed,
 					upgradeLetters = getUpgradeLetterStates(),
 				)

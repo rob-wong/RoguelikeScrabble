@@ -11,6 +11,7 @@ sealed class DialogAction : Action {
 		val onDismiss: () -> Unit,
 		val showDismissButton: Boolean,
 		val title: String,
+		val message: String? = null,
 		val confirmState: ConfirmState
 	) : DialogAction()
 
