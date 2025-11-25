@@ -47,6 +47,13 @@ fun ImageRouter(
 		GameOverText -> painterResource(R.drawable.icon_game_over_text)
 
 		DefaultLetterBackground -> painterResource(R.drawable.icon_letter_background_default)
+
+		AwakenMidshopCard -> painterResource(R.drawable.image_awaken_midshop_card)
+		ExpungeMidshopCard -> painterResource(R.drawable.image_expunge_midshop_card)
+		PerfectionismMidshopCard -> painterResource(R.drawable.image_perfectionism_midshop_card)
+		PersistenceMidshopCard -> painterResource(R.drawable.image_persistence_midshop_card)
+		UpgradeMidshopCard -> painterResource(R.drawable.image_upgrade_midshop_card)
+
 		None -> return
 	}
 	Image(

@@ -28,12 +28,13 @@ import androidx.compose.ui.unit.dp
 import com.example.gymapprefactor.common.components.buttons.presentation.ButtonState
 import com.example.gymapprefactor.common.components.buttons.ui.ButtonRouter
 import com.example.gymapprefactor.features.game.presentation.models.midshop.MidshopOption
+import com.example.gymapprefactor.features.game.presentation.models.midshop.MidshopOptionState
 import com.example.gymapprefactor.features.game.ui.components.MidshopOptionItem
 
 @Composable
 fun MidshopSelectionOverlay(
-	options: List<MidshopOption>,
-	selectedOption: MidshopOption?,
+	options: List<MidshopOptionState>,
+	selectedOption: MidshopOptionState?,
 	confirmButton: ButtonState,
 	onOptionSelected: (MidshopOption) -> Unit,
 	modifier: Modifier = Modifier,
@@ -53,8 +54,8 @@ fun MidshopSelectionOverlay(
 
 @Composable
 private fun MidshopSelectionContent(
-	options: List<MidshopOption>,
-	selectedOption: MidshopOption?,
+	options: List<MidshopOptionState>,
+	selectedOption: MidshopOptionState?,
 	confirmButton: ButtonState,
 	onOptionSelected: (MidshopOption) -> Unit,
 	modifier: Modifier = Modifier,
@@ -84,16 +85,16 @@ private fun MidshopDarkOverlay() {
 
 @Composable
 private fun MidshopSelectionUI(
-	options: List<MidshopOption>,
-	selectedOption: MidshopOption?,
+	options: List<MidshopOptionState>,
+	selectedOption: MidshopOptionState?,
 	confirmButton: ButtonState,
 	onOptionSelected: (MidshopOption) -> Unit,
 ) {
 	Column(
 		modifier = Modifier
-			.fillMaxSize()
-			.padding(32.dp),
-		horizontalAlignment = Alignment.CenterHorizontally
+			.fillMaxSize(),
+		horizontalAlignment = Alignment.CenterHorizontally,
+		verticalArrangement = Arrangement.Center
 	) {
 		MidshopOptionsGrid(
 			options = options,
@@ -107,8 +108,8 @@ private fun MidshopSelectionUI(
 
 @Composable
 private fun MidshopOptionsGrid(
-	options: List<MidshopOption>,
-	selectedOption: MidshopOption?,
+	options: List<MidshopOptionState>,
+	selectedOption: MidshopOptionState?,
 	onOptionSelected: (MidshopOption) -> Unit,
 ) {
 	val columns = calculateGridColumns(options.size)
@@ -140,9 +141,9 @@ private fun MidshopOptionsGrid(
 
 @Composable
 private fun MidshopOptionRow(
-	row: List<MidshopOption>,
+	row: List<MidshopOptionState>,
 	columns: Int,
-	selectedOption: MidshopOption?,
+	selectedOption: MidshopOptionState?,
 	onOptionSelected: (MidshopOption) -> Unit,
 ) {
 	val density = LocalDensity.current
@@ -156,14 +157,14 @@ private fun MidshopOptionRow(
 				rowWidth = with(density) { coordinates.size.width.toDp() }
 			}
 	) {
-		row.forEach { option ->
+		row.forEach { optionState ->
 			val modifier = calculateOptionModifier(rowWidth, columns)
 			MidshopOptionItem(
-				option = option,
-				isSelected = selectedOption?.id == option.id,
+				optionState = optionState,
+				isSelected = selectedOption?.option?.id == optionState.option.id,
 				onClick = {
-					if (option.isEnabled) {
-						onOptionSelected(option)
+					if (optionState.option.isEnabled) {
+						onOptionSelected(optionState.option)
 					}
 				},
 				modifier = modifier
@@ -189,7 +190,7 @@ private fun calculateOptionModifier(
 ): Modifier {
 	// Calculate width based on what it would be in a full row
 	// Account for padding (32dp * 2 = 64dp total), item padding (4dp * 2 = 8dp per item), and spacing (8dp between items)
-	val horizontalPadding = 64.dp // 32dp on each side
+	val horizontalPadding = 15.dp // 32dp on each side
 	val itemPadding = 8.dp // 4dp on each side of each item
 	val spacingBetweenItems = (8 * (columns - 1)).dp // spacing between items
 	val availableWidth = rowWidth - horizontalPadding
