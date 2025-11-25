@@ -25,11 +25,19 @@ import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
+import androidx.compose.material3.Text
+import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.font.Font
+import androidx.compose.ui.text.font.FontFamily
+import androidx.compose.ui.text.style.TextAlign
+import com.example.gymapprefactor.R
 import com.example.gymapprefactor.common.components.buttons.presentation.ButtonState
 import com.example.gymapprefactor.common.components.buttons.ui.ButtonRouter
 import com.example.gymapprefactor.features.game.presentation.models.midshop.MidshopOption
 import com.example.gymapprefactor.features.game.presentation.models.midshop.MidshopOptionState
 import com.example.gymapprefactor.features.game.ui.components.MidshopOptionItem
+import com.example.gymapprefactor.ui.theme.OffWhite
 
 @Composable
 fun MidshopSelectionOverlay(
@@ -101,7 +109,9 @@ private fun MidshopSelectionUI(
 			selectedOption = selectedOption,
 			onOptionSelected = onOptionSelected
 		)
-		
+
+		MidshopDescription(selectedOption = selectedOption)
+
 		MidshopConfirmButton(confirmButton)
 	}
 }
@@ -170,6 +180,24 @@ private fun MidshopOptionRow(
 				modifier = modifier
 			)
 		}
+	}
+}
+
+@Composable
+private fun MidshopDescription(selectedOption: MidshopOptionState?) {
+	selectedOption?.description?.let { description ->
+		Text(
+			text = description,
+			style = TextStyle(
+				fontFamily = FontFamily(Font(R.font.pixel_operator)),
+				color = OffWhite,
+				fontSize = 20.sp
+			),
+			textAlign = TextAlign.Center,
+			modifier = Modifier
+				.fillMaxWidth()
+				.padding(horizontal = 32.dp, vertical = 16.dp)
+		)
 	}
 }
 

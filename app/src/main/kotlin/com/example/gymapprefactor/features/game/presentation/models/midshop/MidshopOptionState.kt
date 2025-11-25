@@ -5,4 +5,5 @@ import com.example.gymapprefactor.common.components.presentation.ImageState
 data class MidshopOptionState(
 	val option: MidshopOption,
 	val imageState: ImageState,
+	val description: String,
 )
