@@ -24,5 +24,11 @@ sealed class ImageState {
 
 	data object DefaultLetterBackground : ImageState()
 
+	data object AwakenMidshopCard : ImageState()
+	data object ExpungeMidshopCard : ImageState()
+	data object PerfectionismMidshopCard : ImageState()
+	data object PersistenceMidshopCard : ImageState()
+	data object UpgradeMidshopCard : ImageState()
+
 	data object None : ImageState()
 }

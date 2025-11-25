@@ -13,6 +13,7 @@ import com.example.gymapprefactor.features.game.presentation.models.components.E
 import com.example.gymapprefactor.features.game.presentation.models.components.RoundsRemainingState
 import com.example.gymapprefactor.features.game.presentation.models.midshop.MidshopLetterSelectionState
 import com.example.gymapprefactor.features.game.presentation.models.midshop.MidshopOption
+import com.example.gymapprefactor.features.game.presentation.models.midshop.MidshopOptionState
 
 sealed class GameScreenState : State {
 	data class Playing(
@@ -33,8 +34,8 @@ sealed class GameScreenState : State {
 		val onEffectSelected: ((Effect) -> Unit)?,
 		val onEffectSelectionBackPressed: (() -> Unit)?,
 		val needsMidshopSelection: Boolean,
-		val midshopOptions: List<MidshopOption>,
-		val selectedMidshopOption: MidshopOption?,
+		val midshopOptions: List<MidshopOptionState>,
+		val selectedMidshopOption: MidshopOptionState?,
 		val midshopConfirmButton: ButtonState,
 		val onMidshopOptionSelected: ((MidshopOption) -> Unit)?,
 		val onMidshopConfirmed: (() -> Unit)?,

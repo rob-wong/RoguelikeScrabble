@@ -17,8 +17,11 @@ import com.example.gymapprefactor.features.game.presentation.models.components.E
 import com.example.gymapprefactor.features.game.presentation.models.components.RoundsRemainingState
 import com.example.gymapprefactor.features.game.presentation.models.midshop.MidshopLetterSelectionState
 import kotlinx.coroutines.flow.MutableStateFlow
+import javax.inject.Inject
 
-class GameScreenReducerImpl : GameScreenReducer {
+class GameScreenReducerImpl @Inject constructor(
+	private val midshopOptionStateMapper: MidshopOptionStateMapper
+) : GameScreenReducer {
 	override val state = MutableStateFlow<GameScreenState>(GameScreenState.None)
 
 	override suspend fun update(action: GameScreenAction) {
@@ -57,8 +60,8 @@ class GameScreenReducerImpl : GameScreenReducer {
 			onEffectSelected = action.onEffectSelected,
 			onEffectSelectionBackPressed = action.onEffectSelectionBackPressed,
 			needsMidshopSelection = action.needsMidshopSelection,
-			midshopOptions = action.midshopOptions,
-			selectedMidshopOption = action.selectedMidshopOption,
+			midshopOptions = action.midshopOptions.map { midshopOptionStateMapper.map(it) },
+			selectedMidshopOption = action.selectedMidshopOption?.let { midshopOptionStateMapper.map(it) },
 			midshopConfirmButton = mapMidshopConfirmButton(action),
 			onMidshopOptionSelected = action.onMidshopOptionSelected,
 			onMidshopConfirmed = action.onMidshopConfirmed,
