@@ -15,15 +15,24 @@ class EffectAnimationPayloadMapperImpl @Inject constructor() : EffectAnimationPa
 	override fun map(param: EffectAnimationPayloadMapper.Param): List<EffectAnimationPayload> {
 		var cumulativeScore = param.rawScore
 		return param.effectModifications.map { modification ->
-			cumulativeScore += modification.scoreDelta
-			EffectAnimationPayload(
-				effectId = modification.effectId,
-				effectLabel = modification.effectLabel,
-				scoreDelta = modification.scoreDelta,
-				orderIndex = modification.orderIndex,
-				cumulativeScore = cumulativeScore,
-				multiplier = modification.multiplier
-			)
+			if (modification.glyphAmount > 0) {
+				EffectAnimationPayload.Glyph(
+					effectId = modification.effectId,
+					effectLabel = modification.effectLabel,
+					glyphAmount = modification.glyphAmount,
+					orderIndex = modification.orderIndex
+				)
+			} else {
+				cumulativeScore += modification.scoreDelta
+				EffectAnimationPayload.Score(
+					effectId = modification.effectId,
+					effectLabel = modification.effectLabel,
+					scoreDelta = modification.scoreDelta,
+					orderIndex = modification.orderIndex,
+					cumulativeScore = cumulativeScore,
+					multiplier = modification.multiplier
+				)
+			}
 		}
 	}
 }

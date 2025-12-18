@@ -19,6 +19,7 @@ import com.example.gymapprefactor.business.effects.templating.domain.EffectDescr
 import com.example.gymapprefactor.business.models.Effect
 import com.example.gymapprefactor.common.components.ui.OutlinedText
 import com.example.gymapprefactor.ui.theme.common
+import com.example.gymapprefactor.ui.theme.legendary
 import com.example.gymapprefactor.ui.theme.rare
 import com.example.gymapprefactor.ui.theme.uncommon
 
@@ -76,6 +77,7 @@ private fun getEffectTextStyle(descriptor: EffectDescriptor?): TextStyle {
 		descriptor == null -> common
 		descriptor.type == "fixed_addition" -> uncommon
 		descriptor.type == "multiplication" -> rare
+		descriptor.type == "monetary" -> legendary
 		else -> common
 	}
 }

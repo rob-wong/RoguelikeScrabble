@@ -76,7 +76,8 @@ class GameplayBusinessMediator(
 		val effectModifications = calculateEffectModifications(result.gameState, rawScore)
 		val finalScore = calculateFinalScore(rawScore, effectModifications)
 		
-		var gameState = applyScoreAndWordEffect(result.gameState, finalScore, result.wordEffect)
+		var gameState = applyGlyphRewardsFromEffects(result.gameState, effectModifications)
+		gameState = applyScoreAndWordEffect(gameState, finalScore, result.wordEffect)
 		gameState = saveGameState(gameState)
 		
 		val gameConditions = checkGameConditions(gameState)
@@ -175,6 +176,17 @@ class GameplayBusinessMediator(
 				glyphCount = currentGlyphCount + reward
 			)
 		)
+	}
+
+	private fun applyGlyphRewardsFromEffects(
+		gameState: ActiveGameState,
+		effectModifications: List<EffectScoreModification>
+	): ActiveGameState {
+		val totalGlyphReward = effectModifications.sumOf { it.glyphAmount }
+		if (totalGlyphReward > 0) {
+			return applyGlyphReward(gameState, totalGlyphReward)
+		}
+		return gameState
 	}
 
 	private fun calculateRuneReward(gameState: ActiveGameState): Int {

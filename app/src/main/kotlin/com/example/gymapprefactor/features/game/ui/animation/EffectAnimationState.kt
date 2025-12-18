@@ -13,6 +13,7 @@ class EffectAnimationState(
 	val effectScoreAlphaMap: MutableMap<String, Animatable<Float, AnimationVector1D>>,
 	val effectScoreValueMap: MutableMap<String, Int>,
 	val effectMultiplierMap: MutableMap<String, Double>,
+	val effectGlyphAmountMap: MutableMap<String, Int>,
 	val totalScoreState: MutableState<Int?>,
 	val totalScoreShake: Animatable<Float, AnimationVector1D>,
 ) {
@@ -29,6 +30,7 @@ class EffectAnimationState(
 		effectScoreAlphaMap.clear()
 		effectScoreValueMap.clear()
 		effectMultiplierMap.clear()
+		effectGlyphAmountMap.clear()
 		totalScoreState.value = null
 		totalScoreShake.snapTo(0f)
 	}
@@ -40,6 +42,7 @@ internal fun rememberEffectAnimationState(): EffectAnimationState {
 	val effectScoreAlphaMap = remember { mutableStateMapOf<String, Animatable<Float, AnimationVector1D>>() }
 	val effectScoreValueMap = remember { mutableStateMapOf<String, Int>() }
 	val effectMultiplierMap = remember { mutableStateMapOf<String, Double>() }
+	val effectGlyphAmountMap = remember { mutableStateMapOf<String, Int>() }
 	val totalScoreState = remember { mutableStateOf<Int?>(null) }
 	val totalScoreShake = remember { Animatable(0f) }
 
@@ -49,6 +52,7 @@ internal fun rememberEffectAnimationState(): EffectAnimationState {
 			effectScoreAlphaMap = effectScoreAlphaMap,
 			effectScoreValueMap = effectScoreValueMap,
 			effectMultiplierMap = effectMultiplierMap,
+			effectGlyphAmountMap = effectGlyphAmountMap,
 			totalScoreState = totalScoreState,
 			totalScoreShake = totalScoreShake
 		)

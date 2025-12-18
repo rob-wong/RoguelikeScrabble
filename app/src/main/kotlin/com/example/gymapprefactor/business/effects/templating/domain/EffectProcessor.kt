@@ -7,5 +7,5 @@ interface EffectProcessor {
 		currentScore: Int,
 		descriptor: EffectDescriptor,
 		nextEffect: Effect?
-	): Int
+	): EffectModificationResult
 }

@@ -5,6 +5,7 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListState
@@ -25,9 +26,12 @@ import androidx.compose.ui.unit.dp
 import com.example.gymapprefactor.app.util.DeviceUtil
 import com.example.gymapprefactor.business.effects.templating.domain.EffectDescriptor
 import com.example.gymapprefactor.business.models.Effect
+import com.example.gymapprefactor.common.components.presentation.ImageState
+import com.example.gymapprefactor.common.components.ui.ImageRouter
 import com.example.gymapprefactor.common.components.ui.OutlinedText
 import com.example.gymapprefactor.features.game.ui.animation.EffectAnimationState
 import com.example.gymapprefactor.ui.theme.common
+import com.example.gymapprefactor.ui.theme.legendary
 import com.example.gymapprefactor.ui.theme.rare
 import com.example.gymapprefactor.ui.theme.uncommon
 import kotlin.math.roundToInt
@@ -125,6 +129,7 @@ private fun EffectItemWithBackground(
 	val scoreAlpha = effectState?.effectScoreAlphaMap?.get(effect.id)?.value ?: 0f
 	val scoreDelta = effectState?.effectScoreValueMap?.get(effect.id)
 	val multiplier = effectState?.effectMultiplierMap?.get(effect.id)
+	val glyphAmount = effectState?.effectGlyphAmountMap?.get(effect.id)
 	
 	val descriptor = effect.descriptor ?: effectDescriptors[effect.label]
 	val textStyle = getEffectTextStyle(descriptor)
@@ -144,7 +149,7 @@ private fun EffectItemWithBackground(
 				useGlow = false
 			)
 		}
-		renderEffectModifier(multiplier, scoreDelta, scoreAlpha)
+		renderEffectModifier(multiplier, scoreDelta, glyphAmount, scoreAlpha)
 	}
 }
 
@@ -172,9 +177,34 @@ private fun createEffectRowModifier(shake: Float, hasStoneBackground: Boolean): 
 private fun renderEffectModifier(
 	multiplier: Double?,
 	scoreDelta: Int?,
+	glyphAmount: Int?,
 	scoreAlpha: Float
 ) {
 	when {
+		glyphAmount != null && scoreAlpha > 0f -> {
+			Row(
+				modifier = Modifier
+					.graphicsLayer(alpha = scoreAlpha)
+					.padding(start = 8.dp),
+				verticalAlignment = Alignment.CenterVertically
+			) {
+				OutlinedText(
+					text = "+$glyphAmount",
+					textAlign = TextAlign.Center,
+					textStyle = common.copy(
+						fontSize = common.fontSize * 0.66
+					),
+					outlineWidth = 4,
+					useGlow = false
+				)
+				ImageRouter(
+					state = ImageState.GlyphIcon,
+					modifier = Modifier
+						.padding(start = 4.dp)
+						.size(20.dp)
+				)
+			}
+		}
 		multiplier != null && scoreAlpha > 0f -> {
 			OutlinedText(
 				text = "x ${multiplier.toInt()}",
@@ -230,6 +260,7 @@ private fun getEffectTextStyle(descriptor: EffectDescriptor?): TextStyle {
 		descriptor == null -> common
 		descriptor.type == "fixed_addition" -> uncommon
 		descriptor.type == "multiplication" -> rare
+		descriptor.type == "monetary" -> legendary
 		else -> common
 	}
 }

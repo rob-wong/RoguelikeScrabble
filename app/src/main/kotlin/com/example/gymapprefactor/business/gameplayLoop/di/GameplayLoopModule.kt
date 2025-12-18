@@ -25,6 +25,7 @@ import com.example.gymapprefactor.business.effects.domain.EffectsRepository
 import com.example.gymapprefactor.business.effects.templating.domain.EffectProcessorFactory
 import com.example.gymapprefactor.business.effects.templating.domain.processors.ComboProcessor
 import com.example.gymapprefactor.business.effects.templating.domain.processors.FixedAdditionProcessor
+import com.example.gymapprefactor.business.effects.templating.domain.processors.MonetaryProcessor
 import com.example.gymapprefactor.business.effects.templating.domain.processors.MultiplicationProcessor
 import com.example.gymapprefactor.business.gameplayLoop.domain.mappers.EffectScoreMapper
 import com.example.gymapprefactor.business.gameplayLoop.domain.mappers.EffectScoreMapperImpl
@@ -179,16 +180,25 @@ object GameplayLoopModule {
 	}
 
 	@Provides
+	fun provideMonetaryProcessor(
+		json: kotlinx.serialization.json.Json
+	): MonetaryProcessor {
+		return MonetaryProcessor(json)
+	}
+
+	@Provides
 	@Singleton
 	fun provideEffectProcessorFactory(
 		fixedAdditionProcessor: FixedAdditionProcessor,
 		multiplicationProcessor: MultiplicationProcessor,
-		comboProcessor: ComboProcessor
+		comboProcessor: ComboProcessor,
+		monetaryProcessor: MonetaryProcessor
 	): EffectProcessorFactory {
 		return EffectProcessorFactory(
 			fixedAdditionProcessor = fixedAdditionProcessor,
 			multiplicationProcessor = multiplicationProcessor,
-			comboProcessor = comboProcessor
+			comboProcessor = comboProcessor,
+			monetaryProcessor = monetaryProcessor
 		)
 	}
 
