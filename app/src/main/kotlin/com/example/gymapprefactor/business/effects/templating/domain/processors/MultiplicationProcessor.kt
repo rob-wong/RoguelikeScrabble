@@ -1,6 +1,7 @@
 package com.example.gymapprefactor.business.effects.templating.domain.processors
 
 import com.example.gymapprefactor.business.effects.templating.domain.EffectDescriptor
+import com.example.gymapprefactor.business.effects.templating.domain.EffectModificationResult
 import com.example.gymapprefactor.business.effects.templating.domain.EffectProcessor
 import com.example.gymapprefactor.business.effects.templating.domain.MultiplicationConfig
 import com.example.gymapprefactor.business.models.Effect
@@ -16,13 +17,17 @@ class MultiplicationProcessor @Inject constructor(
 		currentScore: Int,
 		descriptor: EffectDescriptor,
 		nextEffect: Effect?
-	): Int {
+	): EffectModificationResult {
 		val config = json.decodeFromJsonElement(
 			serializer<MultiplicationConfig>(),
 			descriptor.config
 		)
 		// Return the delta (change in score), not the new total score
 		val newScore = (currentScore * config.multiplier).toInt()
-		return newScore - currentScore
+		val scoreDelta = newScore - currentScore
+		return EffectModificationResult(
+			scoreDelta = scoreDelta,
+			glyphAmount = 0
+		)
 	}
 }

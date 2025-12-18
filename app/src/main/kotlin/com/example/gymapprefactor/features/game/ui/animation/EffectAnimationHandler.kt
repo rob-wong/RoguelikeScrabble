@@ -67,6 +67,17 @@ private suspend fun animateEffect(
 	effectState: EffectAnimationState,
 	scoreState: ScoreAnimationState
 ) {
+	when (effectAnimation) {
+		is EffectAnimationPayload.Score -> animateScoreEffect(effectAnimation, effectState, scoreState)
+		is EffectAnimationPayload.Glyph -> animateGlyphEffect(effectAnimation, effectState)
+	}
+}
+
+private suspend fun animateScoreEffect(
+	effectAnimation: EffectAnimationPayload.Score,
+	effectState: EffectAnimationState,
+	scoreState: ScoreAnimationState
+) {
 	coroutineScope {
 		// 1. Small shake on the individual effect
 		launch {
@@ -91,6 +102,8 @@ private suspend fun animateEffect(
 				// Clear multiplier for non-multiplication effects
 				effectState.effectMultiplierMap.remove(effectAnimation.effectId)
 			}
+			// Clear glyph amount for score effects
+			effectState.effectGlyphAmountMap.remove(effectAnimation.effectId)
 			alphaAnim.snapTo(0f)
 			alphaAnim.animateTo(1f, tween(durationMillis = 200, easing = LinearEasing))
 			delay(200)
@@ -106,6 +119,37 @@ private suspend fun animateEffect(
 			scoreState.totalScoreAlpha.snapTo(1f)
 			// Use effectState's shake for the animation
 			animateTotalScoreShake(effectState.totalScoreShake)
+		}
+	}
+}
+
+private suspend fun animateGlyphEffect(
+	effectAnimation: EffectAnimationPayload.Glyph,
+	effectState: EffectAnimationState
+) {
+	coroutineScope {
+		// 1. Small shake on the individual effect
+		launch {
+			val shakeAnim = effectState.effectShakeMap.getOrPut(effectAnimation.effectId) {
+				Animatable(0f)
+			}
+			animateEffectShake(shakeAnim)
+		}
+
+		// 2. Show "+<amount><glyph icon>" text on the effect
+		launch {
+			val alphaAnim = effectState.effectScoreAlphaMap.getOrPut(effectAnimation.effectId) {
+				Animatable(0f)
+			}
+			// Store glyph amount for display
+			effectState.effectGlyphAmountMap[effectAnimation.effectId] = effectAnimation.glyphAmount
+			// Clear score-related maps for glyph effects
+			effectState.effectScoreValueMap.remove(effectAnimation.effectId)
+			effectState.effectMultiplierMap.remove(effectAnimation.effectId)
+			alphaAnim.snapTo(0f)
+			alphaAnim.animateTo(1f, tween(durationMillis = 200, easing = LinearEasing))
+			delay(200)
+			alphaAnim.animateTo(0f, tween(durationMillis = 150, easing = LinearEasing))
 		}
 	}
 }

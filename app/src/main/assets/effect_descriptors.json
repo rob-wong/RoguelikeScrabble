@@ -208,5 +208,19 @@
     "config": {
       "value": 30
     }
+  },
+  "GLYPH": {
+    "type": "monetary",
+    "config": {
+      "type" : "glyph",
+      "value": 1
+    }
+  },
+  "GLYPHS": {
+    "type": "monetary",
+    "config": {
+      "type" : "glyph",
+      "value": 1
+    }
   }
 }

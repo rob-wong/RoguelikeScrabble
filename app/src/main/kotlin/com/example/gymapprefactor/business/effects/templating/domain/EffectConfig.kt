@@ -25,3 +25,10 @@ data class ComboConfig(
 	val condition: ComboCondition,
 	val comboEffect: EffectDescriptor
 ) : EffectConfig
+
+@Serializable
+@SerialName("monetary")
+data class MonetaryConfig(
+	val type: String,
+	val value: Int
+) : EffectConfig

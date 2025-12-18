@@ -2,6 +2,7 @@ package com.example.gymapprefactor.business.gameplayLoop.domain.mappers
 
 import com.example.gymapprefactor.business.effects.domain.EffectsRepository
 import com.example.gymapprefactor.business.effects.templating.domain.EffectDescriptor
+import com.example.gymapprefactor.business.effects.templating.domain.EffectModificationResult
 import com.example.gymapprefactor.business.effects.templating.domain.EffectProcessorFactory
 import com.example.gymapprefactor.business.effects.templating.domain.MultiplicationConfig
 import com.example.gymapprefactor.business.models.Effect
@@ -15,7 +16,8 @@ data class EffectScoreModification(
 	val effectLabel: String,
 	val scoreDelta: Int,
 	val orderIndex: Int,
-	val multiplier: Double? = null // For multiplication effects, the multiplier to display (e.g., 2.0 for "x 2")
+	val multiplier: Double? = null, // For multiplication effects, the multiplier to display (e.g., 2.0 for "x 2")
+	val glyphAmount: Int = 0
 )
 
 interface EffectScoreMapper {
@@ -40,7 +42,7 @@ class EffectScoreMapperImpl @Inject constructor(
 		
 		return param.effects.mapIndexed { index, effect ->
 			val descriptor = getEffectDescriptor(effect, descriptorMap)
-			val scoreDelta = calculateScoreDelta(
+			val modificationResult = calculateModificationResult(
 				effect = effect,
 				currentScore = currentScore,
 				nextEffect = param.effects.getOrNull(index + 1),
@@ -48,14 +50,15 @@ class EffectScoreMapperImpl @Inject constructor(
 			)
 			
 			val multiplier = extractMultiplier(descriptor)
-			currentScore += scoreDelta
+			currentScore += modificationResult.scoreDelta
 			
 			EffectScoreModification(
 				effectId = effect.id,
 				effectLabel = effect.label,
-				scoreDelta = scoreDelta,
+				scoreDelta = modificationResult.scoreDelta,
 				orderIndex = index,
-				multiplier = multiplier
+				multiplier = multiplier,
+				glyphAmount = modificationResult.glyphAmount
 			)
 		}
 	}
@@ -67,12 +70,12 @@ class EffectScoreMapperImpl @Inject constructor(
 		return effect.descriptor ?: descriptorMap[effect.label]
 	}
 
-	private fun calculateScoreDelta(
+	private fun calculateModificationResult(
 		effect: Effect,
 		currentScore: Int,
 		nextEffect: Effect?,
 		descriptor: EffectDescriptor?
-	): Int {
+	): EffectModificationResult {
 		if (descriptor != null) {
 			val processor = processorFactory.createProcessor(descriptor.type)
 			if (processor != null) {
@@ -81,7 +84,10 @@ class EffectScoreMapperImpl @Inject constructor(
 		}
 
 		// Fallback: use effect label length if no descriptor/processor available
-		return effect.label.length
+		return EffectModificationResult(
+			scoreDelta = effect.label.length,
+			glyphAmount = 0
+		)
 	}
 
 	private fun extractMultiplier(descriptor: EffectDescriptor?): Double? {
