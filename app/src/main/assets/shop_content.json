@@ -1,0 +1,74 @@
+{
+  "data": [
+    {
+      "type": "list",
+      "template_id": "basic",
+      "id": "3324-5462-567",
+      "includes": [
+        {
+          "type": "item",
+          "id": "dfgs-gf-rwe4",
+          "template_id": "shopcard",
+          "price": {
+            "type": "CAD",
+            "amount": 4.50
+          },
+          "product": {
+            "type": "rune",
+            "amount": 100
+          },
+          "description": "Add 100 runes to your balance"
+        },
+        {
+          "type": "item",
+          "id": "424f-12ed-6dgh",
+          "template_id": "shopcard",
+          "price": {
+            "type": "rune",
+            "amount": 100
+          },
+          "product": {
+            "type": "deck",
+            "decktype": "blue"
+          },
+          "description": "Unlock the blue deck"
+        }
+      ]
+    },
+    {
+      "type": "list",
+      "template_id": "basic",
+      "id": "332y-5462-567",
+      "includes": [
+        {
+          "type": "item",
+          "id": "d3gs-gf-rwe4",
+          "template_id": "shopcard",
+          "price": {
+            "type": "CAD",
+            "amount": 4.50
+          },
+          "product": {
+            "type": "rune",
+            "amount": 100
+          },
+          "description": "Add 100 runes to your balance"
+        },
+        {
+          "type": "item",
+          "id": "42uf-12ed-6dgh",
+          "template_id": "shopcard",
+          "price": {
+            "type": "rune",
+            "amount": 100
+          },
+          "product": {
+            "type": "deck",
+            "decktype": "blue"
+          },
+          "description": "Unlock the blue deck"
+        }
+      ]
+    }
+  ]
+}
