@@ -1,5 +1,6 @@
 package com.example.gymapprefactor.features.shop.presentation.viewmodel
 
+import android.util.Log
 import androidx.lifecycle.viewModelScope
 import com.example.gymapprefactor.app.util.dispatcher.DispatcherProvider
 import com.example.gymapprefactor.business.models.User
@@ -9,10 +10,8 @@ import com.example.gymapprefactor.features.navigation.presentation.models.Naviga
 import com.example.gymapprefactor.features.navigation.presentation.state.NavigationReducer
 import com.example.gymapprefactor.features.shop.presentation.models.ShopScreenAction
 import com.example.gymapprefactor.features.shop.presentation.state.ShopScreenReducer
-import com.example.gymapprefactor.features.templateengine.presentation.viewmodel.basic.BasicListViewModel
-import com.example.gymapprefactor.features.templateengine.presentation.viewmodel.shopcard.ShopCardItemViewModel
+import com.example.gymapprefactor.features.templateengine.presentation.services.TemplateContentService
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -23,13 +22,17 @@ class ShopScreenViewModelImpl @Inject constructor(
 	private val dispatcherProvider: DispatcherProvider,
 	private val userBusinessMediator: UserBusinessMediator,
 	private val loadShopScreenUseCase: LoadShopScreenUseCase,
+	private val templateContentService: TemplateContentService,
 ): ShopScreenViewModel() {
 	override val state = shopScreenReducer.state
+
+	private companion object {
+		const val TAG = "ShopScreenViewModel"
+	}
 
 	init {
 		startObservingUserUpdates()
 		loadInitialUserContent()
-		loadTemplateContent()
 	}
 
 	private fun startObservingUserUpdates() {
@@ -54,10 +57,34 @@ class ShopScreenViewModelImpl @Inject constructor(
 	}
 
 	private suspend fun updateContentWithUser(user: User) {
+		val instances = loadShopScreenUseCase("shop_content.json")
+
+		val templateStates = instances.fold(
+			onSuccess = { instances ->
+				templateContentService.extractStatesFromInstances(instances)
+			},
+			onFailure = { error ->
+				Log.e(TAG, "Failed to load template instances", error)
+				Result.failure(error)
+			}
+		)
+		
+		templateStates.fold(
+			onSuccess = { templateStates ->
+				templateStates.forEachIndexed { index, state ->
+					Log.d(TAG, "  State[$index]: ${state::class.simpleName}, $state")
+				}
+			},
+			onFailure = { error ->
+				Log.e(TAG, "Failed to extract template states", error)
+			}
+		)
+
 		shopScreenReducer.update(
 			ShopScreenAction.SetContent(
 				runesCount = user.runesCount,
-				onBackPressed = ::onBackPressed
+				onBackPressed = ::onBackPressed,
+				templateStates = templateStates.getOrElse { emptyList() }
 			)
 		)
 	}
@@ -65,46 +92,6 @@ class ShopScreenViewModelImpl @Inject constructor(
 	private fun onBackPressed() {
 		viewModelScope.launch(dispatcherProvider.default) {
 			navigationReducer.update(NavigationAction.GoBack)
-		}
-	}
-
-	// this is temporary, will implement a ContentRouter later
-	private fun loadTemplateContent() {
-		viewModelScope.launch(dispatcherProvider.default) {
-			val result = loadShopScreenUseCase()
-			result.onSuccess { templateInstances ->
-				println("=== Template Engine Results ===")
-				println("Total instances: ${templateInstances.size}")
-				templateInstances.forEach { instance ->
-					println("\n--- Template Instance ---")
-					println("ID: ${instance.id}")
-					println("Template ID: ${instance.templateId}")
-					println("Type: ${instance.type}")
-					println("ViewModel: ${instance.viewModel::class.simpleName}")
-
-					try {
-						when (instance.viewModel) {
-							is BasicListViewModel -> {
-								val state = instance.viewModel.state.first()
-								println("BasicList State: $state")
-							}
-							is ShopCardItemViewModel -> {
-								val state = instance.viewModel.state.first()
-								println("ShopCardItem State: $state")
-							}
-							else -> {
-								println("Unknown ViewModel type: ${instance.viewModel::class.simpleName}")
-							}
-						}
-					} catch (e: Exception) {
-						println("Error accessing state: ${e.message}")
-					}
-				}
-				println("=== End Template Engine Results ===\n")
-			}.onFailure { error ->
-				println("Error loading template content: ${error.message}")
-				error.printStackTrace()
-			}
 		}
 	}
 }

@@ -10,9 +10,9 @@ class LoadShopScreenUseCase @Inject constructor(
 	override val repository: TemplateRepository,
 	private val templateEngine: TemplateEngine
 ) : UseCase {
-	suspend operator fun invoke(): Result<List<TemplateInstance>> {
+	suspend operator fun invoke(path: String): Result<List<TemplateInstance>> {
 		return try {
-			val jsonString = repository.fetchTemplateData()
+			val jsonString = repository.fetchTemplateData(path)
 			val instances = templateEngine.parseAndCreateInstances(jsonString)
 			Result.success(instances)
 		} catch (e: Exception) {
