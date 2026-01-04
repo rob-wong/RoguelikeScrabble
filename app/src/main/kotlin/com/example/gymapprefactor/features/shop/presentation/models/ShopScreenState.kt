@@ -8,6 +8,7 @@ sealed class ShopScreenState : State {
 	data class Content(
 		val resourceBar: ResourceBarState,
 		val backButton: ButtonState,
+		val templateStates: List<State>
 	) : ShopScreenState()
 
 	data object None : ShopScreenState()

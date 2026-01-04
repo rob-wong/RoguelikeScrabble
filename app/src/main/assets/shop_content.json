@@ -52,7 +52,7 @@
             "type": "rune",
             "amount": 100
           },
-          "description": "Add 100 runes to your balance"
+          "description": "Add 500 runes to your balance"
         },
         {
           "type": "item",
@@ -66,7 +66,7 @@
             "type": "deck",
             "decktype": "blue"
           },
-          "description": "Unlock the blue deck"
+          "description": "Unlock the red deck"
         }
       ]
     }

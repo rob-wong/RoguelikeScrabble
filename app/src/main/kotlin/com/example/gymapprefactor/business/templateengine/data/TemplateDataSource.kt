@@ -15,21 +15,21 @@ class TemplateDataSource @Inject constructor(
 	private val dispatcherProvider: DispatcherProvider
 ) : DataSource {
 	
-	suspend fun fetchTemplateData(): String {
+	suspend fun fetchTemplateData(path: String): String {
 		return withContext(dispatcherProvider.io) {
-			loadTemplateData()
+			loadTemplateData(path)
 		}
 	}
 
-	private fun loadTemplateData(): String {
+	private fun loadTemplateData(path: String): String {
 		return try {
-			val input = context.assets.open("shop_content.json")
+			val input = context.assets.open(path)
 			input.bufferedReader().use { it.readText() }
 		} catch (e: java.io.FileNotFoundException) {
-			Log.e("TemplateDataSource", "shop_content.json not found", e)
+			Log.e("TemplateDataSource", "$path not found", e)
 			"{\"data\": []}"
 		} catch (e: java.io.IOException) {
-			Log.e("TemplateDataSource", "Failed to load shop_content.json", e)
+			Log.e("TemplateDataSource", "Failed to load $path", e)
 			"{\"data\": []}"
 		}
 	}

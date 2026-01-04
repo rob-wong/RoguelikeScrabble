@@ -1,5 +1,7 @@
-package com.example.gymapprefactor.business.templateengine.domain.registry
+package com.example.gymapprefactor.features.templateengine.presentation.registry
 
+import com.example.gymapprefactor.features.templateengine.presentation.factories.ItemTemplateFactory
+import com.example.gymapprefactor.features.templateengine.presentation.factories.ListTemplateFactory
 import javax.inject.Inject
 import javax.inject.Singleton
 

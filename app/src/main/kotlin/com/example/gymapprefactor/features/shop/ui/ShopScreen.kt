@@ -83,7 +83,8 @@ private fun ShopScreenPreview() {
 			backButton = IconButtonState.Content(
 				onClick = { },
 				image = ImageState.BackIcon
-			)
+			),
+			templateStates = emptyList()
 		)
 	)
 }

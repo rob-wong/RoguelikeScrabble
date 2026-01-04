@@ -28,7 +28,8 @@ class ShopScreenReducerImpl : ShopScreenReducer {
 				),
 				glyphState = ResourceState.None
 			),
-			backButton = mapBackButton(action)
+			backButton = mapBackButton(action),
+			templateStates = action.templateStates
 		)
 	}
 

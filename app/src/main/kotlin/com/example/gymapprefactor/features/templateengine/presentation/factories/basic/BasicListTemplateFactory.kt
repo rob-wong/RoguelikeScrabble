@@ -1,14 +1,15 @@
 package com.example.gymapprefactor.features.templateengine.presentation.factories.basic
 
 import androidx.lifecycle.ViewModel
-import com.example.gymapprefactor.business.templateengine.data.models.ListNet
-import com.example.gymapprefactor.business.templateengine.domain.registry.ListTemplateFactory
+import com.example.gymapprefactor.business.templateengine.domain.models.TemplateList
+import com.example.gymapprefactor.features.templateengine.presentation.factories.ListTemplateFactory
 import com.example.gymapprefactor.features.templateengine.presentation.state.basic.BasicListReducerImpl
 import com.example.gymapprefactor.features.templateengine.presentation.viewmodel.basic.BasicListViewModelImpl
 
 class BasicListTemplateFactory : ListTemplateFactory {
-	override fun createViewModel(listNet: ListNet): ViewModel {
+	override fun createViewModel(templateList: TemplateList): ViewModel {
 		val reducer = BasicListReducerImpl()
-		return BasicListViewModelImpl(reducer)
+		val viewModel = BasicListViewModelImpl(reducer)
+		return viewModel
 	}
 }

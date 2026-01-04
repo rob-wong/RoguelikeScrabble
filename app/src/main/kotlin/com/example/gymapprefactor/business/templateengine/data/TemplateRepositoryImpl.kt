@@ -5,7 +5,7 @@ import com.example.gymapprefactor.business.templateengine.domain.TemplateReposit
 class TemplateRepositoryImpl(
 	override val dataSource: TemplateDataSource
 ) : TemplateRepository {
-	override suspend fun fetchTemplateData(): String {
-		return dataSource.fetchTemplateData()
+	override suspend fun fetchTemplateData(path: String): String {
+		return dataSource.fetchTemplateData(path)
 	}
 }

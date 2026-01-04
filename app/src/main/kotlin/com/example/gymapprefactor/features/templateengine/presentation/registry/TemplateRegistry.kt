@@ -1,4 +1,7 @@
-package com.example.gymapprefactor.business.templateengine.domain.registry
+package com.example.gymapprefactor.features.templateengine.presentation.registry
+
+import com.example.gymapprefactor.features.templateengine.presentation.factories.ItemTemplateFactory
+import com.example.gymapprefactor.features.templateengine.presentation.factories.ListTemplateFactory
 
 interface TemplateRegistry {
 	fun registerListFactory(templateId: String, factory: ListTemplateFactory)
