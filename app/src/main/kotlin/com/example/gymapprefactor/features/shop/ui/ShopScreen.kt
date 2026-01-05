@@ -22,6 +22,7 @@ import com.example.gymapprefactor.common.components.ui.ResourceBarRouter
 import com.example.gymapprefactor.features.shop.presentation.models.ShopScreenState
 import com.example.gymapprefactor.features.shop.presentation.models.ShopScreenState.None
 import com.example.gymapprefactor.features.shop.presentation.viewmodel.ShopScreenViewModelImpl
+import com.example.gymapprefactor.features.templateengine.ui.ContentRouter
 
 @Composable
 fun ShopScreen(
@@ -64,7 +65,9 @@ private fun ShopScreenContent(
 	Column(
 		modifier
 	) {
-		state
+		state.templateStates.forEach { templateState ->
+			ContentRouter(templateState)
+		}
 	}
 }
 
