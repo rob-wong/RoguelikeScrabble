@@ -222,5 +222,115 @@
       "type" : "glyph",
       "value": 1
     }
+  },
+  "MONEY": {
+    "type": "monetary",
+    "config": {
+      "type" : "glyph",
+      "value": 1
+    }
+  },
+  "CASH": {
+    "type": "monetary",
+    "config": {
+      "type" : "glyph",
+      "value": 1
+    }
+  },
+  "BUSINESS": {
+    "type": "monetary",
+    "config": {
+      "type" : "glyph",
+      "value": 1
+    }
+  },
+  "INCOME": {
+    "type": "monetary",
+    "config": {
+      "type" : "glyph",
+      "value": 1
+    }
+  },
+  "ECONOMY": {
+    "type": "monetary",
+    "config": {
+      "type" : "glyph",
+      "value": 1
+    }
+  },
+  "BAZAAR": {
+    "type": "monetary",
+    "config": {
+      "type" : "glyph",
+      "value": 1
+    }
+  },
+  "BROKE": {
+    "type": "monetary",
+    "config": {
+      "type" : "glyph",
+      "value": 1
+    }
+  },
+  "WALLET": {
+    "type": "monetary",
+    "config": {
+      "type" : "glyph",
+      "value": 1
+    }
+  },
+  "QUOTE": {
+    "type": "fixed_addition",
+    "config": {
+      "value": 20
+    }
+  },
+  "FEAT": {
+    "type": "fixed_addition",
+    "config": {
+      "value": 10
+    }
+  },
+  "COMET": {
+    "type": "fixed_addition",
+    "config": {
+      "value": 30
+    }
+  },
+  "STAR": {
+    "type": "fixed_addition",
+    "config": {
+      "value": 30
+    }
+  },
+  "DOZEN": {
+    "type": "fixed_addition",
+    "config": {
+      "value": 12
+    }
+  },
+  "FIRE": {
+    "type": "fixed_addition",
+    "config": {
+      "value": 20
+    }
+  },
+  "FIERY": {
+    "type": "fixed_addition",
+    "config": {
+      "value": 20
+    }
+  },
+  "RISE": {
+    "type": "multiplication",
+    "config": {
+      "multiplier": 2.0
+    }
+  },
+  "RISEN": {
+    "type": "multiplication",
+    "config": {
+      "multiplier": 2.0
+    }
   }
 }
