@@ -1,5 +1,6 @@
 package com.example.gymapprefactor.business.effects.templating.domain.processors
 
+import com.example.gymapprefactor.business.effects.templating.domain.EffectContext
 import com.example.gymapprefactor.business.effects.templating.domain.EffectDescriptor
 import com.example.gymapprefactor.business.effects.templating.domain.EffectModificationResult
 import com.example.gymapprefactor.business.effects.templating.domain.EffectProcessor
@@ -16,7 +17,8 @@ class FixedAdditionProcessor @Inject constructor(
 	override fun calculate(
 		currentScore: Int,
 		descriptor: EffectDescriptor,
-		nextEffect: Effect?
+		nextEffect: Effect?,
+		context: EffectContext?
 	): EffectModificationResult {
 		val config = json.decodeFromJsonElement(
 			serializer<FixedAdditionConfig>(),

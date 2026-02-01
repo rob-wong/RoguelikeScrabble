@@ -69,6 +69,7 @@ import dagger.Provides
 import dagger.hilt.InstallIn
 import dagger.hilt.android.qualifiers.ApplicationContext
 import dagger.hilt.components.SingletonComponent
+import kotlinx.serialization.json.Json
 import javax.inject.Singleton
 
 @Module
@@ -139,9 +140,10 @@ object GameplayLoopModule {
 	@Provides
 	fun provideEffectsDataSource(
 		@ApplicationContext context: Context,
-		dispatcherProvider: com.example.gymapprefactor.app.util.dispatcher.DispatcherProvider
+		dispatcherProvider: com.example.gymapprefactor.app.util.dispatcher.DispatcherProvider,
+		json: Json
 	): EffectsDataSource {
-		return EffectsDataSource(context, dispatcherProvider)
+		return EffectsDataSource(context, dispatcherProvider, json)
 	}
 
 	@Provides
@@ -153,27 +155,31 @@ object GameplayLoopModule {
 
 	@Provides
 	@Singleton
-	fun provideJson(): kotlinx.serialization.json.Json {
-		return kotlinx.serialization.json.Json { ignoreUnknownKeys = true }
+	fun provideJson(): Json {
+		return Json {
+			ignoreUnknownKeys = true
+			coerceInputValues = true // Allows missing fields to be coerced to null for nullable types
+			encodeDefaults = false // Don't encode default values when serializing
+		}
 	}
 
 	@Provides
 	fun provideFixedAdditionProcessor(
-		json: kotlinx.serialization.json.Json
+		json: Json
 	): FixedAdditionProcessor {
 		return FixedAdditionProcessor(json)
 	}
 
 	@Provides
 	fun provideMultiplicationProcessor(
-		json: kotlinx.serialization.json.Json
+		json: Json
 	): MultiplicationProcessor {
 		return MultiplicationProcessor(json)
 	}
 
 	@Provides
 	fun provideComboProcessor(
-		json: kotlinx.serialization.json.Json,
+		json: Json,
 		processorFactoryProvider: javax.inject.Provider<EffectProcessorFactory>
 	): ComboProcessor {
 		return ComboProcessor(json, processorFactoryProvider)
@@ -181,7 +187,7 @@ object GameplayLoopModule {
 
 	@Provides
 	fun provideMonetaryProcessor(
-		json: kotlinx.serialization.json.Json
+		json: Json
 	): MonetaryProcessor {
 		return MonetaryProcessor(json)
 	}
@@ -205,10 +211,9 @@ object GameplayLoopModule {
 	@Provides
 	fun provideEffectScoreMapper(
 		effectsRepository: EffectsRepository,
-		processorFactory: EffectProcessorFactory,
-		json: kotlinx.serialization.json.Json
+		processorFactory: EffectProcessorFactory
 	): EffectScoreMapper {
-		return EffectScoreMapperImpl(effectsRepository, processorFactory, json)
+		return EffectScoreMapperImpl(effectsRepository, processorFactory)
 	}
 
 	@Provides

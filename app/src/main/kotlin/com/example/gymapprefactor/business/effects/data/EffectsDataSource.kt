@@ -17,10 +17,9 @@ import javax.inject.Singleton
 @Singleton
 class EffectsDataSource @Inject constructor(
 	@ApplicationContext private val context: Context,
-	private val dispatcherProvider: DispatcherProvider
+	private val dispatcherProvider: DispatcherProvider,
+	private val json: Json
 ) {
-	private val json = Json { ignoreUnknownKeys = true }
-
 	fun getEffectDescriptors(): Flow<Map<String, EffectDescriptor>> = flow {
 		val descriptorMap = withContext(dispatcherProvider.io) {
 			loadEffectDescriptors()

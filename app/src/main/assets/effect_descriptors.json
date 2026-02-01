@@ -149,12 +149,6 @@
       "value": 30
     }
   },
-  "LUCKY": {
-    "type": "fixed_addition",
-    "config": {
-      "value": 20
-    }
-  },
   "EPIC": {
     "type": "fixed_addition",
     "config": {
@@ -221,6 +215,188 @@
     "config": {
       "type" : "glyph",
       "value": 1
+    }
+  },
+  "MONEY": {
+    "type": "monetary",
+    "config": {
+      "type" : "glyph",
+      "value": 1
+    }
+  },
+  "CASH": {
+    "type": "monetary",
+    "config": {
+      "type" : "glyph",
+      "value": 1
+    }
+  },
+  "BUSINESS": {
+    "type": "monetary",
+    "config": {
+      "type" : "glyph",
+      "value": 1
+    }
+  },
+  "INCOME": {
+    "type": "monetary",
+    "config": {
+      "type" : "glyph",
+      "value": 1
+    }
+  },
+  "ECONOMY": {
+    "type": "monetary",
+    "config": {
+      "type" : "glyph",
+      "value": 1
+    }
+  },
+  "BAZAAR": {
+    "type": "monetary",
+    "config": {
+      "type" : "glyph",
+      "value": 1
+    }
+  },
+  "BROKE": {
+    "type": "monetary",
+    "config": {
+      "type" : "glyph",
+      "value": 1
+    }
+  },
+  "WALLET": {
+    "type": "monetary",
+    "config": {
+      "type" : "glyph",
+      "value": 1
+    }
+  },
+  "QUOTE": {
+    "type": "fixed_addition",
+    "config": {
+      "value": 20
+    }
+  },
+  "FEAT": {
+    "type": "fixed_addition",
+    "config": {
+      "value": 10
+    }
+  },
+  "COMET": {
+    "type": "fixed_addition",
+    "config": {
+      "value": 30
+    }
+  },
+  "STAR": {
+    "type": "fixed_addition",
+    "config": {
+      "value": 30
+    }
+  },
+  "DOZEN": {
+    "type": "fixed_addition",
+    "config": {
+      "value": 12
+    }
+  },
+  "FIRE": {
+    "type": "fixed_addition",
+    "config": {
+      "value": 20
+    }
+  },
+  "FIERY": {
+    "type": "fixed_addition",
+    "config": {
+      "value": 20
+    }
+  },
+  "RISE": {
+    "type": "multiplication",
+    "config": {
+      "multiplier": 2.0
+    }
+  },
+  "RISEN": {
+    "type": "multiplication",
+    "config": {
+      "multiplier": 2.0
+    }
+  },
+  "GAMBLE": {
+    "type": "multiplication",
+    "config": {
+      "type": "chance",
+      "minMultiplier": 1.0,
+      "maxMultiplier": 2.0
+    }
+  },
+  "FICKLE": {
+    "type": "multiplication",
+    "config": {
+      "type": "chance",
+      "minMultiplier": 0.5,
+      "maxMultiplier": 3.0
+    }
+  },
+  "RISK": {
+    "type": "multiplication",
+    "config": {
+      "type": "chance",
+      "minMultiplier": 0.75,
+      "maxMultiplier": 2.5
+    }
+  },
+  "RISKY": {
+    "type": "multiplication",
+    "config": {
+      "type": "chance",
+      "minMultiplier": 0.75,
+      "maxMultiplier": 2.5
+    }
+  },
+  "BET": {
+    "type": "multiplication",
+    "config": {
+      "type": "chance",
+      "minMultiplier": 0.9,
+      "maxMultiplier": 1.5
+    }
+  },
+  "BETTING": {
+    "type": "multiplication",
+    "config": {
+      "type": "chance",
+      "minMultiplier": 0.5,
+      "maxMultiplier": 3.0
+    }
+  },
+  "CHANCE": {
+    "type": "multiplication",
+    "config": {
+      "type": "chance",
+      "minMultiplier": 1.0,
+      "maxMultiplier": 2.5
+    }
+  },
+  "LUCK": {
+    "type": "multiplication",
+    "config": {
+      "type": "chance",
+      "minMultiplier": 2.0,
+      "maxMultiplier": 4.0
+    }
+  },
+  "LUCKY": {
+    "type": "multiplication",
+    "config": {
+      "type": "chance",
+      "minMultiplier": 2.0,
+      "maxMultiplier": 4.0
     }
   }
 }

@@ -15,7 +15,10 @@ data class FixedAdditionConfig(
 @Serializable
 @SerialName("multiplication")
 data class MultiplicationConfig(
-	val multiplier: Double
+	val multiplier: Double? = null,
+	val type: String? = null,
+	val minMultiplier: Double? = null,
+	val maxMultiplier: Double? = null
 ) : EffectConfig
 
 @Serializable

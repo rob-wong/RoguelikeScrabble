@@ -13,6 +13,7 @@ class EffectAnimationState(
 	val effectScoreAlphaMap: MutableMap<String, Animatable<Float, AnimationVector1D>>,
 	val effectScoreValueMap: MutableMap<String, Int>,
 	val effectMultiplierMap: MutableMap<String, Double>,
+	val effectChanceMultiplierMap: MutableMap<String, Boolean>,
 	val effectGlyphAmountMap: MutableMap<String, Int>,
 	val totalScoreState: MutableState<Int?>,
 	val totalScoreShake: Animatable<Float, AnimationVector1D>,
@@ -20,16 +21,13 @@ class EffectAnimationState(
 	var totalScore: Int?
 		get() = totalScoreState.value
 		set(value) { totalScoreState.value = value }
-	
-	/**
-	 * Clears all effect animation state maps.
-	 * Should be called when starting a new game or advancing to a new level.
-	 */
+
 	suspend fun clear() {
 		effectShakeMap.clear()
 		effectScoreAlphaMap.clear()
 		effectScoreValueMap.clear()
 		effectMultiplierMap.clear()
+		effectChanceMultiplierMap.clear()
 		effectGlyphAmountMap.clear()
 		totalScoreState.value = null
 		totalScoreShake.snapTo(0f)
@@ -42,6 +40,7 @@ internal fun rememberEffectAnimationState(): EffectAnimationState {
 	val effectScoreAlphaMap = remember { mutableStateMapOf<String, Animatable<Float, AnimationVector1D>>() }
 	val effectScoreValueMap = remember { mutableStateMapOf<String, Int>() }
 	val effectMultiplierMap = remember { mutableStateMapOf<String, Double>() }
+	val effectChanceMultiplierMap = remember { mutableStateMapOf<String, Boolean>() }
 	val effectGlyphAmountMap = remember { mutableStateMapOf<String, Int>() }
 	val totalScoreState = remember { mutableStateOf<Int?>(null) }
 	val totalScoreShake = remember { Animatable(0f) }
@@ -52,6 +51,7 @@ internal fun rememberEffectAnimationState(): EffectAnimationState {
 			effectScoreAlphaMap = effectScoreAlphaMap,
 			effectScoreValueMap = effectScoreValueMap,
 			effectMultiplierMap = effectMultiplierMap,
+			effectChanceMultiplierMap = effectChanceMultiplierMap,
 			effectGlyphAmountMap = effectGlyphAmountMap,
 			totalScoreState = totalScoreState,
 			totalScoreShake = totalScoreShake
