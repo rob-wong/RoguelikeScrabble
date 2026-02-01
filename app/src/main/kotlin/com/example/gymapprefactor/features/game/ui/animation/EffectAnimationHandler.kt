@@ -11,6 +11,16 @@ import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
+private const val ALPHA_FADE_IN_DURATION_MS = 200L
+private const val ALPHA_FADE_OUT_DURATION_MS = 150L
+private const val ALPHA_HOLD_DURATION_MS = 200L
+private const val SHAKE_DURATION_MS = 300
+private const val SHAKE_AMOUNT = 6f
+private const val SHAKE_CYCLES = 3
+private const val LONGEST_ANIMATION_DURATION_MS =
+	ALPHA_FADE_IN_DURATION_MS + ALPHA_HOLD_DURATION_MS + ALPHA_FADE_OUT_DURATION_MS
+private const val POST_ANIMATION_DELAY_MS = 1000L
+
 @Composable
 internal fun EffectAnimationHandler(
 	effectAnimations: List<EffectAnimationPayload>?,
@@ -21,8 +31,6 @@ internal fun EffectAnimationHandler(
 ) {
 	LaunchedEffect(effectAnimations) {
 		if (effectAnimations != null && effectAnimations.isNotEmpty()) {
-			// Longest animation duration (alpha animation: 200ms + 200ms + 150ms = 550ms)
-			val longestAnimationDuration = 550L
 			
 			coroutineScope {
 				for ((index, effectAnimation) in effectAnimations.withIndex()) {
@@ -36,7 +44,7 @@ internal fun EffectAnimationHandler(
 							in 1..3 -> {
 								// Indices 1-3: wait for previous animation to finish
 								// Each waits cumulative: index 1 waits 550ms, index 2 waits 1100ms, index 3 waits 1650ms
-								val delayMs = index * longestAnimationDuration
+								val delayMs = index * LONGEST_ANIMATION_DURATION_MS
 								delay(delayMs)
 								onEffectAnimationStart(effectAnimation.effectId)
 								animateEffect(effectAnimation, effectState, scoreState)
@@ -44,7 +52,7 @@ internal fun EffectAnimationHandler(
 							else -> {
 								// Index 4+: progressive delay based on when previous started
 								// Calculate cumulative delay from start
-								val delayMs = calculateCumulativeDelay(index, longestAnimationDuration)
+								val delayMs = calculateCumulativeDelay(index, LONGEST_ANIMATION_DURATION_MS)
 								delay(delayMs)
 								onEffectAnimationStart(effectAnimation.effectId)
 								animateEffect(effectAnimation, effectState, scoreState)
@@ -54,8 +62,8 @@ internal fun EffectAnimationHandler(
 				}
 			}
 			
-			// Wait 1 second after all effect animations complete before triggering damage animation
-			delay(1000L)
+			// Wait after all effect animations complete before triggering damage animation
+			delay(POST_ANIMATION_DELAY_MS)
 		}
 
 		onEffectAnimationComplete()
@@ -68,8 +76,12 @@ private suspend fun animateEffect(
 	scoreState: ScoreAnimationState
 ) {
 	when (effectAnimation) {
-		is EffectAnimationPayload.Score -> animateScoreEffect(effectAnimation, effectState, scoreState)
-		is EffectAnimationPayload.Glyph -> animateGlyphEffect(effectAnimation, effectState)
+		is EffectAnimationPayload.Score -> {
+			animateScoreEffect(effectAnimation, effectState, scoreState)
+		}
+		is EffectAnimationPayload.Glyph -> {
+			animateGlyphEffect(effectAnimation, effectState)
+		}
 	}
 }
 
@@ -84,7 +96,7 @@ private suspend fun animateScoreEffect(
 			val shakeAnim = effectState.effectShakeMap.getOrPut(effectAnimation.effectId) {
 				Animatable(0f)
 			}
-			animateEffectShake(shakeAnim)
+			animateShake(shakeAnim)
 		}
 
 		// 2. Show "+n" or "x n" text on the effect
@@ -95,19 +107,21 @@ private suspend fun animateScoreEffect(
 			// Store scoreDelta for addition effects, multiplier for multiplication effects
 			if (effectAnimation.multiplier != null) {
 				effectState.effectMultiplierMap[effectAnimation.effectId] = effectAnimation.multiplier
+				effectState.effectChanceMultiplierMap[effectAnimation.effectId] = effectAnimation.isChanceMultiplier
 				// Clear scoreDelta for multiplication effects
 				effectState.effectScoreValueMap.remove(effectAnimation.effectId)
 			} else {
 				effectState.effectScoreValueMap[effectAnimation.effectId] = effectAnimation.scoreDelta
 				// Clear multiplier for non-multiplication effects
 				effectState.effectMultiplierMap.remove(effectAnimation.effectId)
+				effectState.effectChanceMultiplierMap.remove(effectAnimation.effectId)
 			}
 			// Clear glyph amount for score effects
 			effectState.effectGlyphAmountMap.remove(effectAnimation.effectId)
 			alphaAnim.snapTo(0f)
-			alphaAnim.animateTo(1f, tween(durationMillis = 200, easing = LinearEasing))
-			delay(200)
-			alphaAnim.animateTo(0f, tween(durationMillis = 150, easing = LinearEasing))
+			alphaAnim.animateTo(1f, tween(durationMillis = ALPHA_FADE_IN_DURATION_MS.toInt(), easing = LinearEasing))
+			delay(ALPHA_HOLD_DURATION_MS)
+			alphaAnim.animateTo(0f, tween(durationMillis = ALPHA_FADE_OUT_DURATION_MS.toInt(), easing = LinearEasing))
 		}
 
 		// 3. Update and shake total score in scoring lane
@@ -118,7 +132,7 @@ private suspend fun animateScoreEffect(
 			// Ensure alpha stays at 1f so score remains visible
 			scoreState.totalScoreAlpha.snapTo(1f)
 			// Use effectState's shake for the animation
-			animateTotalScoreShake(effectState.totalScoreShake)
+			animateShake(effectState.totalScoreShake)
 		}
 	}
 }
@@ -133,7 +147,7 @@ private suspend fun animateGlyphEffect(
 			val shakeAnim = effectState.effectShakeMap.getOrPut(effectAnimation.effectId) {
 				Animatable(0f)
 			}
-			animateEffectShake(shakeAnim)
+			animateShake(shakeAnim)
 		}
 
 		// 2. Show "+<amount><glyph icon>" text on the effect
@@ -147,77 +161,35 @@ private suspend fun animateGlyphEffect(
 			effectState.effectScoreValueMap.remove(effectAnimation.effectId)
 			effectState.effectMultiplierMap.remove(effectAnimation.effectId)
 			alphaAnim.snapTo(0f)
-			alphaAnim.animateTo(1f, tween(durationMillis = 200, easing = LinearEasing))
-			delay(200)
-			alphaAnim.animateTo(0f, tween(durationMillis = 150, easing = LinearEasing))
+			alphaAnim.animateTo(1f, tween(durationMillis = ALPHA_FADE_IN_DURATION_MS.toInt(), easing = LinearEasing))
+			delay(ALPHA_HOLD_DURATION_MS)
+			alphaAnim.animateTo(0f, tween(durationMillis = ALPHA_FADE_OUT_DURATION_MS.toInt(), easing = LinearEasing))
 		}
 	}
 }
 
-private suspend fun animateEffectShake(
+private suspend fun animateShake(
 	shakeOffset: Animatable<Float, AnimationVector1D>
 ) {
-	val shakeDuration = 300
-	val shakeAmount = 6f
-	val shakeCycles = 3
-	val cycleDuration = shakeDuration / shakeCycles
+	val cycleDuration = SHAKE_DURATION_MS / SHAKE_CYCLES
 
 	shakeOffset.snapTo(0f)
 	shakeOffset.animateTo(
-		targetValue = shakeAmount,
+		targetValue = SHAKE_AMOUNT,
 		animationSpec = tween(
 			durationMillis = cycleDuration / 2,
 			easing = LinearEasing
 		)
 	)
 	shakeOffset.animateTo(
-		targetValue = -shakeAmount,
+		targetValue = -SHAKE_AMOUNT,
 		animationSpec = tween(
 			durationMillis = cycleDuration,
 			easing = LinearEasing
 		)
 	)
 	shakeOffset.animateTo(
-		targetValue = shakeAmount,
-		animationSpec = tween(
-			durationMillis = cycleDuration,
-			easing = LinearEasing
-		)
-	)
-	shakeOffset.animateTo(
-		targetValue = 0f,
-		animationSpec = tween(
-			durationMillis = cycleDuration / 2,
-			easing = LinearEasing
-		)
-	)
-}
-
-private suspend fun animateTotalScoreShake(
-	shakeOffset: Animatable<Float, AnimationVector1D>
-) {
-	val shakeDuration = 300
-	val shakeAmount = 6f
-	val shakeCycles = 3
-	val cycleDuration = shakeDuration / shakeCycles
-
-	shakeOffset.snapTo(0f)
-	shakeOffset.animateTo(
-		targetValue = shakeAmount,
-		animationSpec = tween(
-			durationMillis = cycleDuration / 2,
-			easing = LinearEasing
-		)
-	)
-	shakeOffset.animateTo(
-		targetValue = -shakeAmount,
-		animationSpec = tween(
-			durationMillis = cycleDuration,
-			easing = LinearEasing
-		)
-	)
-	shakeOffset.animateTo(
-		targetValue = shakeAmount,
+		targetValue = SHAKE_AMOUNT,
 		animationSpec = tween(
 			durationMillis = cycleDuration,
 			easing = LinearEasing
@@ -241,11 +213,11 @@ private suspend fun animateTotalScoreShake(
  *   - Index 2: starts 200ms after index 1 started (550ms + 200ms = 750ms)
  *   - Index 3: starts 180ms after index 2 started (750ms + 180ms = 930ms)
  *   - Index 4: starts 160ms after index 3 started (930ms + 160ms = 1090ms)
- *   - ...decreasing by 20ms each time...
- *   - Minimum 100ms between starts
+ *   - ...decreasing by 5ms each time...
+ *   - Minimum 150ms between starts
  * 
  * @param index The animation index (0-based)
- * @param longestAnimationDuration Duration of longest animation in ms (550ms)
+ * @param longestAnimationDuration Duration of longest animation in ms
  * @return Cumulative delay from start in milliseconds
  */
 private fun calculateCumulativeDelay(index: Int, longestAnimationDuration: Long): Long {
@@ -253,10 +225,9 @@ private fun calculateCumulativeDelay(index: Int, longestAnimationDuration: Long)
 		0 -> 0L
 		in 1..3 -> index * longestAnimationDuration // Wait for previous to finish
 		else -> {
-			// Index 3 starts at 3 * longestAnimationDuration (1650ms)
+			// Index 3 starts at 3 * longestAnimationDuration
 			// Index 4+ start based on when previous STARTED + progressive delay
-			// Index 4 starts at index 3 start time (1650ms) + 200ms = 1850ms
-			var previousStartTime = 3 * longestAnimationDuration // Index 3 start time (1650ms)
+			var previousStartTime = 3 * longestAnimationDuration
 			for (i in 4..index) {
 				// Progressive delay: starts at 200ms for index 4, decreases by 5ms, minimum 150ms
 				val stepDelay = 200L - (i - 4) * 5L

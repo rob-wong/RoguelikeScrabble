@@ -118,7 +118,10 @@ class GameplayBusinessMediator(
 		return effectScoreMapper.map(
 			EffectScoreMapper.Param(
 				effects = combinedEffects,
-				rawScore = rawScore
+				rawScore = rawScore,
+				seed = gameState.activeGameValues.seed,
+				level = gameState.activeGameVariables.level,
+				round = gameState.currentRound.round
 			)
 		)
 	}
@@ -364,4 +367,3 @@ data class ScoredWordResult(
 	val letters: List<Letter>,
 	val wordEffect: Effect
 )
-

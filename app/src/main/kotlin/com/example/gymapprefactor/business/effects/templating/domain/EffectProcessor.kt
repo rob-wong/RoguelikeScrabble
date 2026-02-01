@@ -6,6 +6,7 @@ interface EffectProcessor {
 	fun calculate(
 		currentScore: Int,
 		descriptor: EffectDescriptor,
-		nextEffect: Effect?
+		nextEffect: Effect?,
+		context: EffectContext?
 	): EffectModificationResult
 }

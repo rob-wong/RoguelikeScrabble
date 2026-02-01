@@ -1,14 +1,12 @@
 package com.example.gymapprefactor.business.gameplayLoop.domain.mappers
 
 import com.example.gymapprefactor.business.effects.domain.EffectsRepository
+import com.example.gymapprefactor.business.effects.templating.domain.EffectContext
 import com.example.gymapprefactor.business.effects.templating.domain.EffectDescriptor
 import com.example.gymapprefactor.business.effects.templating.domain.EffectModificationResult
 import com.example.gymapprefactor.business.effects.templating.domain.EffectProcessorFactory
-import com.example.gymapprefactor.business.effects.templating.domain.MultiplicationConfig
 import com.example.gymapprefactor.business.models.Effect
 import kotlinx.coroutines.flow.first
-import kotlinx.serialization.json.Json
-import kotlinx.serialization.serializer
 import javax.inject.Inject
 
 data class EffectScoreModification(
@@ -16,14 +14,18 @@ data class EffectScoreModification(
 	val effectLabel: String,
 	val scoreDelta: Int,
 	val orderIndex: Int,
-	val multiplier: Double? = null, // For multiplication effects, the multiplier to display (e.g., 2.0 for "x 2")
-	val glyphAmount: Int = 0
+	val multiplier: Double?, // For multiplication effects, the multiplier to display (e.g., 2.0 for "x 2")
+	val isChanceMultiplier: Boolean, // True if this is a chance-type multiplication effect
+	val glyphAmount: Int
 )
 
 interface EffectScoreMapper {
 	data class Param(
 		val effects: List<Effect>,
-		val rawScore: Int
+		val rawScore: Int,
+		val seed: Long,
+		val level: Int,
+		val round: Int
 	)
 	
 	suspend fun map(param: Param): List<EffectScoreModification>
@@ -31,8 +33,7 @@ interface EffectScoreMapper {
 
 class EffectScoreMapperImpl @Inject constructor(
 	private val effectsRepository: EffectsRepository,
-	private val processorFactory: EffectProcessorFactory,
-	private val json: Json
+	private val processorFactory: EffectProcessorFactory
 ) : EffectScoreMapper {
 
 	override suspend fun map(param: EffectScoreMapper.Param): List<EffectScoreModification> {
@@ -42,14 +43,20 @@ class EffectScoreMapperImpl @Inject constructor(
 		
 		return param.effects.mapIndexed { index, effect ->
 			val descriptor = getEffectDescriptor(effect, descriptorMap)
+			val context = EffectContext(
+				seed = param.seed,
+				level = param.level,
+				round = param.round,
+				effectIndex = index
+			)
 			val modificationResult = calculateModificationResult(
 				effect = effect,
 				currentScore = currentScore,
 				nextEffect = param.effects.getOrNull(index + 1),
-				descriptor = descriptor
+				descriptor = descriptor,
+				context = context
 			)
 			
-			val multiplier = extractMultiplier(descriptor)
 			currentScore += modificationResult.scoreDelta
 			
 			EffectScoreModification(
@@ -57,7 +64,8 @@ class EffectScoreMapperImpl @Inject constructor(
 				effectLabel = effect.label,
 				scoreDelta = modificationResult.scoreDelta,
 				orderIndex = index,
-				multiplier = multiplier,
+				multiplier = modificationResult.multiplier,
+				isChanceMultiplier = modificationResult.isChanceMultiplier,
 				glyphAmount = modificationResult.glyphAmount
 			)
 		}
@@ -74,12 +82,13 @@ class EffectScoreMapperImpl @Inject constructor(
 		effect: Effect,
 		currentScore: Int,
 		nextEffect: Effect?,
-		descriptor: EffectDescriptor?
+		descriptor: EffectDescriptor?,
+		context: EffectContext
 	): EffectModificationResult {
 		if (descriptor != null) {
 			val processor = processorFactory.createProcessor(descriptor.type)
 			if (processor != null) {
-				return processor.calculate(currentScore, descriptor, nextEffect)
+				return processor.calculate(currentScore, descriptor, nextEffect, context)
 			}
 		}
 
@@ -88,27 +97,5 @@ class EffectScoreMapperImpl @Inject constructor(
 			scoreDelta = effect.label.length,
 			glyphAmount = 0
 		)
-	}
-
-	private fun extractMultiplier(descriptor: EffectDescriptor?): Double? {
-		if (descriptor == null) return null
-		
-		return when (descriptor.type) {
-			"multiplication" -> extractMultiplicationMultiplier(descriptor)
-			"combo" -> null
-			else -> null
-		}
-	}
-
-	private fun extractMultiplicationMultiplier(descriptor: EffectDescriptor): Double? {
-		return try {
-			val config = json.decodeFromJsonElement(
-				serializer<MultiplicationConfig>(),
-				descriptor.config
-			)
-			config.multiplier
-		} catch (_: Exception) {
-			null
-		}
 	}
 }

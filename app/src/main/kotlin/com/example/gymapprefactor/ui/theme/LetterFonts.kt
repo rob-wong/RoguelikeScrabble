@@ -36,3 +36,21 @@ val legendary = TextStyle(
 	color = Color(0xFFFFC857), // Gold-orange
 	fontSize = 45.sp,
 )
+
+// Chance multiplier font - uses oscillating colors per character
+// The color is applied per-character in the composable, not as a single TextStyle color
+val chanceOscillatingColors = listOf(
+	Color(0xFFFF5F5F), // Red
+	Color(0xFF2A2A2A), // Dark gray/black
+	Color(0xFF7DE77D)  // Green
+)
+
+val chance = TextStyle(
+	fontFamily = FontFamily(Font(R.font.pixel_operator)),
+	color = Color(0xFFFFF8E7), // Base color (off-white) - will be overridden per character
+	fontSize = 45.sp,
+)
+
+// Chance multiplier text colors - green for positive, red for negative
+val chanceMultiplierPositiveColor = Color(0xFF00FF00) // Green
+val chanceMultiplierNegativeColor = Color(0xFFFF0000) // Red

@@ -25,18 +25,23 @@ import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.dp
 import com.example.gymapprefactor.app.util.DeviceUtil
 import com.example.gymapprefactor.business.effects.templating.domain.EffectDescriptor
+import com.example.gymapprefactor.business.effects.templating.domain.isChanceEffect
 import com.example.gymapprefactor.business.models.Effect
 import com.example.gymapprefactor.common.components.presentation.ImageState
 import com.example.gymapprefactor.common.components.ui.ImageRouter
 import com.example.gymapprefactor.common.components.ui.OutlinedText
 import com.example.gymapprefactor.features.game.ui.animation.EffectAnimationState
+import com.example.gymapprefactor.ui.theme.chance
+import com.example.gymapprefactor.ui.theme.chanceMultiplierNegativeColor
+import com.example.gymapprefactor.ui.theme.chanceMultiplierPositiveColor
+import com.example.gymapprefactor.ui.theme.chanceOscillatingColors
 import com.example.gymapprefactor.ui.theme.common
 import com.example.gymapprefactor.ui.theme.legendary
 import com.example.gymapprefactor.ui.theme.rare
 import com.example.gymapprefactor.ui.theme.uncommon
 import kotlin.math.roundToInt
 
-@SuppressWarnings("LongMethod")
+@Suppress("LongMethod", "TooManyFunctions")
 @Composable
 fun EffectsColumn(
 	activeGameEffects: List<Effect>,
@@ -129,27 +134,50 @@ private fun EffectItemWithBackground(
 	val scoreAlpha = effectState?.effectScoreAlphaMap?.get(effect.id)?.value ?: 0f
 	val scoreDelta = effectState?.effectScoreValueMap?.get(effect.id)
 	val multiplier = effectState?.effectMultiplierMap?.get(effect.id)
+	val isChanceMultiplier = effectState?.effectChanceMultiplierMap?.get(effect.id) ?: false
 	val glyphAmount = effectState?.effectGlyphAmountMap?.get(effect.id)
 	
 	val descriptor = effect.descriptor ?: effectDescriptors[effect.label]
-	val textStyle = getEffectTextStyle(descriptor)
+	val isChanceEffectType = try {
+		descriptor?.isChanceEffect() ?: false
+	} catch (_: Exception) {
+		false
+	}
+	val textStyle = if (isChanceEffectType) {
+		chance
+	} else {
+		getEffectTextStyle(descriptor)
+	}
 	Row(
 		verticalAlignment = Alignment.CenterVertically
 	) {
 		Row(
 			modifier = createEffectRowModifier(shake, hasStoneBackground),
 		) {
-			OutlinedText(
-				text = effect.label,
-				textAlign = TextAlign.Center,
-				textStyle = textStyle.copy(
-					fontSize = textStyle.fontSize * 0.66
-				),
-				outlineWidth = 5,
-				useGlow = false
-			)
+			if (isChanceEffectType) {
+				// For chance multipliers, always oscillate colors on the effect label
+				OscillatingColorText(
+					text = effect.label,
+					baseTextStyle = textStyle.copy(
+						fontSize = textStyle.fontSize * 0.66
+					),
+					colors = chanceOscillatingColors,
+					outlineWidth = 5,
+					useGlow = false
+				)
+			} else {
+				OutlinedText(
+					text = effect.label,
+					textAlign = TextAlign.Center,
+					textStyle = textStyle.copy(
+						fontSize = textStyle.fontSize * 0.66
+					),
+					outlineWidth = 5,
+					useGlow = false
+				)
+			}
 		}
-		renderEffectModifier(multiplier, scoreDelta, glyphAmount, scoreAlpha)
+		renderEffectModifier(multiplier, isChanceMultiplier, scoreDelta, glyphAmount, scoreAlpha)
 	}
 }
 
@@ -176,61 +204,56 @@ private fun createEffectRowModifier(shake: Float, hasStoneBackground: Boolean): 
 @Composable
 private fun renderEffectModifier(
 	multiplier: Double?,
+	isChanceMultiplier: Boolean,
 	scoreDelta: Int?,
 	glyphAmount: Int?,
 	scoreAlpha: Float
 ) {
+	val modifier = Modifier.graphicsLayer(alpha = scoreAlpha).padding(start = 8.dp)
+	val textStyle = common.copy(fontSize = common.fontSize * 0.66)
+	
 	when {
 		glyphAmount != null && scoreAlpha > 0f -> {
-			Row(
-				modifier = Modifier
-					.graphicsLayer(alpha = scoreAlpha)
-					.padding(start = 8.dp),
-				verticalAlignment = Alignment.CenterVertically
-			) {
+			Row(modifier = modifier, verticalAlignment = Alignment.CenterVertically) {
 				OutlinedText(
 					text = "+$glyphAmount",
 					textAlign = TextAlign.Center,
-					textStyle = common.copy(
-						fontSize = common.fontSize * 0.66
-					),
+					textStyle = textStyle,
 					outlineWidth = 4,
 					useGlow = false
 				)
 				ImageRouter(
 					state = ImageState.GlyphIcon,
-					modifier = Modifier
-						.padding(start = 4.dp)
-						.size(20.dp)
+					modifier = Modifier.padding(start = 4.dp).size(20.dp)
 				)
 			}
 		}
 		multiplier != null && scoreAlpha > 0f -> {
-			OutlinedText(
-				text = "x ${multiplier.toInt()}",
-				textAlign = TextAlign.Center,
-				textStyle = common.copy(
-					fontSize = common.fontSize * 0.66
-				),
-				outlineWidth = 4,
-				useGlow = false,
-				modifier = Modifier
-					.graphicsLayer(alpha = scoreAlpha)
-					.padding(start = 8.dp)
-			)
+			if (isChanceMultiplier) {
+				ChanceMultiplierText(
+					multiplier = multiplier,
+					baseTextStyle = chance.copy(fontSize = chance.fontSize * 0.66),
+					modifier = modifier
+				)
+			} else {
+				OutlinedText(
+					text = "x ${multiplier.toInt()}",
+					textAlign = TextAlign.Center,
+					textStyle = textStyle,
+					outlineWidth = 4,
+					useGlow = false,
+					modifier = modifier
+				)
+			}
 		}
 		scoreDelta != null && scoreAlpha > 0f -> {
 			OutlinedText(
 				text = "+$scoreDelta",
 				textAlign = TextAlign.Center,
-				textStyle = common.copy(
-					fontSize = common.fontSize * 0.66
-				),
+				textStyle = textStyle,
 				outlineWidth = 4,
 				useGlow = false,
-				modifier = Modifier
-					.graphicsLayer(alpha = scoreAlpha)
-					.padding(start = 8.dp)
+				modifier = modifier
 			)
 		}
 	}
@@ -252,6 +275,60 @@ private fun stonePatternBrush(): Brush {
 			lightGrey
 		)
 	)
+}
+
+@Composable
+private fun ChanceMultiplierText(
+	multiplier: Double,
+	baseTextStyle: TextStyle,
+	modifier: Modifier = Modifier
+) {
+	// Format multiplier to 2 decimal places - this is the presentation state requirement
+	val formattedText = "x ${String.format(java.util.Locale.US, "%.2f", multiplier)}"
+	
+	// Green if above x1, red if below
+	val multiplierColor = if (multiplier >= 1.0) {
+		chanceMultiplierPositiveColor
+	} else {
+		chanceMultiplierNegativeColor
+	}
+	
+	OutlinedText(
+		text = formattedText,
+		textAlign = TextAlign.Center,
+		textStyle = baseTextStyle.copy(color = multiplierColor),
+		outlineWidth = 4,
+		useGlow = false,
+		modifier = modifier
+	)
+}
+
+@Composable
+private fun OscillatingColorText(
+	text: String,
+	baseTextStyle: TextStyle,
+	colors: List<Color>,
+	modifier: Modifier = Modifier,
+	outlineWidth: Int = 4,
+	useGlow: Boolean = false,
+) {
+	Row(
+		modifier = modifier,
+		verticalAlignment = Alignment.CenterVertically
+	) {
+		text.forEachIndexed { index, char ->
+			val color = colors[index % colors.size]
+			val charTextStyle = baseTextStyle.copy(color = color)
+			
+			OutlinedText(
+				text = char.toString(),
+				textAlign = TextAlign.Center,
+				textStyle = charTextStyle,
+				outlineWidth = outlineWidth,
+				useGlow = useGlow
+			)
+		}
+	}
 }
 
 @Composable

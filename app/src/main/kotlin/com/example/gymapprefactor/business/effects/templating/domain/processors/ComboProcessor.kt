@@ -1,6 +1,7 @@
 package com.example.gymapprefactor.business.effects.templating.domain.processors
 
 import com.example.gymapprefactor.business.effects.templating.domain.ComboConfig
+import com.example.gymapprefactor.business.effects.templating.domain.EffectContext
 import com.example.gymapprefactor.business.effects.templating.domain.EffectDescriptor
 import com.example.gymapprefactor.business.effects.templating.domain.EffectModificationResult
 import com.example.gymapprefactor.business.effects.templating.domain.EffectProcessor
@@ -19,7 +20,8 @@ class ComboProcessor @Inject constructor(
 	override fun calculate(
 		currentScore: Int,
 		descriptor: EffectDescriptor,
-		nextEffect: Effect?
+		nextEffect: Effect?,
+		context: EffectContext?,
 	): EffectModificationResult {
 		val config = json.decodeFromJsonElement(
 			serializer<ComboConfig>(),
@@ -40,9 +42,6 @@ class ComboProcessor @Inject constructor(
 		val processor = processorFactory.createProcessor(effectToApply.type)
 			?: return EffectModificationResult(scoreDelta = 0, glyphAmount = 0)
 
-		// For combo effects, we need to recursively process
-		// Pass nextEffect through so nested combos can also check conditions
-		// This allows chained combo effects to work correctly
-		return processor.calculate(currentScore, effectToApply, nextEffect)
+		return processor.calculate(currentScore, effectToApply, nextEffect, context)
 	}
 }

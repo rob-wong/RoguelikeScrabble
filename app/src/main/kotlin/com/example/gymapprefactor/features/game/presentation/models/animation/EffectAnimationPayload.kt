@@ -11,13 +11,14 @@ sealed class EffectAnimationPayload {
 		val scoreDelta: Int,
 		override val orderIndex: Int,
 		val cumulativeScore: Int,
-		val multiplier: Double? = null // For multiplication effects, the multiplier to display (e.g., 2.0 for "x 2")
+		val multiplier: Double?,
+		val isChanceMultiplier: Boolean,
 	) : EffectAnimationPayload()
 
 	data class Glyph(
 		override val effectId: String,
 		override val effectLabel: String,
 		val glyphAmount: Int,
-		override val orderIndex: Int
+		override val orderIndex: Int,
 	) : EffectAnimationPayload()
 }
