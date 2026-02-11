@@ -2,7 +2,9 @@ package com.example.gymapprefactor.features.dialogs.ui
 
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.wrapContentSize
@@ -14,12 +16,12 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.Dp
-import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.gymapprefactor.app.util.DevicePreviews
 import com.example.gymapprefactor.app.util.DeviceUtil
+import com.example.gymapprefactor.app.util.SpacerUtil
 import com.example.gymapprefactor.common.components.buttons.presentation.IconButtonState
 import com.example.gymapprefactor.common.components.buttons.ui.ButtonRouter
 import com.example.gymapprefactor.common.components.presentation.ImageState
@@ -55,28 +57,19 @@ private fun DialogContent(
 		) {
 			ImageRouter(
 				state = ImageState.DialogBackground,
-				modifier = Modifier
-					.width(dialogWidthRouter()),
+				modifier = Modifier.width(calculateDialogWidth()),
 				isLandscape = DeviceUtil.isLandscape,
 				contentScale = ContentScale.FillWidth
 			)
 			Column(
-				modifier = Modifier.padding(100.dp)
+				modifier = Modifier.padding(calculateDialogPadding())
 			) {
-				Text(
-					text = state.title,
-					style = Typography.bodyMedium,
-					modifier = Modifier.fillMaxWidth(),
-					textAlign = TextAlign.Center
-				)
-				if (state.message != null) {
-					Text(
-						text = state.message,
-						style = Typography.bodySmall,
-						modifier = Modifier.fillMaxWidth(),
-						textAlign = TextAlign.Center
-					)
+				DialogTitle(state.title)
+				state.message?.let {
+					Spacer(modifier = Modifier.height(SpacerUtil.spacer_04))
+					DialogMessage(it)
 				}
+				Spacer(modifier = Modifier.height(SpacerUtil.spacer_20))
 				ButtonRouter(state.confirmState, Modifier.fillMaxWidth())
 				ButtonRouter(state.dismissState, Modifier.fillMaxWidth())
 			}
@@ -85,12 +78,38 @@ private fun DialogContent(
 }
 
 @Composable
-private fun dialogWidthRouter(): Dp {
-	with (DeviceUtil) {
-		return when (isLandscape) {
-			true -> getColumnWidthDp(6)
-			false -> getColumnWidthDp(8)
-		}
+private fun DialogTitle(title: String) {
+	Text(
+		text = title,
+		style = Typography.bodyMedium,
+		modifier = Modifier.fillMaxWidth(),
+		textAlign = TextAlign.Center
+	)
+}
+
+@Composable
+private fun DialogMessage(message: String) {
+	Text(
+		text = message,
+		style = Typography.bodySmall,
+		modifier = Modifier.fillMaxWidth(),
+		textAlign = TextAlign.Center
+	)
+}
+
+@Composable
+private fun calculateDialogWidth(): Dp {
+	return when (DeviceUtil.isLandscape) {
+		true -> DeviceUtil.getColumnWidthDp(6)
+		false -> DeviceUtil.getColumnWidthDp(8)
+	}
+}
+
+@Composable
+private fun calculateDialogPadding(): Dp {
+	return when (DeviceUtil.isLandscape) {
+		true -> SpacerUtil.spacer_30
+		false -> SpacerUtil.spacer_20
 	}
 }
 

@@ -15,7 +15,11 @@ class UserRepositoryImpl(
     }
 
     override suspend fun saveUser(user: User) {
-        dataSource.saveUser(user)
+        dataSource.saveUser(user).getOrThrow()
+    }
+
+    suspend fun saveUserWithResult(user: User): Result<Unit> {
+        return dataSource.saveUser(user)
     }
 
     override fun getUserFlow(): Flow<User?> {
@@ -30,8 +34,11 @@ class UserDataSource @Inject constructor(
         return appDataModel.getCurrentUser()
     }
     
-    suspend fun saveUser(user: User) {
-        appDataModel.saveUser(user)
+    suspend fun saveUser(user: User): Result<Unit> {
+        return appDataModel.saveUser(user).fold(
+            onSuccess = { Result.success(Unit) },
+            onFailure = { Result.failure(it) }
+        )
     }
 
     fun getUserFlow(): Flow<User?> {

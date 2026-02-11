@@ -11,6 +11,7 @@ import com.example.gymapprefactor.features.navigation.presentation.models.Naviga
 import com.example.gymapprefactor.features.navigation.presentation.state.NavigationReducer
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.launch
+import timber.log.Timber
 import javax.inject.Inject
 
 @HiltViewModel
@@ -53,7 +54,7 @@ class NavigationViewModelImpl @Inject constructor(
         addPageToBackStack(page = state.page, newIndex = index)
         setBackgroundForPage(state.page)
         sendGoToAction(state.page)
-        println(navigationStack.toString())
+        Timber.d("Navigation stack: $navigationStack")
     }
 
     // instead of this, make a back event reducer that routines,

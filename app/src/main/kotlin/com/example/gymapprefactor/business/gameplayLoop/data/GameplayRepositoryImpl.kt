@@ -37,24 +37,31 @@ class GameplayDataSource @Inject constructor(
 	}
 
 	suspend fun saveGameState(gameState: GameState): GameState {
-		return appDataModel.saveUser(
+		val result = appDataModel.saveUser(
 			appDataModel.getCurrentUser().copy(gameState = gameState)
-		).gameState
+		)
+		return result.getOrNull()?.gameState ?: gameState
 	}
 
-	suspend fun endGame(gameState: ActiveGameState) {
+	suspend fun endGame(gameState: ActiveGameState): Result<Unit> {
 		val user = appDataModel.getCurrentUser()
-		appDataModel.saveUser(
+		return appDataModel.saveUser(
 			user.copy(
 				runesCount = user.runesCount + gameState.activeGameVariables.runesCount,
 				gameState = NoneGameState
 			)
+		).fold(
+			onSuccess = { Result.success(Unit) },
+			onFailure = { Result.failure(it) }
 		)
 	}
 
-	suspend fun quitGame() {
-		appDataModel.saveUser(
+	suspend fun quitGame(): Result<Unit> {
+		return appDataModel.saveUser(
 			appDataModel.getCurrentUser().copy(gameState = NoneGameState)
+		).fold(
+			onSuccess = { Result.success(Unit) },
+			onFailure = { Result.failure(it) }
 		)
 	}
 }

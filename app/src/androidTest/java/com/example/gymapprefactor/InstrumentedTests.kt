@@ -49,7 +49,8 @@ class InstrumentedTests {
         TestEnvironment.setUserPresentEnvironment()
 
         activityRule.scenario.onActivity {
-            val user = runBlocking { userStorage.loadUser() }
+            val userResult = runBlocking { userStorage.loadUser() }
+            val user = userResult.getOrNull()
             Assert.assertEquals("PreSavedUser", user?.username)
             Assert.assertEquals(777, user?.runesCount)
         }

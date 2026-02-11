@@ -38,6 +38,7 @@ import com.example.gymapprefactor.features.game.presentation.models.GameScreenSt
 import com.example.gymapprefactor.features.game.ui.animation.EffectAnimationState
 import com.example.gymapprefactor.features.game.ui.animation.ScoreAnimationState
 import kotlin.math.roundToInt
+import timber.log.Timber
 
 @Composable
 internal fun ScoreLane(
@@ -268,7 +269,7 @@ private fun handleLetterClick(
 	letter: GameScreenState.DraggableLetter,
 	boardState: LetterBoardState
 ) {
-	println("letter clicked")
+	Timber.d("Letter clicked")
 	if (letter in boardState.holdingLetters) {
 		boardState.holdingLetters.remove(letter)
 		boardState.playedLetters.add(letter)

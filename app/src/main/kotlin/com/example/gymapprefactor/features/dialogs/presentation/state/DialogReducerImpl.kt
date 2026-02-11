@@ -11,62 +11,57 @@ import kotlinx.coroutines.flow.MutableStateFlow
 class DialogReducerImpl : DialogReducer {
 	override val state = MutableStateFlow<DialogState>(DialogState.None)
 
-	private lateinit var defaultDismiss: () -> Unit
+	private var defaultDismiss: (() -> Unit)? = null
 
 	override suspend fun update(action: DialogAction) {
 		state.value = when (action) {
-			is InitializeDismiss -> initializeDismiss(action)
-			is TriggerDialog -> setDialogContent(action)
+			is InitializeDismiss -> handleInitializeDismiss(action)
+			is TriggerDialog -> createDialogState(action)
 			is ClearDialogs -> DialogState.None
 			is None -> DialogState.None
 		}
 	}
 
 	override fun onDefaultDismiss() {
-		defaultDismiss()
+		defaultDismiss?.invoke()
 	}
 
-	private fun setDialogContent(action: TriggerDialog): DialogState {
-		return with(action) {
-			DialogState.Content(
-				onDismissRequest = onDismiss,
-				title = title,
-				message = message,
-				confirmState = mapConfirmButton(action),
-				dismissState = mapDismissButton(action)
-			)
-		}
-	}
-
-	private fun initializeDismiss(action: InitializeDismiss): DialogState {
+	private fun handleInitializeDismiss(action: InitializeDismiss): DialogState {
 		defaultDismiss = action.onDismiss
 		return state.value
 	}
 
-	private fun mapConfirmButton(action: TriggerDialog): ButtonState {
-		with(action) {
-			return when (confirmState) {
-				is ConfirmState.Content -> IconButtonState.Content(
-					onClick = {
-						confirmState.onConfirm()
-						action.onDismiss()
-					},
-					image = ImageState.ConfirmIcon
-				)
-				is ConfirmState.None -> IconButtonState.None
-			}
+	private fun createDialogState(action: TriggerDialog): DialogState {
+		return DialogState.Content(
+			onDismissRequest = action.onDismiss,
+			title = action.title,
+			message = action.message,
+			confirmState = createConfirmButton(action),
+			dismissState = createDismissButton(action)
+		)
+	}
+
+	private fun createConfirmButton(action: TriggerDialog): ButtonState {
+		return when (val confirm = action.confirmState) {
+			is ConfirmState.Content -> IconButtonState.Content(
+				onClick = {
+					confirm.onConfirm()
+					action.onDismiss()
+				},
+				image = ImageState.ConfirmIcon
+			)
+			is ConfirmState.None -> IconButtonState.None
 		}
 	}
 
-	private fun mapDismissButton(action: TriggerDialog): ButtonState {
-		with(action) {
-			return when (showDismissButton) {
-				true -> IconButtonState.Content(
-					onClick = onDismiss,
-					image = ImageState.DismissIcon
-				)
-				false -> IconButtonState.None
-			}
+	private fun createDismissButton(action: TriggerDialog): ButtonState {
+		return if (action.showDismissButton) {
+			IconButtonState.Content(
+				onClick = action.onDismiss,
+				image = ImageState.DismissIcon
+			)
+		} else {
+			IconButtonState.None
 		}
 	}
 }
