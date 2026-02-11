@@ -13,6 +13,7 @@ import com.example.gymapprefactor.features.game.ui.LetterBoardState
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import timber.log.Timber
 
 @Composable
 @SuppressWarnings("MaxLineLength")
@@ -25,11 +26,11 @@ internal fun ScoreAnimationHandler(
 ) {
 	LaunchedEffect(scoreBreakdown) {
 		if (scoreBreakdown == null || scoreBreakdown.letterScores.isEmpty()) {
-			println("LetterBoard: scoreBreakdown empty -> $scoreBreakdown")
+			Timber.d("LetterBoard: scoreBreakdown empty -> $scoreBreakdown")
 			return@LaunchedEffect
 		}
 
-		println(
+		Timber.d(
 			"LetterBoard: incoming scores=${scoreBreakdown.letterScores.map { it.first to it.second }} " +
 				"holding=${boardState.holdingLetters.map { it.id }} played=${boardState.playedLetters.map { it.id }}"
 		)
@@ -38,7 +39,7 @@ internal fun ScoreAnimationHandler(
 		val filteredScores = filterValidScores(scoreBreakdown, scoreState)
 
 		if (filteredScores.isEmpty()) {
-			println("LetterBoard: filteredScores empty, skipping animation")
+			Timber.d("LetterBoard: filteredScores empty, skipping animation")
 			onScoreAnimationConsumed()
 			clearLetterScoreState(scoreState)
 			return@LaunchedEffect
@@ -91,7 +92,7 @@ private fun filterValidScores(
 	val filteredScores = scoreBreakdown.letterScores.filter { score ->
 		scoreState.scoredLetters.containsKey(score.first)
 	}
-	println("LetterBoard: filteredScores=${filteredScores.map { it.first }}")
+	Timber.d("LetterBoard: filteredScores=${filteredScores.map { it.first }}")
 	return filteredScores
 }
 

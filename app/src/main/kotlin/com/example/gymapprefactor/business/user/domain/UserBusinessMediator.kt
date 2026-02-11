@@ -1,11 +1,13 @@
 package com.example.gymapprefactor.business.user.domain
 
+import com.example.gymapprefactor.business.errors.UserException
 import com.example.gymapprefactor.business.models.Deck
 import com.example.gymapprefactor.business.models.Letter
 import com.example.gymapprefactor.business.models.NoneUser
 import com.example.gymapprefactor.business.models.User
 import com.example.gymapprefactor.business.models.copy
 import kotlinx.coroutines.flow.Flow
+import timber.log.Timber
 
 class UserBusinessMediator(
 	private val getDecksUseCase: GetDecksUseCase,
@@ -13,17 +15,23 @@ class UserBusinessMediator(
 	private val saveUserUseCase: SaveUserUseCase,
 	private val userRepository: UserRepository,
 ) {
-	suspend fun getDecks(): List<Deck> {
+	suspend fun getDecks(): Result<List<Deck>> {
 		return getDecksUseCase().fold(
-			onSuccess = { it },
-			onFailure = { emptyList() }
+			onSuccess = { Result.success(it) },
+			onFailure = { error ->
+				Timber.e(error, "Failed to get decks")
+				Result.failure(error)
+			}
 		)
 	}
 
-	suspend fun getUser(): User {
+	suspend fun getUser(): Result<User> {
 		return getUserUseCase().fold(
-			onSuccess = { it },
-			onFailure = { NoneUser } // error dialog
+			onSuccess = { Result.success(it) },
+			onFailure = { error ->
+				Timber.e(error, "Failed to get user")
+				Result.failure(error)
+			}
 		)
 	}
 
@@ -31,15 +39,15 @@ class UserBusinessMediator(
 		return userRepository.getUserFlow()
 	}
 
-	suspend fun upgradeLetter(deck: Deck, letter: Letter) {
-		val user = getUser().also { if (it is NoneUser) return } // exit early if not logged in
-
-		val cost = 0 // figure out source of truth for cost, prolly a mapper
-
-		if (!deck.letters.contains(letter) || user.runesCount < cost) {
-			return // error dialog
+	suspend fun upgradeLetter(deck: Deck, letter: Letter): Result<Unit> {
+		val userResult = getUser()
+		val validationError = validateUpgradeLetter(userResult, deck, letter)
+		if (validationError != null) {
+			return Result.failure(validationError)
 		}
 
+		val user = userResult.getOrNull()!!
+		val cost = 0
 		val upgradedDeck = deck.copy(
 			letters = deck.letters.map {
 				if (it.id == letter.id) letter.copy(level = letter.level + 1) else it
@@ -53,7 +61,27 @@ class UserBusinessMediator(
 			}
 		)
 
-		// Save the updated user using your use case or repository
-		saveUserUseCase(updatedUser)
+		return saveUserUseCase(updatedUser).fold(
+			onSuccess = { Result.success(Unit) },
+			onFailure = { error ->
+				Timber.e(error, "Failed to save user after letter upgrade")
+				Result.failure(error)
+			}
+		)
+	}
+
+	private fun validateUpgradeLetter(
+		userResult: Result<User>,
+		deck: Deck,
+		letter: Letter
+	): UserException? {
+		val user = userResult.getOrNull() ?: return UserException.UserNotFound
+		
+		return when {
+			user is NoneUser -> UserException.UserNotFound
+			!deck.letters.contains(letter) -> UserException.LetterNotFound(letter.id)
+			user.runesCount < 0 -> UserException.InsufficientRunes(0, user.runesCount)
+			else -> null
+		}
 	}
 }

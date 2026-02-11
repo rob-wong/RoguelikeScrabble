@@ -6,6 +6,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.withContext
+import timber.log.Timber
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -20,30 +21,48 @@ class AppDataModel @Inject constructor(
 
     fun getCurrentUser() = user
 
-    suspend fun saveUser(savedUser: User): User {
-        user = userStorage.saveUser(savedUser)
-        _userFlow.value = user
-        return user
-    }
-
-    suspend fun fetchOrCreateUser() {
-        withContext(dispatcherProvider.io) {
-            val fetchedUser = fetchUserFromStorage()
-
-            if (fetchedUser != null) {
-                user = fetchedUser
-            } else {
-                user = createDefaultUser()
-            }
-            _userFlow.value = user
+    suspend fun saveUser(savedUser: User): Result<User> {
+        return withContext(dispatcherProvider.io) {
+            userStorage.saveUser(savedUser).fold(
+                onSuccess = { saved ->
+                    user = saved
+                    _userFlow.value = user
+                    Result.success(user)
+                },
+                onFailure = { error ->
+                    Timber.e(error, "Failed to save user")
+                    Result.failure(error)
+                }
+            )
         }
     }
 
-    private suspend fun fetchUserFromStorage(): User? {
+    suspend fun fetchOrCreateUser(): Result<User> {
+        return withContext(dispatcherProvider.io) {
+            val loadResult = fetchUserFromStorage()
+            
+            when {
+                loadResult.isSuccess && loadResult.getOrNull() != null -> {
+                    user = loadResult.getOrNull()!!
+                    _userFlow.value = user
+                    Result.success(user)
+                }
+                loadResult.isSuccess -> {
+                    createDefaultUser()
+                }
+                else -> {
+                    Timber.w(loadResult.exceptionOrNull(), "Failed to load user, creating default")
+                    createDefaultUser()
+                }
+            }
+        }
+    }
+
+    private suspend fun fetchUserFromStorage(): Result<User?> {
         return userStorage.loadUser()
     }
 
-    private suspend fun createDefaultUser(): User {
+    private suspend fun createDefaultUser(): Result<User> {
         val newUser = DefaultUser(
             username = "Username",
             runesCount = 100,
@@ -52,7 +71,17 @@ class AppDataModel @Inject constructor(
 			gameState = NoneGameState
         )
 
-        return userStorage.saveUser(newUser)
+        return userStorage.saveUser(newUser).fold(
+            onSuccess = { saved ->
+                user = saved
+                _userFlow.value = user
+                Result.success(user)
+            },
+            onFailure = { error ->
+                Timber.e(error, "Failed to create default user")
+                Result.failure(error)
+            }
+        )
     }
 
     private fun createDefaultDeck(): Deck {

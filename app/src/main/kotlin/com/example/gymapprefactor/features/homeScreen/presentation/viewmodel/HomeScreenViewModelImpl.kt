@@ -10,6 +10,7 @@ import com.example.gymapprefactor.features.navigation.presentation.models.Naviga
 import com.example.gymapprefactor.features.navigation.presentation.state.NavigationReducer
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.launch
+import timber.log.Timber
 import javax.inject.Inject
 
 @HiltViewModel
@@ -42,8 +43,14 @@ class HomeScreenViewModelImpl @Inject constructor(
 
     private fun loadInitialUserContent() {
         viewModelScope.launch(dispatcherProvider.default) {
-            val user = userBusinessMediator.getUser()
-            updateContentWithUser(user)
+            userBusinessMediator.getUser().fold(
+                onSuccess = { user ->
+                    updateContentWithUser(user)
+                },
+                onFailure = { error ->
+                    Timber.e(error, "Failed to load user for home screen")
+                }
+            )
         }
     }
 

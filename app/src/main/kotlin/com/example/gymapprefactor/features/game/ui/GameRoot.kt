@@ -21,6 +21,7 @@ import com.example.gymapprefactor.features.game.presentation.viewmodel.GameViewM
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.launch
+import timber.log.Timber
 
 @Composable
 fun GameRoot(
@@ -188,7 +189,7 @@ private fun setupEventCollectors(
 
 	LaunchedEffect(Unit) {
 		viewModel.scoreEvent.collectLatest { payload ->
-			println("GameRoot: received score payload size=${payload.letterScores.size} " +
+			Timber.d("GameRoot: received score payload size=${payload.letterScores.size} " +
 					"ids=${payload.letterScores.map { it.first }}")
 			animationQueues.scoreQueue.add(payload)
 		}
@@ -196,14 +197,14 @@ private fun setupEventCollectors(
 
 	LaunchedEffect(Unit) {
 		viewModel.effectAnimationEvent.collectLatest { payload ->
-			println("GameRoot: received effect animation payload size=${payload.size}")
+			Timber.d("GameRoot: received effect animation payload size=${payload.size}")
 			animationQueues.effectAnimationQueue.add(payload)
 		}
 	}
 
 	LaunchedEffect(Unit) {
 		viewModel.glyphAnimationEvent.collectLatest { payload ->
-			println(
+			Timber.d(
 				"GameRoot: received glyph animation payload " +
 				"glyphAmount=${payload.glyphAmount}, runeAmount=${payload.runeAmount}"
 			)
@@ -213,7 +214,7 @@ private fun setupEventCollectors(
 
 	LaunchedEffect(Unit) {
 		viewModel.midshopResultEvent.collectLatest { payload ->
-			println("GameRoot: received midshop result payload")
+			Timber.d("GameRoot: received midshop result payload")
 			animationQueues.midshopResultQueue.add(payload)
 		}
 	}

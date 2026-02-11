@@ -15,6 +15,7 @@ import com.example.gymapprefactor.features.upgrade.presentation.state.UpgradeScr
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
+import timber.log.Timber
 import javax.inject.Inject
 
 @HiltViewModel
@@ -50,8 +51,14 @@ class UpgradeScreenViewModelImpl @Inject constructor(
 
 	private fun loadInitialUserContent() {
 		viewModelScope.launch(dispatcherProvider.default) {
-			val user = userBusinessMediator.getUser()
-			setContent(user)
+			userBusinessMediator.getUser().fold(
+				onSuccess = { user ->
+					setContent(user)
+				},
+				onFailure = { error ->
+					Timber.e(error, "Failed to load user for upgrade screen")
+				}
+			)
 		}
 	}
 
@@ -79,13 +86,13 @@ class UpgradeScreenViewModelImpl @Inject constructor(
 	}
 
 	private suspend fun getUpgradeLetterStates(): List<UpgradeLetterState> {
-		currentDeck = userBusinessMediator.getDecks()
-			.first() // temporary, while only one deck is supported
+		val decksResult = userBusinessMediator.getDecks()
+		currentDeck = decksResult.getOrNull()?.firstOrNull() ?: return emptyList()
 
 		return currentDeck.letters.map {
 			upgradeLetterStateMapper.map(
 				UpgradeLetterStateMapper.Param(
-					deckType = DeckType.Default, // again, temporary
+					deckType = DeckType.Default,
 					letter = it,
 					onUpgrade = ::onUpgradeLetter
 				)
@@ -95,9 +102,21 @@ class UpgradeScreenViewModelImpl @Inject constructor(
 
 	private fun onUpgradeLetter(letter: Letter) {
 		viewModelScope.launch(dispatcherProvider.default) {
-			userBusinessMediator.upgradeLetter(deck = currentDeck, letter = letter)
-			val user = userBusinessMediator.getUser()
-			setContent(user)
+			userBusinessMediator.upgradeLetter(deck = currentDeck, letter = letter).fold(
+				onSuccess = {
+					userBusinessMediator.getUser().fold(
+						onSuccess = { user ->
+							setContent(user)
+						},
+						onFailure = { error ->
+							Timber.e(error, "Failed to get user after upgrade")
+						}
+					)
+				},
+				onFailure = { error ->
+					Timber.e(error, "Failed to upgrade letter")
+				}
+			)
 		}
 	}
 

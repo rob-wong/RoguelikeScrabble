@@ -4,6 +4,7 @@ import android.content.Context
 import android.util.DisplayMetrics
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import timber.log.Timber
 
 
 object DeviceUtil {
@@ -38,7 +39,7 @@ object DeviceUtil {
             true -> screenWidthDp / LANDSCAPE_COLUMNS
             false -> screenWidthDp / PORTRAIT_COLUMNS
         }
-        println("ColumnSize: $columnSize dp")
+        Timber.d("ColumnSize: $columnSize dp")
     }
 
     fun getColumnWidthDp(columns: Int): Dp {

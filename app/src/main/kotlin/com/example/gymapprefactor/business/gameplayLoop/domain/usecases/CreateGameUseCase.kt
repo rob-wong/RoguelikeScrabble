@@ -21,10 +21,10 @@ class CreateGameUseCase @Inject constructor(
 	private val enemyCreationMapper: EnemyCreationMapper,
 ) {
 	suspend operator fun invoke(): ActiveGameState {
-		val user = userBusinessMediator.getUser()
+		val user = userBusinessMediator.getUser().getOrThrow()
 		val gameDeck = user.decks
-			.first() // change with multiple deck support
-			.copy() // during the game, the deck will be changed but not permanently
+			.first()
+			.copy()
 
 		val initialEnemyHealth = enemyCreationMapper.map(
 			EnemyCreationMapper.Param(
