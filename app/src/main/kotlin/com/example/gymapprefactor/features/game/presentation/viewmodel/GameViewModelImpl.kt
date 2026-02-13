@@ -121,7 +121,7 @@ class GameViewModelImpl @Inject constructor(
 		discardsRemaining: Int,
 		effectDescriptors: Map<String, EffectDescriptor>
 	): GameScreenAction.StartPlaying {
-		val gameState = activeGameState ?: throw IllegalStateException("activeGameState not initialized")
+		val gameState = activeGameState ?: error("activeGameState not initialized")
 		return GameScreenAction.StartPlaying(
 			runesCount = gameState.activeGameVariables.runesCount,
 			glyphCount = gameState.activeGameVariables.glyphCount,

@@ -20,7 +20,7 @@ class AppDataModel @Inject constructor(
     val userFlow: StateFlow<User?> = _userFlow.asStateFlow()
 
     fun getCurrentUser(): User {
-        return user ?: throw IllegalStateException("User not initialized. Call fetchOrCreateUser() first.")
+        return user ?: error("User not initialized. Call fetchOrCreateUser() first.")
     }
 
     suspend fun saveUser(savedUser: User): Result<User> {
