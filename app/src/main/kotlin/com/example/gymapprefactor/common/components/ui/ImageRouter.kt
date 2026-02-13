@@ -54,6 +54,12 @@ fun ImageRouter(
 		PersistenceMidshopCard -> painterResource(R.drawable.image_persistence_midshop_card)
 		UpgradeMidshopCard -> painterResource(R.drawable.image_upgrade_midshop_card)
 
+		RuneShopCard -> painterResource(R.drawable.image_rune_shopcard)
+		GlyphShopCard -> painterResource(R.drawable.image_glyph_shopcard)
+		CrateShopCard -> painterResource(R.drawable.image_crate_shopcard)
+
+		ComingSoon -> painterResource(R.drawable.image_comingsoon)
+
 		None -> return
 	}
 	Image(
