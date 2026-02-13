@@ -30,5 +30,11 @@ sealed class ImageState {
 	data object PersistenceMidshopCard : ImageState()
 	data object UpgradeMidshopCard : ImageState()
 
+	data object RuneShopCard : ImageState()
+	data object GlyphShopCard : ImageState()
+	data object CrateShopCard : ImageState()
+
+	data object ComingSoon : ImageState()
+
 	data object None : ImageState()
 }

@@ -1,5 +1,6 @@
 package com.example.gymapprefactor.features.shop.ui
 
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
@@ -18,6 +19,7 @@ import com.example.gymapprefactor.common.components.presentation.ImageState
 import com.example.gymapprefactor.common.components.presentation.ResourceBarState
 import com.example.gymapprefactor.common.components.presentation.ResourceState
 import com.example.gymapprefactor.common.components.buttons.ui.ButtonRouter
+import com.example.gymapprefactor.common.components.ui.ComingSoonOverlay
 import com.example.gymapprefactor.common.components.ui.ResourceBarRouter
 import com.example.gymapprefactor.features.shop.presentation.models.ShopScreenState
 import com.example.gymapprefactor.features.shop.presentation.models.ShopScreenState.None
@@ -54,6 +56,10 @@ private fun ShopScreenLayout(
 			)
 			ShopScreenContent(state, Modifier.fillMaxSize())
 		}
+		// Temp
+		ComingSoonOverlay(
+			modifier = Modifier.align(Alignment.Center)
+		)
 	}
 }
 
@@ -63,7 +69,8 @@ private fun ShopScreenContent(
 	modifier: Modifier = Modifier,
 ) {
 	Column(
-		modifier
+		modifier = modifier,
+		verticalArrangement = Arrangement.spacedBy(16.dp)
 	) {
 		state.templateStates.forEach { templateState ->
 			ContentRouter(templateState)

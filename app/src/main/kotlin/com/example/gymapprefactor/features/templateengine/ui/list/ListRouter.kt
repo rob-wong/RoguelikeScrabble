@@ -1,7 +1,7 @@
 package com.example.gymapprefactor.features.templateengine.ui.list
 
-import androidx.compose.foundation.layout.ExperimentalLayoutApi
-import androidx.compose.foundation.layout.FlowRow
+import androidx.compose.foundation.lazy.LazyRow
+import androidx.compose.foundation.lazy.items
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import com.example.gymapprefactor.features.templateengine.presentation.models.basic.BasicListState
@@ -18,14 +18,13 @@ fun ListRouter(
 	}
 }
 
-@OptIn(ExperimentalLayoutApi::class)
 @Composable
 private fun BasicListContent(
 	state: BasicListState.Content,
 	modifier: Modifier = Modifier,
 ) {
-	FlowRow(modifier = modifier) {
-		state.items.forEach { item ->
+	LazyRow(modifier = modifier) {
+		items(state.items) { item ->
 			ContentRouter(item)
 		}
 	}

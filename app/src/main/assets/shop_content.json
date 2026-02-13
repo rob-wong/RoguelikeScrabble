@@ -32,6 +32,20 @@
             "decktype": "blue"
           },
           "description": "Unlock the blue deck"
+        },
+        {
+          "type": "item",
+          "id": "glyph-1234-5678",
+          "template_id": "shopcard",
+          "price": {
+            "type": "CAD",
+            "amount": 5.99
+          },
+          "product": {
+            "type": "glyph",
+            "amount": 50
+          },
+          "description": "Add 50 glyphs to your balance"
         }
       ]
     },
