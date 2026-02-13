@@ -54,7 +54,7 @@ class GameViewModelImpl @Inject constructor(
 ) : GameViewModel() {
 	override val state = gameScreenReducer.state
 
-	private lateinit var activeGameState: ActiveGameState
+	private var activeGameState: ActiveGameState? = null
 	val invalidWordEvent = MutableSharedFlow<Unit>()
 	val scoreEvent = MutableSharedFlow<ScoreAnimationPayload>()
 	val scoreAnimationComplete = MutableSharedFlow<Unit>()
@@ -85,17 +85,18 @@ class GameViewModelImpl @Inject constructor(
 	}
 
 	private suspend fun updateGame() {
+		val gameState = activeGameState ?: return
 		val enemyMaxHealth = enemyCreationMapper.map(
 			EnemyCreationMapper.Param(
-				stage = activeGameState.activeGameVariables.stage,
-				level = activeGameState.activeGameVariables.level
+				stage = gameState.activeGameVariables.stage,
+				level = gameState.activeGameVariables.level
 			)
 		)
 		val enemyLabel = enemyLabelMapper.map(
-			EnemyLabelMapper.Param(level = activeGameState.activeGameVariables.level)
+			EnemyLabelMapper.Param(level = gameState.activeGameVariables.level)
 		)
 		val discardsRemaining = discardsRemainingMapper.map(
-			DiscardsRemainingMapper.Param(game = activeGameState)
+			DiscardsRemainingMapper.Param(game = gameState)
 		)
 		val effectDescriptors = getEffectDescriptorsUseCase()
 		
@@ -107,7 +108,7 @@ class GameViewModelImpl @Inject constructor(
 		)
 		gameScreenReducer.update(action)
 		
-		if (activeGameState.activeGameVariables.gameLost) {
+		if (gameState.activeGameVariables.gameLost) {
 			delay(300)
 			triggerGameLostDialog()
 		}
@@ -120,60 +121,61 @@ class GameViewModelImpl @Inject constructor(
 		discardsRemaining: Int,
 		effectDescriptors: Map<String, EffectDescriptor>
 	): GameScreenAction.StartPlaying {
+		val gameState = activeGameState ?: throw IllegalStateException("activeGameState not initialized")
 		return GameScreenAction.StartPlaying(
-			runesCount = activeGameState.activeGameVariables.runesCount,
-			glyphCount = activeGameState.activeGameVariables.glyphCount,
+			runesCount = gameState.activeGameVariables.runesCount,
+			glyphCount = gameState.activeGameVariables.glyphCount,
 			onQuitPressed = ::onQuitPressed,
 			onWordPlayed = ::onWordPlayed,
 			onDiscardPressed = ::onDiscardPressed,
-			hand = activeGameState.currentRound.hand,
-			currentLettersInDeck = activeGameState.currentRound.mutableDeck.size(),
-			maxLettersInDeck = activeGameState.activeGameValues.deck.size(),
+			hand = gameState.currentRound.hand,
+			currentLettersInDeck = gameState.currentRound.mutableDeck.size(),
+			maxLettersInDeck = gameState.activeGameValues.deck.size(),
 			discardsRemaining = discardsRemaining,
-			currentRound = activeGameState.currentRound.round,
-			maxRounds = activeGameState.activeGameVariables.maxRounds,
-			enemyHealth = activeGameState.currentRound.enemyHealth,
+			currentRound = gameState.currentRound.round,
+			maxRounds = gameState.activeGameVariables.maxRounds,
+			enemyHealth = gameState.currentRound.enemyHealth,
 			enemyMaxHealth = enemyMaxHealth,
 			enemyLabel = enemyLabel,
-			activeGameEffects = activeGameState.activeGameValues.effects,
-			currentRoundEffects = activeGameState.currentRound.effects,
+			activeGameEffects = gameState.activeGameValues.effects,
+			currentRoundEffects = gameState.currentRound.effects,
 			effectDescriptors = effectDescriptors,
-			needsEffectSelection = activeGameState.activeGameVariables.needsEffectSelection,
-			effectSelectionEffects = if (activeGameState.activeGameVariables.needsEffectSelection) {
-				activeGameState.currentRound.effects
+			needsEffectSelection = gameState.activeGameVariables.needsEffectSelection,
+			effectSelectionEffects = if (gameState.activeGameVariables.needsEffectSelection) {
+				gameState.currentRound.effects
 			} else {
 				emptyList()
 			},
-			onEffectSelected = if (activeGameState.activeGameVariables.needsEffectSelection) {
+			onEffectSelected = if (gameState.activeGameVariables.needsEffectSelection) {
 				::onEffectSelected
 			} else {
 				null
 			},
-			onEffectSelectionBackPressed = if (activeGameState.activeGameVariables.needsEffectSelection) {
+			onEffectSelectionBackPressed = if (gameState.activeGameVariables.needsEffectSelection) {
 				::quitGame
 			} else {
 				null
 			},
-			needsMidshopSelection = activeGameState.activeGameVariables.needsMidshopSelection,
-			midshopOptions = if (activeGameState.activeGameVariables.needsMidshopSelection) {
+			needsMidshopSelection = gameState.activeGameVariables.needsMidshopSelection,
+			midshopOptions = if (gameState.activeGameVariables.needsMidshopSelection) {
 				midshopOptionMapper.map(
-					MidshopOptionMapper.Param(game = activeGameState)
+					MidshopOptionMapper.Param(game = gameState)
 				)
 			} else {
 				emptyList()
 			},
-			selectedMidshopOption = if (activeGameState.activeGameVariables.needsMidshopSelection) {
+			selectedMidshopOption = if (gameState.activeGameVariables.needsMidshopSelection) {
 				selectedMidshopOption
 			} else {
 				null
 			},
 			midshopConfirmButton = IconButtonState.None, // Will be mapped in reducer
-			onMidshopOptionSelected = if (activeGameState.activeGameVariables.needsMidshopSelection) {
+			onMidshopOptionSelected = if (gameState.activeGameVariables.needsMidshopSelection) {
 				::onMidshopOptionSelected
 			} else {
 				null
 			},
-			onMidshopConfirmed = if (activeGameState.activeGameVariables.needsMidshopSelection) {
+			onMidshopConfirmed = if (gameState.activeGameVariables.needsMidshopSelection) {
 				::onMidshopConfirmed
 			} else {
 				null
@@ -222,12 +224,13 @@ class GameViewModelImpl @Inject constructor(
 
 	private fun onWordPlayed(letterIds: List<String>) {
 		viewModelScope.launch(dispatcherProvider.default) {
+			val gameState = activeGameState ?: return@launch
 			mutex.withLock {
 				gameplayBusinessMediator.onWordPlayed(
 					list = letterIds.map { letterId ->
-						activeGameState.currentRound.hand.first { it.id == letterId }
+						gameState.currentRound.hand.first { it.id == letterId }
 					},
-					game = activeGameState
+					game = gameState
 				).fold(
 					onSuccess = { result ->
 						handleScoredWord(result)
@@ -242,7 +245,8 @@ class GameViewModelImpl @Inject constructor(
 
 	private fun onDiscardPressed() {
 		viewModelScope.launch(dispatcherProvider.default) {
-			activeGameState = gameplayBusinessMediator.discardHand(activeGameState)
+			val gameState = activeGameState ?: return@launch
+			activeGameState = gameplayBusinessMediator.discardHand(gameState)
 			updateGame()
 		}
 	}
@@ -285,9 +289,10 @@ class GameViewModelImpl @Inject constructor(
 
 	private fun onEffectSelected(effect: Effect) {
 		viewModelScope.launch(dispatcherProvider.default) {
+			val gameState = activeGameState ?: return@launch
 			selectedEffect = effect
 			activeGameState = gameplayBusinessMediator.selectEffect(
-				game = activeGameState
+				game = gameState
 			)
 			// After effect selection, show midshop instead of advancing immediately
 			updateGame()
@@ -303,12 +308,13 @@ class GameViewModelImpl @Inject constructor(
 	
 	private fun onMidshopConfirmed() {
 		viewModelScope.launch(dispatcherProvider.default) {
+			val gameState = activeGameState ?: return@launch
 			val option = selectedMidshopOption
 			if (option != null) {
 				val result = gameplayBusinessMediator.selectMidshopOptionAndAdvance(
 					midshopOption = option,
 					selectedEffect = selectedEffect,
-					game = activeGameState
+					game = gameState
 				)
 				activeGameState = result.gameState
 
@@ -358,12 +364,13 @@ class GameViewModelImpl @Inject constructor(
 	
 	private fun onAwakenConfirmed() {
 		viewModelScope.launch(dispatcherProvider.default) {
+			val gameState = activeGameState ?: return@launch
 			val letter = selectedAwakenLetter
 			if (letter != null) {
 				// Add letter to deck and advance to next enemy
 				activeGameState = gameplayBusinessMediator.confirmAwakenLetterSelection(
 					selectedLetter = letter,
-					game = activeGameState
+					game = gameState
 				)
 				
 				// Clear state
@@ -390,12 +397,13 @@ class GameViewModelImpl @Inject constructor(
 	
 	private fun onExpungeConfirmed() {
 		viewModelScope.launch(dispatcherProvider.default) {
+			val gameState = activeGameState ?: return@launch
 			val letter = selectedExpungeLetter
 			if (letter != null) {
 				// Delete letter from deck and advance to next enemy
 				activeGameState = gameplayBusinessMediator.confirmExpungeLetterSelection(
 					selectedLetter = letter,
-					game = activeGameState
+					game = gameState
 				)
 				
 				// Clear state
@@ -419,8 +427,9 @@ class GameViewModelImpl @Inject constructor(
 
 	private fun quitGame() {
 		viewModelScope.launch(dispatcherProvider.default) {
-			val shouldSaveProgression = activeGameState.activeGameVariables.gameLost
-			gameplayBusinessMediator.endGame(game = activeGameState, saveProgression = shouldSaveProgression)
+			val gameState = activeGameState ?: return@launch
+			val shouldSaveProgression = gameState.activeGameVariables.gameLost
+			gameplayBusinessMediator.endGame(game = gameState, saveProgression = shouldSaveProgression)
 			navigationReducer.update(NavigationAction.GoTo(NavigationPage.HomeScreen))
 		}
 	}
@@ -436,8 +445,9 @@ class GameViewModelImpl @Inject constructor(
 	}
 
 	private suspend fun triggerGameLostDialog() {
+		val gameState = activeGameState ?: return
 		withContext(dispatcherProvider.main) {
-			val runesCount = activeGameState.activeGameVariables.runesCount
+			val runesCount = gameState.activeGameVariables.runesCount
 			val message = if (runesCount > 0) {
 				"Runes earned: $runesCount"
 			} else {

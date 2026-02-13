@@ -26,7 +26,7 @@ class UpgradeScreenViewModelImpl @Inject constructor(
 	private val navigationReducer: NavigationReducer,
 	private val dispatcherProvider: DispatcherProvider,
 ): UpgradeScreenViewModel() {
-	private lateinit var currentDeck : Deck
+	private var currentDeck: Deck? = null
 
 	override val state = upgradeScreenReducer.state
 
@@ -87,9 +87,10 @@ class UpgradeScreenViewModelImpl @Inject constructor(
 
 	private suspend fun getUpgradeLetterStates(): List<UpgradeLetterState> {
 		val decksResult = userBusinessMediator.getDecks()
-		currentDeck = decksResult.getOrNull()?.firstOrNull() ?: return emptyList()
+		val deck = decksResult.getOrNull()?.firstOrNull() ?: return emptyList()
+		currentDeck = deck
 
-		return currentDeck.letters.map {
+		return deck.letters.map {
 			upgradeLetterStateMapper.map(
 				UpgradeLetterStateMapper.Param(
 					deckType = DeckType.Default,
@@ -102,7 +103,8 @@ class UpgradeScreenViewModelImpl @Inject constructor(
 
 	private fun onUpgradeLetter(letter: Letter) {
 		viewModelScope.launch(dispatcherProvider.default) {
-			userBusinessMediator.upgradeLetter(deck = currentDeck, letter = letter).fold(
+			val deck = currentDeck ?: return@launch
+			userBusinessMediator.upgradeLetter(deck = deck, letter = letter).fold(
 				onSuccess = {
 					userBusinessMediator.getUser().fold(
 						onSuccess = { user ->

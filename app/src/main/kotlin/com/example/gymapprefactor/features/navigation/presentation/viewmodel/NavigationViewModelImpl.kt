@@ -65,8 +65,12 @@ class NavigationViewModelImpl @Inject constructor(
     }
 
     private fun onGoBack() {
+        if (navigationStack.isEmpty()) {
+            return
+        }
         navigationStack.removeAt(navigationStack.size - 1)
-        sendGoToAction(navigationStack.removeAt(navigationStack.size - 1))
+        val previousPage = navigationStack.lastOrNull() ?: NavigationPage.HomeScreen
+        sendGoToAction(previousPage)
     }
 
     private fun findIndexForPageInStack(page: NavigationPage): Int {

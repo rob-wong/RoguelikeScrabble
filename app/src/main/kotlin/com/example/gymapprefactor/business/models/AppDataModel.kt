@@ -15,19 +15,21 @@ class AppDataModel @Inject constructor(
     private val userStorage: UserStorage,
     private val dispatcherProvider: DispatcherProvider,
 ) {
-    private lateinit var user: User
+    private var user: User? = null
     private val _userFlow = MutableStateFlow<User?>(null)
     val userFlow: StateFlow<User?> = _userFlow.asStateFlow()
 
-    fun getCurrentUser() = user
+    fun getCurrentUser(): User {
+        return user ?: throw IllegalStateException("User not initialized. Call fetchOrCreateUser() first.")
+    }
 
     suspend fun saveUser(savedUser: User): Result<User> {
         return withContext(dispatcherProvider.io) {
             userStorage.saveUser(savedUser).fold(
                 onSuccess = { saved ->
                     user = saved
-                    _userFlow.value = user
-                    Result.success(user)
+                    _userFlow.value = saved
+                    Result.success(saved)
                 },
                 onFailure = { error ->
                     Timber.e(error, "Failed to save user")
@@ -43,9 +45,10 @@ class AppDataModel @Inject constructor(
             
             when {
                 loadResult.isSuccess && loadResult.getOrNull() != null -> {
-                    user = loadResult.getOrNull()!!
-                    _userFlow.value = user
-                    Result.success(user)
+                    val loadedUser = loadResult.getOrNull()!!
+                    user = loadedUser
+                    _userFlow.value = loadedUser
+                    Result.success(loadedUser)
                 }
                 loadResult.isSuccess -> {
                     createDefaultUser()
@@ -74,8 +77,8 @@ class AppDataModel @Inject constructor(
         return userStorage.saveUser(newUser).fold(
             onSuccess = { saved ->
                 user = saved
-                _userFlow.value = user
-                Result.success(user)
+                _userFlow.value = saved
+                Result.success(saved)
             },
             onFailure = { error ->
                 Timber.e(error, "Failed to create default user")
