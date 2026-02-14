@@ -15,18 +15,9 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import com.example.gymapprefactor.app.util.DevicePreviews
 import com.example.gymapprefactor.app.util.DeviceUtil
-import com.example.gymapprefactor.common.components.buttons.presentation.IconButtonState
-import com.example.gymapprefactor.common.components.buttons.presentation.ImageButtonState
 import com.example.gymapprefactor.common.components.buttons.ui.ButtonRouter
-import com.example.gymapprefactor.common.components.presentation.DeckType
-import com.example.gymapprefactor.common.components.presentation.ImageState
-import com.example.gymapprefactor.common.components.presentation.LetterState
-import com.example.gymapprefactor.common.components.presentation.ResourceBarState
-import com.example.gymapprefactor.common.components.presentation.ResourceState
 import com.example.gymapprefactor.common.components.ui.ResourceBarRouter
-import com.example.gymapprefactor.features.upgrade.presentation.models.UpgradeLetterState
 import com.example.gymapprefactor.features.upgrade.presentation.models.UpgradeScreenState
 import com.example.gymapprefactor.features.upgrade.presentation.viewmodel.UpgradeScreenViewModelImpl
 
@@ -39,7 +30,11 @@ fun UpgradeScreen(
 	val state: UpgradeScreenState by viewModel.state.collectAsStateWithLifecycle(UpgradeScreenState.None)
 
 	when(val screenState = state) {
-		is UpgradeScreenState.Content -> UpgradeScreenLayout(screenState, modifier)
+		is UpgradeScreenState.Content -> UpgradeScreenLayout(
+			screenState,
+			onAnimationComplete = { viewModel.onAnimationComplete() },
+			modifier
+		)
 		is UpgradeScreenState.None -> Unit
 	}
 }
@@ -47,6 +42,7 @@ fun UpgradeScreen(
 @Composable
 private fun UpgradeScreenLayout(
 	state: UpgradeScreenState.Content,
+	onAnimationComplete: () -> Unit,
 	modifier: Modifier = Modifier,
 ) {
 	Box(modifier.fillMaxSize()) {
@@ -60,6 +56,21 @@ private fun UpgradeScreenLayout(
 				state.resourceBar
 			)
 			UpgradeScreenContent(state, Modifier.fillMaxSize())
+		}
+		
+		state.selectedLetter?.let { selectedLetter ->
+			LetterSelectionOverlay(
+				state = selectedLetter,
+				modifier = Modifier.fillMaxSize()
+			)
+		}
+		
+		state.upgradeAnimation?.let { animation ->
+			UpgradeAnimationOverlay(
+				payload = animation,
+				onAnimationComplete = onAnimationComplete,
+				modifier = Modifier.fillMaxSize()
+			)
 		}
 	}
 }
@@ -82,64 +93,3 @@ private fun UpgradeScreenContent(
 	}
 }
 
-@Composable
-@DevicePreviews
-private fun UpgradeScreenPreview() {
-	UpgradeScreenLayout(
-		state = UpgradeScreenState.Content(
-			resourceBar = ResourceBarState.Content(
-				runeState = ResourceState.Content(
-					amount = "10",
-					icon = ImageState.RuneIcon
-				),
-				glyphState = ResourceState.None
-			),
-			backButton = IconButtonState.Content(
-				onClick = { },
-				image = ImageState.BackIcon
-			),
-			letters = listOf(
-				UpgradeLetterState.Content(
-					LetterState.Display(DeckType.Default,'a',1),
-					ImageButtonState.Content({ }, ImageState.UpgradeButton,ImageState.None)
-				),
-				UpgradeLetterState.Content(
-					LetterState.Display(DeckType.Default,'b',1),
-					ImageButtonState.Content({ }, ImageState.UpgradeButton,ImageState.None)
-				),
-				UpgradeLetterState.Content(
-					LetterState.Display(DeckType.Default,'c',1),
-					ImageButtonState.Content({ }, ImageState.UpgradeButton,ImageState.None)
-				),
-				UpgradeLetterState.Content(
-					LetterState.Display(DeckType.Default,'d',1),
-					ImageButtonState.Content({ }, ImageState.UpgradeButton,ImageState.None)
-				),
-				UpgradeLetterState.Content(
-					LetterState.Display(DeckType.Default,'e',1),
-					ImageButtonState.Content({ }, ImageState.UpgradeButton,ImageState.None)
-				),
-				UpgradeLetterState.Content(
-					LetterState.Display(DeckType.Default,'f',1),
-					ImageButtonState.Content({ }, ImageState.UpgradeButton,ImageState.None)
-				),
-				UpgradeLetterState.Content(
-					LetterState.Display(DeckType.Default,'g',1),
-					ImageButtonState.Content({ }, ImageState.UpgradeButton,ImageState.None)
-				),
-				UpgradeLetterState.Content(
-					LetterState.Display(DeckType.Default,'h',1),
-					ImageButtonState.Content({ }, ImageState.UpgradeButton,ImageState.None)
-				),
-				UpgradeLetterState.Content(
-					LetterState.Display(DeckType.Default,'i',1),
-					ImageButtonState.Content({ }, ImageState.UpgradeButton,ImageState.None)
-				),
-				UpgradeLetterState.Content(
-					LetterState.Display(DeckType.Default,'j',1),
-					ImageButtonState.Content({ }, ImageState.UpgradeButton,ImageState.None)
-				),
-			),
-		)
-	)
-}

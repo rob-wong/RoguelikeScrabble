@@ -39,15 +39,14 @@ class UserBusinessMediator(
 		return userRepository.getUserFlow()
 	}
 
-	suspend fun upgradeLetter(deck: Deck, letter: Letter): Result<Unit> {
+	suspend fun upgradeLetter(deck: Deck, letter: Letter, cost: Int): Result<Unit> {
 		val userResult = getUser()
-		val validationError = validateUpgradeLetter(userResult, deck, letter)
+		val validationError = validateUpgradeLetter(userResult, deck, letter, cost)
 		if (validationError != null) {
 			return Result.failure(validationError)
 		}
 
 		val user = userResult.getOrNull()!!
-		val cost = 0
 		val upgradedDeck = deck.copy(
 			letters = deck.letters.map {
 				if (it.id == letter.id) letter.copy(level = letter.level + 1) else it
@@ -73,14 +72,15 @@ class UserBusinessMediator(
 	private fun validateUpgradeLetter(
 		userResult: Result<User>,
 		deck: Deck,
-		letter: Letter
+		letter: Letter,
+		cost: Int
 	): UserException? {
 		val user = userResult.getOrNull() ?: return UserException.UserNotFound
 		
 		return when {
 			user is NoneUser -> UserException.UserNotFound
 			!deck.letters.contains(letter) -> UserException.LetterNotFound(letter.id)
-			user.runesCount < 0 -> UserException.InsufficientRunes(0, user.runesCount)
+			user.runesCount < cost -> UserException.InsufficientRunes(cost, user.runesCount)
 			else -> null
 		}
 	}

@@ -9,6 +9,8 @@ sealed class UpgradeScreenState : State {
 		val resourceBar: ResourceBarState,
 		val backButton: ButtonState,
 		val letters: List<UpgradeLetterState>,
+		val selectedLetter: SelectedLetterState?,
+		val upgradeAnimation: UpgradeAnimationPayload?,
 	) : UpgradeScreenState()
 
 	data object None : UpgradeScreenState()
