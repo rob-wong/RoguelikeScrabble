@@ -115,11 +115,12 @@ object GameplayLoopModule {
 	@Provides
 	@Singleton
 	fun provideValidWords(@ApplicationContext context: Context): Set<String> {
-		val input = context.assets.open("words.txt")
-		return input.bufferedReader()
-			.readLines()
-			.map { it.lowercase() }
-			.toSet()
+		return context.assets.open("words.txt").use { input ->
+			input.bufferedReader()
+				.readLines()
+				.map { it.lowercase() }
+				.toSet()
+		}
 	}
 
 	@Provides

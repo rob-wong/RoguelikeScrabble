@@ -14,7 +14,11 @@ class NavigationReducerImpl : NavigationReducer {
         when(action) {
             is NavigationAction.SetCallbacks -> setCallbacks(action)
             is NavigationAction.GoTo -> goToPage(action.navigationPage)
-            is NavigationAction.GoBack -> onBackCallback()
+            is NavigationAction.GoBack -> {
+                if (::onBackCallback.isInitialized) {
+                    onBackCallback()
+                }
+            }
             is NavigationAction.None -> Unit
         }
     }
