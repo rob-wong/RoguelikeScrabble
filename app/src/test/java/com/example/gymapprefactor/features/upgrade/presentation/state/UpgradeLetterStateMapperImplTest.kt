@@ -1,9 +1,9 @@
 package com.example.gymapprefactor.features.upgrade.presentation.state
 
 import com.example.gymapprefactor.business.models.Letter
-import com.example.gymapprefactor.common.components.buttons.presentation.ImageButtonState
 import com.example.gymapprefactor.common.components.presentation.DeckType
 import com.example.gymapprefactor.common.components.presentation.LetterState
+import com.example.gymapprefactor.features.upgrade.domain.UpgradeCostMapperImpl
 import com.example.gymapprefactor.features.upgrade.presentation.models.UpgradeLetterState
 import io.mockk.every
 import io.mockk.mockk
@@ -11,10 +11,14 @@ import io.mockk.spyk
 import io.mockk.verify
 import kotlinx.coroutines.test.runTest
 import org.junit.jupiter.api.Test
+import kotlin.test.assertEquals
+import kotlin.test.assertFalse
 import kotlin.test.assertIs
+import kotlin.test.assertTrue
 
 class UpgradeLetterStateMapperImplTest {
 	private val sut = UpgradeLetterStateMapperImpl()
+	private val upgradeCostMapper = UpgradeCostMapperImpl()
 
 	private val letter = mockk<Letter> {
 		every { letter } returns 'a'
@@ -22,46 +26,64 @@ class UpgradeLetterStateMapperImplTest {
 
 	@Test
 	fun `Given params, when map, then content expected`() = runTest {
-		// Given
 		every { letter.level } returns 3
 
-		// When
 		val result = sut.map(UpgradeLetterStateMapper.Param(
 			deckType = deckType,
 			letter = letter,
-			onUpgrade = onUpgrade
+			runesCount = 10,
+			upgradeCostMapper = upgradeCostMapper,
+			onLetterClick = onLetterClick
 		))
 
-		// Then
 		assertIs<UpgradeLetterState.Content>(result)
-		assertIs<ImageButtonState.Content>(result.buttonState)
 		assertIs<LetterState.Display>(result.letterState)
+		assertEquals(3, result.cost)
+		assertTrue(result.canAfford)
+		assertTrue(result.isClickable)
 
-		val buttonState = result.buttonState as ImageButtonState.Content
-		buttonState.onClick.invoke()
-
-		verify { onUpgrade(letter) }
+		result.onLetterClick(3)
+		verify { onLetterClick(3) }
 	}
 
 	@Test
-	fun `Given max letter, When map, Then none Button state expected`() = runTest {
-		// Given
+	fun `Given max letter, when map, then not clickable expected`() = runTest {
 		every { letter.level } returns 5
 
-		// When
 		val result = sut.map(UpgradeLetterStateMapper.Param(
 			deckType = deckType,
 			letter = letter,
-			onUpgrade = onUpgrade
+			runesCount = 10,
+			upgradeCostMapper = upgradeCostMapper,
+			onLetterClick = onLetterClick
 		))
 
-		// Then
 		assertIs<UpgradeLetterState.Content>(result)
-		assertIs<ImageButtonState.None>(result.buttonState)
+		assertEquals(5, result.cost)
+		assertTrue(result.canAfford)
+		assertFalse(result.isClickable)
+	}
+
+	@Test
+	fun `Given insufficient runes, when map, then not clickable expected`() = runTest {
+		every { letter.level } returns 3
+
+		val result = sut.map(UpgradeLetterStateMapper.Param(
+			deckType = deckType,
+			letter = letter,
+			runesCount = 2,
+			upgradeCostMapper = upgradeCostMapper,
+			onLetterClick = onLetterClick
+		))
+
+		assertIs<UpgradeLetterState.Content>(result)
+		assertEquals(3, result.cost)
+		assertFalse(result.canAfford)
+		assertFalse(result.isClickable)
 	}
 
 	private companion object {
 		val deckType = DeckType.Default
-		val onUpgrade: (Letter) -> Unit = spyk()
+		val onLetterClick: (Int) -> Unit = spyk()
 	}
 }
