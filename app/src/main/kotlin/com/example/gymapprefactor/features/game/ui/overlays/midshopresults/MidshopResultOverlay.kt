@@ -8,6 +8,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import com.example.gymapprefactor.business.models.Letter
 import com.example.gymapprefactor.common.components.buttons.presentation.ButtonState
+import com.example.gymapprefactor.common.components.ui.animations.LetterUpgradeAnimation
 import com.example.gymapprefactor.features.game.presentation.models.midshop.MidshopResultPayload
 
 @Composable
@@ -68,7 +69,7 @@ private fun MidshopResultContent(
 ) {
 	when (result) {
 		is MidshopResultPayload.Upgrade -> {
-			UpgradeResultContent(
+			LetterUpgradeAnimation(
 				originalLetters = result.originalLetters,
 				upgradedLetters = result.upgradedLetters,
 				onAnimationComplete = onAnimationComplete

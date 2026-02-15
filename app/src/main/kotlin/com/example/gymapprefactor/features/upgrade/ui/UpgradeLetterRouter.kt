@@ -1,18 +1,10 @@
 package com.example.gymapprefactor.features.upgrade.ui
 
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.padding
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.ui.unit.dp
-import com.example.gymapprefactor.common.components.buttons.presentation.ImageButtonState
-import com.example.gymapprefactor.common.components.buttons.ui.ButtonRouter
-import com.example.gymapprefactor.common.components.presentation.DeckType
-import com.example.gymapprefactor.common.components.presentation.ImageState
-import com.example.gymapprefactor.common.components.presentation.LetterState
 import com.example.gymapprefactor.common.components.ui.LetterRouter
 import com.example.gymapprefactor.features.upgrade.presentation.models.UpgradeLetterState
 
@@ -33,21 +25,16 @@ private fun UpgradeLetterContent(
 	modifier: Modifier = Modifier
 ) {
 	Column(
-		modifier = modifier,
+		modifier = modifier
+			.then(
+				if (state.isClickable) {
+					Modifier.clickable(onClick = { state.onLetterClick(state.cost) })
+				} else {
+					Modifier
+				}
+			),
 		horizontalAlignment = Alignment.CenterHorizontally
 	) {
 		LetterRouter(state.letterState)
-		ButtonRouter(state.buttonState, Modifier.fillMaxWidth().padding(horizontal = 15.dp))
 	}
-}
-
-@Composable
-@Preview
-private fun UpgradeLetterPreview() {
-	UpgradeLetterRouter(
-		UpgradeLetterState.Content(
-			LetterState.Display(DeckType.Default, 'a', 1),
-			ImageButtonState.Content({ }, ImageState.UpgradeButton, ImageState.None)
-		)
-	)
 }

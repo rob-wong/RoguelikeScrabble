@@ -2,22 +2,23 @@ package com.example.gymapprefactor.features.upgrade.presentation.state
 
 import com.example.gymapprefactor.business.interfaces.Mapper
 import com.example.gymapprefactor.business.models.Letter
-import com.example.gymapprefactor.common.components.buttons.presentation.ButtonState
-import com.example.gymapprefactor.common.components.buttons.presentation.ImageButtonState
 import com.example.gymapprefactor.common.components.presentation.DeckType
-import com.example.gymapprefactor.common.components.presentation.ImageState
 import com.example.gymapprefactor.common.components.presentation.LetterState
+import com.example.gymapprefactor.features.upgrade.domain.UpgradeCostMapper
 import com.example.gymapprefactor.features.upgrade.presentation.models.UpgradeLetterState
+import javax.inject.Inject
 
 interface UpgradeLetterStateMapper : Mapper<UpgradeLetterStateMapper.Param, UpgradeLetterState> {
 	data class Param(
 		val deckType: DeckType,
 		val letter: Letter,
-		val onUpgrade: (Letter) -> Unit,
+		val runesCount: Int,
+		val upgradeCostMapper: UpgradeCostMapper,
+		val onLetterClick: (cost: Int) -> Unit,
 	)
 }
 
-class UpgradeLetterStateMapperImpl : UpgradeLetterStateMapper {
+class UpgradeLetterStateMapperImpl @Inject constructor() : UpgradeLetterStateMapper {
 	override fun map(param: UpgradeLetterStateMapper.Param): UpgradeLetterState {
 		with(param) {
 			val letterState = LetterState.Display(
@@ -25,29 +26,17 @@ class UpgradeLetterStateMapperImpl : UpgradeLetterStateMapper {
 				letter = letter.letter.toUpperCase(),
 				level = letter.level
 			)
-			val buttonState = mapButton(param)
+			val cost = upgradeCostMapper.map(letter.level)
+			val canAfford = runesCount >= cost
+			val isClickable = canAfford && letter.level < UpgradeCostMapper.MAX_LETTER_LEVEL
 
 			return UpgradeLetterState.Content(
 				letterState = letterState,
-				buttonState = buttonState
+				cost = cost,
+				canAfford = canAfford,
+				isClickable = isClickable,
+				onLetterClick = { onLetterClick(cost) }
 			)
 		}
-	}
-
-	private fun mapButton(param: UpgradeLetterStateMapper.Param): ButtonState {
-		with (param) {
-			return if (letter.level < MAX_LETTER_LEVEL) {
-				ImageButtonState.Content(
-					onClick = { onUpgrade(letter) },
-					background = ImageState.UpgradeButton,
-					foreground = ImageState.None
-				)
-			} else {
-				ImageButtonState.None
-			}
-		}
-	}
-	private companion object {
-		const val MAX_LETTER_LEVEL = 5
 	}
 }

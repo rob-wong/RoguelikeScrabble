@@ -1,5 +1,7 @@
 package com.example.gymapprefactor.features.upgrade.presentation.viewmodel
 
+import com.example.gymapprefactor.features.upgrade.domain.UpgradeCostMapper
+import com.example.gymapprefactor.features.upgrade.domain.UpgradeCostMapperImpl
 import com.example.gymapprefactor.features.upgrade.presentation.state.UpgradeLetterStateMapper
 import com.example.gymapprefactor.features.upgrade.presentation.state.UpgradeLetterStateMapperImpl
 import com.example.gymapprefactor.features.upgrade.presentation.state.UpgradeScreenReducer
@@ -20,5 +22,10 @@ object UpgradeScreenModule {
 	@Provides
 	fun provideUpgradeLetterStateMapper(): UpgradeLetterStateMapper {
 		return UpgradeLetterStateMapperImpl()
+	}
+
+	@Provides
+	fun provideUpgradeCostMapper(): UpgradeCostMapper {
+		return UpgradeCostMapperImpl()
 	}
 }
