@@ -4,11 +4,16 @@ import android.content.Context
 import com.example.gymapprefactor.app.util.dispatcher.DispatcherProvider
 import com.example.gymapprefactor.business.errors.StorageException
 import com.example.gymapprefactor.business.models.ActiveGameState
+import com.example.gymapprefactor.business.models.Deck
 import com.example.gymapprefactor.business.models.DefaultDeck
 import com.example.gymapprefactor.business.models.DefaultEffect
 import com.example.gymapprefactor.business.models.DefaultLetter
 import com.example.gymapprefactor.business.models.DefaultUser
+import com.example.gymapprefactor.business.models.Effect
+import com.example.gymapprefactor.business.models.GameState
+import com.example.gymapprefactor.business.models.Letter
 import com.example.gymapprefactor.business.models.NoneGameState
+import com.example.gymapprefactor.business.models.NoneUser
 import com.example.gymapprefactor.business.models.User
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.delay
@@ -41,19 +46,19 @@ class UserStorage @Inject constructor(
 		serializersModule = SerializersModule {
 			polymorphic(User::class) {
 				subclass(DefaultUser::class)
-				subclass(com.example.gymapprefactor.business.models.NoneUser::class)
+				subclass(NoneUser::class)
 			}
-			polymorphic(com.example.gymapprefactor.business.models.GameState::class) {
+			polymorphic(GameState::class) {
 				subclass(ActiveGameState::class)
 				subclass(NoneGameState::class)
 			}
-			polymorphic(com.example.gymapprefactor.business.models.Deck::class) {
+			polymorphic(Deck::class) {
 				subclass(DefaultDeck::class)
 			}
-			polymorphic(com.example.gymapprefactor.business.models.Letter::class) {
+			polymorphic(Letter::class) {
 				subclass(DefaultLetter::class)
 			}
-			polymorphic(com.example.gymapprefactor.business.models.Effect::class) {
+			polymorphic(Effect::class) {
 				subclass(DefaultEffect::class)
 			}
 		}

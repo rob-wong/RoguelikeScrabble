@@ -76,7 +76,7 @@ class CreateGameUseCase @Inject constructor(
 		const val STARTING_ROUND = 1
 		const val STARTING_DISCARDS_USED = 0
 		const val STARTING_MAX_ROUNDS = 3
-		const val STARTING_MAX_DISCARDS = 2
+		const val STARTING_MAX_DISCARDS = 3
 		const val STARTING_HAND_SIZE = 8
 	}
 }
