@@ -44,6 +44,10 @@ class GameplayBusinessMediator(
 		return getGameStateUseCase()
 	}
 
+	suspend fun getActiveGameIfExists(): ActiveGameState? {
+		return getGameState() as? ActiveGameState
+	}
+
 	suspend fun onWordPlayed(list: List<Letter>, game: ActiveGameState): Result<ScoredWordResult> {
 		return playWordUseCase(list, game)
 	}

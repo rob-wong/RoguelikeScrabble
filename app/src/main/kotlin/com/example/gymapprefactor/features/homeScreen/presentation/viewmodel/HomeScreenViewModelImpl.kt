@@ -2,7 +2,11 @@ package com.example.gymapprefactor.features.homeScreen.presentation.viewmodel
 
 import androidx.lifecycle.viewModelScope
 import com.example.gymapprefactor.app.util.dispatcher.DispatcherProvider
+import com.example.gymapprefactor.business.gameplayLoop.domain.GameplayBusinessMediator
+import com.example.gymapprefactor.business.models.ActiveGameState
 import com.example.gymapprefactor.business.user.domain.UserBusinessMediator
+import com.example.gymapprefactor.features.dialogs.presentation.models.DialogAction
+import com.example.gymapprefactor.features.dialogs.presentation.state.DialogReducer
 import com.example.gymapprefactor.features.homeScreen.presentation.models.HomeScreenAction
 import com.example.gymapprefactor.features.homeScreen.presentation.state.HomeScreenReducer
 import com.example.gymapprefactor.features.navigation.presentation.models.NavigationAction
@@ -10,6 +14,7 @@ import com.example.gymapprefactor.features.navigation.presentation.models.Naviga
 import com.example.gymapprefactor.features.navigation.presentation.state.NavigationReducer
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import timber.log.Timber
 import javax.inject.Inject
 
@@ -19,12 +24,15 @@ class HomeScreenViewModelImpl @Inject constructor(
     private val navigationReducer: NavigationReducer,
     private val dispatcherProvider: DispatcherProvider,
     private val userBusinessMediator: UserBusinessMediator,
+    private val gameplayBusinessMediator: GameplayBusinessMediator,
+    private val dialogReducer: DialogReducer,
 ) : HomeScreenViewModel() {
     override val state = homeScreenReducer.state
 
     init {
         startObservingUserUpdates()
         loadInitialUserContent()
+        checkAndShowResumeDialog()
     }
 
     private fun startObservingUserUpdates() {
@@ -72,6 +80,54 @@ class HomeScreenViewModelImpl @Inject constructor(
     private fun navigateToScreen(navigationPage: NavigationPage) {
         viewModelScope.launch(dispatcherProvider.main) {
             navigationReducer.update(NavigationAction.GoTo(navigationPage))
+        }
+    }
+
+    private fun checkAndShowResumeDialog() {
+        viewModelScope.launch(dispatcherProvider.default) {
+            val activeGame = gameplayBusinessMediator.getActiveGameIfExists()
+            if (activeGame != null) {
+                showResumeDialog(activeGame)
+            }
+        }
+    }
+
+    private suspend fun showResumeDialog(activeGame: ActiveGameState) {
+        val earnedRunes = activeGame.activeGameVariables.runesCount - activeGame.activeGameVariables.startingRunesCount
+        val message = if (earnedRunes > 0) {
+            "Runes earned: $earnedRunes"
+        } else {
+            null
+        }
+
+        withContext(dispatcherProvider.main) {
+            dialogReducer.update(
+                DialogAction.TriggerDialog(
+                    onDismiss = { onResumeDialogEnd(activeGame) },
+                    title = "Resume Game?",
+                    message = message,
+                    showDismissButton = true,
+                    confirmState = DialogAction.ConfirmState.Content(
+                        onConfirm = { onResumeDialogContinue() }
+                    )
+                )
+            )
+        }
+    }
+
+    private fun onResumeDialogContinue() {
+        navigateToGame()
+        viewModelScope.launch(dispatcherProvider.main) {
+            dialogReducer.update(DialogAction.ClearDialogs)
+        }
+    }
+
+    private fun onResumeDialogEnd(activeGame: ActiveGameState) {
+        viewModelScope.launch(dispatcherProvider.default) {
+            gameplayBusinessMediator.endGame(activeGame, saveProgression = false)
+            withContext(dispatcherProvider.main) {
+                dialogReducer.update(DialogAction.ClearDialogs)
+            }
         }
     }
 }

@@ -24,7 +24,7 @@ class GameplayRepositoryImpl(
 		if (saveProgression) {
 			dataSource.endGame(game)
 		} else {
-			dataSource.quitGame()
+			dataSource.quitGame(game)
 		}
 	}
 }
@@ -45,9 +45,10 @@ class GameplayDataSource @Inject constructor(
 
 	suspend fun endGame(gameState: ActiveGameState): Result<Unit> {
 		val user = appDataModel.getCurrentUser()
+		val earnedRunes = gameState.activeGameVariables.runesCount - gameState.activeGameVariables.startingRunesCount
 		return appDataModel.saveUser(
 			user.copy(
-				runesCount = user.runesCount + gameState.activeGameVariables.runesCount,
+				runesCount = user.runesCount + earnedRunes,
 				gameState = NoneGameState
 			)
 		).fold(
@@ -56,9 +57,14 @@ class GameplayDataSource @Inject constructor(
 		)
 	}
 
-	suspend fun quitGame(): Result<Unit> {
+	suspend fun quitGame(gameState: ActiveGameState): Result<Unit> {
+		val user = appDataModel.getCurrentUser()
+		val earnedRunes = gameState.activeGameVariables.runesCount - gameState.activeGameVariables.startingRunesCount
 		return appDataModel.saveUser(
-			appDataModel.getCurrentUser().copy(gameState = NoneGameState)
+			user.copy(
+				runesCount = user.runesCount + earnedRunes,
+				gameState = NoneGameState
+			)
 		).fold(
 			onSuccess = { Result.success(Unit) },
 			onFailure = { Result.failure(it) }

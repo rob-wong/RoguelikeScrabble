@@ -68,7 +68,7 @@ class AppDataModel @Inject constructor(
     private suspend fun createDefaultUser(): Result<User> {
         val newUser = DefaultUser(
             username = "Username",
-            runesCount = 100,
+            runesCount = 0,
             decks = listOf(createDefaultDeck()),
             unlockedEffects = listOf(),
 			gameState = NoneGameState

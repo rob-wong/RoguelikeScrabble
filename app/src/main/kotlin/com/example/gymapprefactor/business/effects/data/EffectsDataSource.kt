@@ -1,6 +1,7 @@
 package com.example.gymapprefactor.business.effects.data
 
 import android.content.Context
+import android.util.Log
 import com.example.gymapprefactor.app.util.dispatcher.DispatcherProvider
 import com.example.gymapprefactor.business.effects.templating.domain.EffectDescriptor
 import dagger.hilt.android.qualifiers.ApplicationContext
@@ -8,9 +9,7 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.withContext
 import kotlinx.serialization.json.Json
-import kotlinx.serialization.json.JsonObject
 import kotlinx.serialization.json.jsonObject
-import kotlinx.serialization.json.jsonPrimitive
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -29,26 +28,33 @@ class EffectsDataSource @Inject constructor(
 
 	private fun loadEffectDescriptors(): Map<String, EffectDescriptor> {
 		return try {
-			// Try to load new format first
 			val input = context.assets.open("effect_descriptors.json")
 			val jsonString = input.bufferedReader().use { it.readText() }
 			val jsonObject = json.parseToJsonElement(jsonString).jsonObject
 			
-			return jsonObject.mapValues { (_, value) ->
-				val descriptorObj = value.jsonObject
-				EffectDescriptor(
-					type = descriptorObj["type"]?.jsonPrimitive?.content ?: "fixed_addition",
-					config = descriptorObj["config"]?.jsonObject ?: JsonObject(emptyMap())
-				)
+			val descriptorMap = mutableMapOf<String, EffectDescriptor>()
+
+			jsonObject.forEach { (effectType, typeGroupValue) ->
+				val typeGroup = typeGroupValue.jsonObject
+
+				typeGroup.forEach { (effectName, configValue) ->
+					val config = configValue.jsonObject
+					descriptorMap[effectName] = EffectDescriptor(
+						type = effectType,
+						config = config
+					)
+				}
 			}
+			
+			descriptorMap
 		} catch (e: java.io.FileNotFoundException) {
-			android.util.Log.e("EffectsDataSource", "effect_descriptors.json not found", e)
+			Log.e("EffectsDataSource", "effect_descriptors.json not found", e)
 			emptyMap()
 		} catch (e: java.io.IOException) {
-			android.util.Log.e("EffectsDataSource", "Failed to load effect_descriptors.json", e)
+			Log.e("EffectsDataSource", "Failed to load effect_descriptors.json", e)
 			emptyMap()
 		} catch (e: kotlinx.serialization.SerializationException) {
-			android.util.Log.e("EffectsDataSource", "Failed to parse effect_descriptors.json", e)
+			Log.e("EffectsDataSource", "Failed to parse effect_descriptors.json", e)
 			emptyMap()
 		}
 	}

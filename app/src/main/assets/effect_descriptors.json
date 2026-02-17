@@ -1,402 +1,184 @@
 {
-  "BONUS": {
-    "type": "fixed_addition",
-    "config": {
-      "value": 20
-    }
+  "fixed_addition": {
+    "BONUS": { "value": 20 },
+    "BONUSES": { "value": 20 },
+    "POINTS": { "value": 15 },
+    "QUOTE": { "value": 20 },
+    "QUOTES": { "value": 20 },
+    "SCORE": { "value": 15 },
+    "SCORES": { "value": 20 },
+    "TEN": { "value": 10 },
+    "TENS": { "value": 10 },
+    "TWENTY": { "value": 20 },
+    "TWENTIES": { "value": 20 },
+    "THIRTY": { "value": 30 },
+    "THIRTIES": { "value": 30 },
+    "FORTY": { "value": 40 },
+    "FORTIES": { "value": 40 },
+    "FIFTY": { "value": 50 },
+    "FIFTIES": { "value": 50 },
+    "SIXTY": { "value": 60 },
+    "SIXTIES": { "value": 60 },
+    "SEVENTY": { "value": 70 },
+    "SEVENTIES": { "value": 70 },
+    "EIGHTY": { "value": 80 },
+    "EIGHTIES": { "value": 80 },
+    "NINETY": { "value": 90 },
+    "NINETIES": { "value": 90 },
+    "HUNDRED": { "value": 100 },
+    "HUNDREDS": { "value": 100 },
+    "ACE": { "value": 10 },
+    "ACES": { "value": 10 },
+    "WIN": { "value": 30 },
+    "WINS": { "value": 30 },
+    "WINNER": { "value": 30 },
+    "WINNERS": { "value": 30 },
+    "WINNING": { "value": 30 },
+    "EPIC": { "value": 30 },
+    "EPICS": { "value": 30 },
+    "JACKPOT": { "value": 100 },
+    "JACKPOTS": { "value": 100 },
+    "SPLENDOR": { "value": 50 },
+    "SPLENDORS": { "value": 50 },
+    "BLAST": { "value": 25 },
+    "BLASTS": { "value": 30 },
+    "BLASTED": { "value": 30 },
+    "BLASTING": { "value": 30 },
+    "BURST": { "value": 30 },
+    "BURSTS": { "value": 35 },
+    "BURSTED": { "value": 35 },
+    "BURSTING": { "value": 35 },
+    "FEAT": { "value": 10 },
+    "FEATS": { "value": 10 },
+    "COMET": { "value": 30 },
+    "COMETS": { "value": 30 },
+    "STAR": { "value": 30 },
+    "STARS": { "value": 30 },
+    "DOZEN": { "value": 12 },
+    "DOZENS": { "value": 12 },
+    "FIRE": { "value": 20 },
+    "FIRES": { "value": 20 },
+    "FIERY": { "value": 20 },
+    "FIRED": { "value": 20 },
+    "FIRING": { "value": 20 },
+    "GEM": { "value": 10 },
+    "GEMS": { "value": 10 },
+    "GLORY": { "value": 40 },
+    "GOAL": { "value": 20 },
+    "GOALS": { "value": 20 },
+    "MORE": { "value": 10 },
+    "SOAR": { "value": 10 },
+    "SOARS": { "value": 10 },
+    "SOARED": { "value": 10 },
+    "SOARING": { "value": 10 },
+    "VALUE": { "value": 20 },
+    "VALUED": { "value": 20 },
+    "VALUES": { "value": 20 }
   },
-  "POINTS": {
-    "type": "fixed_addition",
-    "config": {
-      "value": 15
-    }
+  "multiplication": {
+    "DOUBLE": { "multiplier": 2.0 },
+    "DOUBLES": { "multiplier": 2.0 },
+    "TRIPLE": { "multiplier": 3.0 },
+    "TRIPLES": { "multiplier": 3.0 },
+    "QUADRUPLE": { "multiplier": 4.0 },
+    "QUADRUPLES": { "multiplier": 4.0 },
+    "QUINTUPLE": { "multiplier": 5.0 },
+    "QUINTUPLES": { "multiplier": 5.0 },
+    "SEXTUPLE": { "multiplier": 6.0 },
+    "SEXTUPLES": { "multiplier": 6.0 },
+    "SEPTUPLE": { "multiplier": 7.0 },
+    "SEPTUPLES": { "multiplier": 7.0 },
+    "OCTUPLE": { "multiplier": 8.0 },
+    "OCTUPLES": { "multiplier": 8.0 },
+    "NONUPLE": { "multiplier": 9.0 },
+    "NONUPLES": { "multiplier": 9.0 },
+    "DECUPLE": { "multiplier": 10.0 },
+    "DECUPLES": { "multiplier": 10.0 },
+    "UNDECUPLE": { "multiplier": 11.0 },
+    "UNDECUPLES": { "multiplier": 11.0 },
+    "SUPER": { "multiplier": 3.0 },
+    "SUPERS": { "multiplier": 3.0 },
+    "AMPLIFY": { "multiplier": 2.0 },
+    "AMPLIFIES": { "multiplier": 2.5 },
+    "AMPLIFIED": { "multiplier": 2.5 },
+    "AMPLIFYING": { "multiplier": 2.5 },
+    "ENHANCE": { "multiplier": 2.0 },
+    "ENHANCES": { "multiplier": 2.0 },
+    "ENHANCED": { "multiplier": 2.0 },
+    "ENHANCING": { "multiplier": 2.0 },
+    "AUGMENT": { "multiplier": 2.5 },
+    "AUGMENTS": { "multiplier": 2.5 },
+    "GLORIFICATION": { "multiplier": 10.0 },
+    "GLORIFICATIONS": { "multiplier": 10.0 },
+    "GLORIFY": { "multiplier": 2.5 },
+    "GLORIFIES": { "multiplier": 3.0 },
+    "GLORIOUS": { "multiplier": 3.0 },
+    "GLORIOUSLY": { "multiplier": 3.5 },
+    "RALLY": { "multiplier": 3.0 },
+    "RALLIES": { "multiplier": 3.5 },
+    "RALLIED": { "multiplier": 3.5 },
+    "RALLYING": { "multiplier": 3.5 },
+    "RISE": { "multiplier": 2.0 },
+    "RISES": { "multiplier": 2.0 },
+    "RISEN": { "multiplier": 2.0 },
+    "RISING": { "multiplier": 2.0 },
+    "SPARK": { "multiplier": 2.0 },
+    "SPARKS": { "multiplier": 2.0 },
+    "SPARKED": { "multiplier": 2.0 },
+    "SPARKING": { "multiplier": 2.0 },
+    "SPARKLE": { "multiplier": 3.0 },
+    "SPARKLES": { "multiplier": 3.0 },
+    "SPARKLED": { "multiplier": 3.0 },
+    "SPARKLING": { "multiplier": 3.0 },
+    "GAMBLE": { "type": "chance", "minMultiplier": 1.0, "maxMultiplier": 2.0 },
+    "GAMBLES": { "type": "chance", "minMultiplier": 1.0, "maxMultiplier": 2.0 },
+    "GAMBLED": { "type": "chance", "minMultiplier": 1.0, "maxMultiplier": 2.0 },
+    "GAMBLING": { "type": "chance", "minMultiplier": 1.0, "maxMultiplier": 2.0 },
+    "FICKLE": { "type": "chance", "minMultiplier": 0.5, "maxMultiplier": 3.0 },
+    "FICKLES": { "type": "chance", "minMultiplier": 0.5, "maxMultiplier": 3.0 },
+    "RISK": { "type": "chance", "minMultiplier": 0.75, "maxMultiplier": 2.5 },
+    "RISKS": { "type": "chance", "minMultiplier": 0.75, "maxMultiplier": 2.5 },
+    "RISKY": { "type": "chance", "minMultiplier": 0.75, "maxMultiplier": 2.5 },
+    "RISKED": { "type": "chance", "minMultiplier": 0.75, "maxMultiplier": 2.5 },
+    "RISKING": { "type": "chance", "minMultiplier": 0.75, "maxMultiplier": 2.5 },
+    "BET": { "type": "chance", "minMultiplier": 0.9, "maxMultiplier": 1.5 },
+    "BETS": { "type": "chance", "minMultiplier": 0.9, "maxMultiplier": 1.5 },
+    "BETTING": { "type": "chance", "minMultiplier": 0.5, "maxMultiplier": 3.0 },
+    "BETTED": { "type": "chance", "minMultiplier": 0.9, "maxMultiplier": 1.5 },
+    "CHANCE": { "type": "chance", "minMultiplier": 1.0, "maxMultiplier": 2.5 },
+    "CHANCES": { "type": "chance", "minMultiplier": 1.0, "maxMultiplier": 2.5 },
+    "LUCK": { "type": "chance", "minMultiplier": 2.0, "maxMultiplier": 4.0 },
+    "LUCKS": { "type": "chance", "minMultiplier": 2.0, "maxMultiplier": 4.0 },
+    "LUCKY": { "type": "chance", "minMultiplier": 2.0, "maxMultiplier": 4.0 },
+    "LUCKED": { "type": "chance", "minMultiplier": 2.0, "maxMultiplier": 4.0 },
+    "LUCKING": { "type": "chance", "minMultiplier": 2.0, "maxMultiplier": 4.0 }
   },
-  "SCORE": {
-    "type": "fixed_addition",
-    "config": {
-      "value": 15
-    }
-  },
-  "TEN": {
-    "type": "fixed_addition",
-    "config": {
-      "value": 10
-    }
-  },
-  "TWENTY": {
-    "type": "fixed_addition",
-    "config": {
-      "value": 20
-    }
-  },
-  "THIRTY": {
-    "type": "fixed_addition",
-    "config": {
-      "value": 30
-    }
-  },
-  "FORTY": {
-    "type": "fixed_addition",
-    "config": {
-      "value": 40
-    }
-  },
-  "FIFTY": {
-    "type": "fixed_addition",
-    "config": {
-      "value": 50
-    }
-  },
-  "SIXTY": {
-    "type": "fixed_addition",
-    "config": {
-      "value": 60
-    }
-  },
-  "SEVENTY": {
-    "type": "fixed_addition",
-    "config": {
-      "value": 70
-    }
-  },
-  "EIGHTY": {
-    "type": "fixed_addition",
-    "config": {
-      "value": 80
-    }
-  },
-  "NINETY": {
-    "type": "fixed_addition",
-    "config": {
-      "value": 90
-    }
-  },
-  "HUNDRED": {
-    "type": "fixed_addition",
-    "config": {
-      "value": 100
-    }
-  },
-  "DOUBLE": {
-    "type": "multiplication",
-    "config": {
-      "multiplier": 2.0
-    }
-  },
-  "TRIPLE": {
-    "type": "multiplication",
-    "config": {
-      "multiplier": 3.0
-    }
-  },
-  "QUADRUPLE": {
-    "type": "multiplication",
-    "config": {
-      "multiplier": 4.0
-    }
-  },
-  "QUINTUPLE": {
-    "type": "multiplication",
-    "config": {
-      "multiplier": 5.0
-    }
-  },
-  "SEXTUPLE": {
-    "type": "multiplication",
-    "config": {
-      "multiplier": 6.0
-    }
-  },
-  "SEPTUPLE": {
-    "type": "multiplication",
-    "config": {
-      "multiplier": 7.0
-    }
-  },
-  "OCTUPLE": {
-    "type": "multiplication",
-    "config": {
-      "multiplier": 8.0
-    }
-  },
-  "NONUPLE": {
-    "type": "multiplication",
-    "config": {
-      "multiplier": 9.0
-    }
-  },
-  "DECUPLE": {
-    "type": "multiplication",
-    "config": {
-      "multiplier": 10.0
-    }
-  },
-  "UNDECUPLE": {
-    "type": "multiplication",
-    "config": {
-      "multiplier": 11.0
-    }
-  },
-  "ACE": {
-    "type": "fixed_addition",
-    "config": {
-      "value": 10
-    }
-  },
-  "WIN": {
-    "type": "fixed_addition",
-    "config": {
-      "value": 30
-    }
-  },
-  "EPIC": {
-    "type": "fixed_addition",
-    "config": {
-      "value": 30
-    }
-  },
-  "SUPER": {
-    "type": "multiplication",
-    "config": {
-      "multiplier": 3.0
-    }
-  },
-  "JACKPOT": {
-    "type": "fixed_addition",
-    "config": {
-      "value": 100
-    }
-  },
-  "SPLENDOR": {
-    "type": "fixed_addition",
-    "config": {
-      "value": 50
-    }
-  },
-  "AMPLIFY": {
-    "type": "multiplication",
-    "config": {
-      "multiplier": 2.0
-    }
-  },
-  "ENHANCE": {
-    "type": "multiplication",
-    "config": {
-      "multiplier": 2.0
-    }
-  },
-  "AUGMENT": {
-    "type": "multiplication",
-    "config": {
-      "multiplier": 2.5
-    }
-  },
-  "BLAST": {
-    "type": "fixed_addition",
-    "config": {
-      "value": 25
-    }
-  },
-  "BURST": {
-    "type": "fixed_addition",
-    "config": {
-      "value": 30
-    }
-  },
-  "GLYPH": {
-    "type": "monetary",
-    "config": {
-      "type" : "glyph",
-      "value": 1
-    }
-  },
-  "GLYPHS": {
-    "type": "monetary",
-    "config": {
-      "type" : "glyph",
-      "value": 1
-    }
-  },
-  "MONEY": {
-    "type": "monetary",
-    "config": {
-      "type" : "glyph",
-      "value": 1
-    }
-  },
-  "CASH": {
-    "type": "monetary",
-    "config": {
-      "type" : "glyph",
-      "value": 1
-    }
-  },
-  "BUSINESS": {
-    "type": "monetary",
-    "config": {
-      "type" : "glyph",
-      "value": 1
-    }
-  },
-  "INCOME": {
-    "type": "monetary",
-    "config": {
-      "type" : "glyph",
-      "value": 1
-    }
-  },
-  "ECONOMY": {
-    "type": "monetary",
-    "config": {
-      "type" : "glyph",
-      "value": 1
-    }
-  },
-  "BAZAAR": {
-    "type": "monetary",
-    "config": {
-      "type" : "glyph",
-      "value": 1
-    }
-  },
-  "BROKE": {
-    "type": "monetary",
-    "config": {
-      "type" : "glyph",
-      "value": 1
-    }
-  },
-  "WALLET": {
-    "type": "monetary",
-    "config": {
-      "type" : "glyph",
-      "value": 1
-    }
-  },
-  "QUOTE": {
-    "type": "fixed_addition",
-    "config": {
-      "value": 20
-    }
-  },
-  "FEAT": {
-    "type": "fixed_addition",
-    "config": {
-      "value": 10
-    }
-  },
-  "COMET": {
-    "type": "fixed_addition",
-    "config": {
-      "value": 30
-    }
-  },
-  "STAR": {
-    "type": "fixed_addition",
-    "config": {
-      "value": 30
-    }
-  },
-  "DOZEN": {
-    "type": "fixed_addition",
-    "config": {
-      "value": 12
-    }
-  },
-  "FIRE": {
-    "type": "fixed_addition",
-    "config": {
-      "value": 20
-    }
-  },
-  "FIERY": {
-    "type": "fixed_addition",
-    "config": {
-      "value": 20
-    }
-  },
-  "RISE": {
-    "type": "multiplication",
-    "config": {
-      "multiplier": 2.0
-    }
-  },
-  "RISEN": {
-    "type": "multiplication",
-    "config": {
-      "multiplier": 2.0
-    }
-  },
-  "GAMBLE": {
-    "type": "multiplication",
-    "config": {
-      "type": "chance",
-      "minMultiplier": 1.0,
-      "maxMultiplier": 2.0
-    }
-  },
-  "FICKLE": {
-    "type": "multiplication",
-    "config": {
-      "type": "chance",
-      "minMultiplier": 0.5,
-      "maxMultiplier": 3.0
-    }
-  },
-  "RISK": {
-    "type": "multiplication",
-    "config": {
-      "type": "chance",
-      "minMultiplier": 0.75,
-      "maxMultiplier": 2.5
-    }
-  },
-  "RISKY": {
-    "type": "multiplication",
-    "config": {
-      "type": "chance",
-      "minMultiplier": 0.75,
-      "maxMultiplier": 2.5
-    }
-  },
-  "BET": {
-    "type": "multiplication",
-    "config": {
-      "type": "chance",
-      "minMultiplier": 0.9,
-      "maxMultiplier": 1.5
-    }
-  },
-  "BETTING": {
-    "type": "multiplication",
-    "config": {
-      "type": "chance",
-      "minMultiplier": 0.5,
-      "maxMultiplier": 3.0
-    }
-  },
-  "CHANCE": {
-    "type": "multiplication",
-    "config": {
-      "type": "chance",
-      "minMultiplier": 1.0,
-      "maxMultiplier": 2.5
-    }
-  },
-  "LUCK": {
-    "type": "multiplication",
-    "config": {
-      "type": "chance",
-      "minMultiplier": 2.0,
-      "maxMultiplier": 4.0
-    }
-  },
-  "LUCKY": {
-    "type": "multiplication",
-    "config": {
-      "type": "chance",
-      "minMultiplier": 2.0,
-      "maxMultiplier": 4.0
-    }
+  "monetary": {
+    "GLYPH": { "type": "glyph", "value": 1 },
+    "GLYPHS": { "type": "glyph", "value": 1 },
+    "MONEY": { "type": "glyph", "value": 1 },
+    "MONEYS": { "type": "glyph", "value": 1 },
+    "CASH": { "type": "glyph", "value": 1 },
+    "CASHES": { "type": "glyph", "value": 1 },
+    "CASHED": { "type": "glyph", "value": 1 },
+    "CASHING": { "type": "glyph", "value": 1 },
+    "BUSINESS": { "type": "glyph", "value": 1 },
+    "BUSINESSES": { "type": "glyph", "value": 2 },
+    "INCOME": { "type": "glyph", "value": 1 },
+    "INCOMES": { "type": "glyph", "value": 1 },
+    "ECONOMY": { "type": "glyph", "value": 1 },
+    "ECONOMIES": { "type": "glyph", "value": 2 },
+    "BAZAAR": { "type": "glyph", "value": 1 },
+    "BAZAARS": { "type": "glyph", "value": 1 },
+    "BROKE": { "type": "glyph", "value": 1 },
+    "FLEX": { "type": "glyph", "value": 1 },
+    "FLEXES": { "type": "glyph", "value": 1 },
+    "FLEXED": { "type": "glyph", "value": 1 },
+    "FLEXING": { "type": "glyph", "value": 1 },
+    "FUNDS": { "type": "glyph", "value": 1 },
+    "PAID": { "type": "glyph", "value": 1 },
+    "PAYING": { "type": "glyph", "value": 1 },
+    "WALLET": { "type": "glyph", "value": 1 },
+    "WALLETS": { "type": "glyph", "value": 1 }
   }
 }
