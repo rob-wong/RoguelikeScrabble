@@ -36,7 +36,8 @@ class CreateGameUseCase @Inject constructor(
 		val game = ActiveGameState(
 			activeGameVariables = ActiveGameVariables(
 				glyphCount = 0,
-				runesCount = 0,
+				runesCount = user.runesCount,
+				startingRunesCount = user.runesCount,
 				stage = STARTING_STAGE,
 				level = STARTING_LEVEL,
 				maxRounds = STARTING_MAX_ROUNDS,

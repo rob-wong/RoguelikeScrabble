@@ -122,8 +122,11 @@ class GameViewModelImpl @Inject constructor(
 		effectDescriptors: Map<String, EffectDescriptor>
 	): GameScreenAction.StartPlaying {
 		val gameState = activeGameState ?: error("activeGameState not initialized")
+		val startingRunes = gameState.activeGameVariables.startingRunesCount
+		val earnedRunes = gameState.activeGameVariables.runesCount - startingRunes
+		val displayRunesCount = startingRunes + earnedRunes
 		return GameScreenAction.StartPlaying(
-			runesCount = gameState.activeGameVariables.runesCount,
+			runesCount = displayRunesCount,
 			glyphCount = gameState.activeGameVariables.glyphCount,
 			onQuitPressed = ::onQuitPressed,
 			onWordPlayed = ::onWordPlayed,

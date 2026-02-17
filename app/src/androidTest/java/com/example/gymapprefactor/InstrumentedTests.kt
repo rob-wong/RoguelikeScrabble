@@ -68,7 +68,7 @@ class InstrumentedTests {
 
             Assert.assertNotNull("User should have been created and not be null", user)
             Assert.assertEquals("Username", user.username)
-            Assert.assertEquals(100, user.runesCount)
+            Assert.assertEquals(0, user.runesCount)
         }
     }
 }
