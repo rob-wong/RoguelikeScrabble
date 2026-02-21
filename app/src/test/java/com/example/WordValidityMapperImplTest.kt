@@ -1,8 +1,8 @@
 package com.example
 
-import com.example.gymapprefactor.business.gameplayLoop.domain.mappers.WordValidityMapperImpl
-import com.example.gymapprefactor.business.models.DefaultLetter
-import com.example.gymapprefactor.business.models.Letter
+import com.cypherose.business.gameplayLoop.domain.mappers.WordValidityMapperImpl
+import com.cypherose.business.models.DefaultLetter
+import com.cypherose.business.models.Letter
 import kotlinx.coroutines.test.runTest
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.Test

@@ -11,7 +11,7 @@ plugins {
 }
 
 android {
-    namespace = "com.example.gymapprefactor"
+    namespace = "com.cypherose"
     compileSdk = 35
 
     packaging {
@@ -22,13 +22,13 @@ android {
         }
     }
     defaultConfig {
-        applicationId = "com.example.gymapprefactor"
+        applicationId = "com.cypherose"
         minSdk = 24
         targetSdk = 35
         versionCode = 1
         versionName = "1.0"
 
-        testInstrumentationRunner = "com.example.gymapprefactor.HiltTestRunner"
+        testInstrumentationRunner = "com.cypherose.HiltTestRunner"
         vectorDrawables {
             useSupportLibrary = true
         }

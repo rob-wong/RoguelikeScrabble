@@ -1,6 +1,6 @@
 package testextension
 
-import com.example.gymapprefactor.common.components.presentation.TopBarState
+import com.cypherose.common.components.presentation.TopBarState
 import io.mockk.mockk
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
