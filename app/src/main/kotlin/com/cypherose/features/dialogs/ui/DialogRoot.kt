@@ -8,6 +8,8 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.wrapContentSize
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -28,6 +30,7 @@ import com.cypherose.common.components.presentation.ImageState
 import com.cypherose.common.components.ui.ImageRouter
 import com.cypherose.features.dialogs.presentation.models.DialogState
 import com.cypherose.features.dialogs.presentation.viewmodel.DialogViewModelImpl
+import com.cypherose.features.templateengine.ui.ContentRouter
 import com.cypherose.ui.theme.Typography
 
 @Composable
@@ -62,13 +65,20 @@ private fun DialogContent(
 				contentScale = ContentScale.FillWidth
 			)
 			Column(
-				modifier = Modifier.padding(calculateDialogPadding())
+				modifier = Modifier
+					.padding(calculateDialogPadding())
+					.verticalScroll(rememberScrollState())
 			) {
 				DialogTitle(state.title)
 				state.message?.let {
 					Spacer(modifier = Modifier.height(SpacerUtil.spacer_04))
 					DialogMessage(it)
 				}
+				state.customContent.forEach { contentState ->
+					Spacer(modifier = Modifier.height(SpacerUtil.spacer_04))
+					ContentRouter(contentState, Modifier.fillMaxWidth())
+				}
+
 				Spacer(modifier = Modifier.height(SpacerUtil.spacer_20))
 				ButtonRouter(state.confirmState, Modifier.fillMaxWidth())
 				ButtonRouter(state.dismissState, Modifier.fillMaxWidth())
@@ -121,6 +131,7 @@ private fun DialogPreview() {
 			onDismissRequest = { },
 			title = "DIALOG TITLE",
 			message = "Sample message",
+			customContent = emptyList(),
 			confirmState = IconButtonState.Content(
 				onClick = { },
 				image = ImageState.ConfirmIcon
