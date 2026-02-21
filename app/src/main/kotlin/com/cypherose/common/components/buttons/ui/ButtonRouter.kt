@@ -1,0 +1,22 @@
+package com.cypherose.common.components.buttons.ui
+
+import androidx.compose.runtime.Composable
+import androidx.compose.ui.Modifier
+import com.cypherose.common.components.buttons.presentation.IconButtonState
+import com.cypherose.common.components.buttons.presentation.ImageButtonState
+import com.cypherose.common.components.buttons.presentation.ButtonState
+import com.cypherose.common.components.buttons.presentation.FoldingButtonState
+import com.cypherose.common.components.buttons.presentation.RectangleButtonState
+
+@Composable
+fun ButtonRouter(
+    state: ButtonState,
+    modifier: Modifier = Modifier,
+) {
+    when(state) {
+        is FoldingButtonState -> FoldingButtonRouter(state, modifier)
+        is RectangleButtonState -> RectangleButtonRouter(state, modifier)
+        is IconButtonState -> IconButtonRouter(state, modifier)
+        is ImageButtonState -> ImageButtonRouter(state, modifier)
+    }
+}

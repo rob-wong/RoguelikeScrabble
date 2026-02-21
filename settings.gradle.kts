@@ -13,6 +13,6 @@ dependencyResolutionManagement {
     }
 }
 
-rootProject.name = "Gym App Refactor"
+rootProject.name = "Cypherose"
 include(":app")
  
