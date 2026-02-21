@@ -36,6 +36,7 @@ class DialogReducerImpl : DialogReducer {
 			onDismissRequest = action.onDismiss,
 			title = action.title,
 			message = action.message,
+			customContent = action.customContent,
 			confirmState = createConfirmButton(action),
 			dismissState = createDismissButton(action)
 		)

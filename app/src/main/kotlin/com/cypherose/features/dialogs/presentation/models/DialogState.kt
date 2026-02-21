@@ -8,6 +8,7 @@ sealed class DialogState : State {
 		val onDismissRequest: () -> Unit,
 		val title: String,
 		val message: String? = null,
+		val customContent: List<State> = emptyList(),
 		val confirmState: ButtonState,
 		val dismissState: ButtonState,
 	) : DialogState()

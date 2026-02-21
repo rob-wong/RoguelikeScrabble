@@ -1,6 +1,7 @@
 package com.cypherose.features.dialogs.presentation.models
 
 import com.cypherose.business.interfaces.Action
+import com.cypherose.business.interfaces.State
 
 sealed class DialogAction : Action {
 
@@ -12,6 +13,7 @@ sealed class DialogAction : Action {
 		val showDismissButton: Boolean,
 		val title: String,
 		val message: String? = null,
+		val customContent: List<State> = emptyList(),
 		val confirmState: ConfirmState
 	) : DialogAction()
 
