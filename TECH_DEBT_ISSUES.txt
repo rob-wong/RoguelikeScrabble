@@ -26,30 +26,30 @@ IMPACT:
 - Can cause app crashes in production
 
 IMPORTANT LOCATIONS:
-1. app/src/main/kotlin/com/example/gymapprefactor/features/game/presentation/viewmodel/GameViewModelImpl.kt
+1. app/src/main/kotlin/com/cypherose/features/game/presentation/viewmodel/GameViewModelImpl.kt
    - Line 48: private lateinit var activeGameState: ActiveGameState
    - Used in: updateGame() (line 74), onWordPlayed() (line 132), handleScoredWord() (line 156)
    - Initialized in: initGame() (line 68) - but this is async, so race condition possible
 
-2. app/src/main/kotlin/com/example/gymapprefactor/business/models/AppDataModel.kt
+2. app/src/main/kotlin/com/cypherose/business/models/AppDataModel.kt
    - Line 14: private lateinit var user: User
    - Line 16: fun getCurrentUser() = user (no null check)
    - Used throughout codebase via getCurrentUser()
    - Initialized in: fetchOrCreateUser() (line 23) - but this is async
 
-3. app/src/main/kotlin/com/example/gymapprefactor/app/MainActivity.kt
+3. app/src/main/kotlin/com/cypherose/app/MainActivity.kt
    - Lines 30-33: Multiple @Inject lateinit properties
    - These are safe due to Hilt, but pattern is worth noting
 
-4. app/src/main/kotlin/com/example/gymapprefactor/features/upgrade/presentation/viewmodel/UpgradeScreenViewModelImpl.kt
+4. app/src/main/kotlin/com/cypherose/features/upgrade/presentation/viewmodel/UpgradeScreenViewModelImpl.kt
    - Line 31: private lateinit var currentDeck : Deck
    - Check initialization pattern here
 
-5. app/src/main/kotlin/com/example/gymapprefactor/features/dialogs/presentation/state/DialogReducerImpl.kt
+5. app/src/main/kotlin/com/cypherose/features/dialogs/presentation/state/DialogReducerImpl.kt
    - Line 14: private lateinit var defaultDismiss: () -> Unit
    - Check if this is always initialized before use
 
-6. app/src/main/kotlin/com/example/gymapprefactor/features/navigation/presentation/state/NavigationReducerImpl.kt
+6. app/src/main/kotlin/com/cypherose/features/navigation/presentation/state/NavigationReducerImpl.kt
    - Line 11: private lateinit var onBackCallback: () -> Unit
    - Check initialization pattern
 
@@ -78,7 +78,7 @@ IMPACT:
 - Potential security issues if exceptions expose file paths
 
 IMPORTANT LOCATIONS:
-1. app/src/main/kotlin/com/example/gymapprefactor/business/network/SaveUser.kt
+1. app/src/main/kotlin/com/cypherose/business/network/SaveUser.kt
    - saveUser() method (lines 62-70)
      * file.writeText() can throw IOException
      * gson.toJson() can throw JsonException
@@ -92,18 +92,18 @@ IMPORTANT LOCATIONS:
    - Both methods use mutex for thread safety (good), but errors still unhandled
 
 2. Check all call sites of saveUser() and loadUser():
-   - app/src/main/kotlin/com/example/gymapprefactor/business/models/AppDataModel.kt
+   - app/src/main/kotlin/com/cypherose/business/models/AppDataModel.kt
      * saveUser() called at line 19
      * loadUser() called at line 36
    
-   - app/src/main/kotlin/com/example/gymapprefactor/business/gameplayLoop/data/GameplayRepositoryImpl.kt
+   - app/src/main/kotlin/com/cypherose/business/gameplayLoop/data/GameplayRepositoryImpl.kt
      * saveGameState() calls appDataModel.saveUser() at line 40
    
-   - app/src/main/kotlin/com/example/gymapprefactor/business/user/data/UserRepositoryImpl.kt
+   - app/src/main/kotlin/com/cypherose/business/user/data/UserRepositoryImpl.kt
      * saveUser() calls appDataModel.saveUser() at line 29
 
 3. Test file operations:
-   - app/src/androidTest/java/com/example/gymapprefactor/TestEnvironment.kt
+   - app/src/androidTest/java/com/cypherose/TestEnvironment.kt
      * Lines 21-40: Test file operations
      * Check if tests cover error scenarios
 
@@ -136,7 +136,7 @@ IMPACT:
 - Memory leaks in worst case
 
 IMPORTANT LOCATIONS:
-1. app/src/main/kotlin/com/example/gymapprefactor/business/gameplayLoop/di/GameplayLoopModule.kt
+1. app/src/main/kotlin/com/cypherose/business/gameplayLoop/di/GameplayLoopModule.kt
    - Lines 76-84: provideValidWords() function
    - Line 79: context.assets.open("words.txt") - InputStream opened
    - Line 80: input.bufferedReader() - BufferedReader created
@@ -144,7 +144,7 @@ IMPORTANT LOCATIONS:
    - No explicit .use { } block or .close() call
 
 2. Check where validWords is used:
-   - app/src/main/kotlin/com/example/gymapprefactor/business/gameplayLoop/domain/WordValidityMapper.kt
+   - app/src/main/kotlin/com/cypherose/business/gameplayLoop/domain/WordValidityMapper.kt
    - Check if validWords Set is held in memory (it's a @Singleton, so yes)
 
 RECOMMENDATIONS:
@@ -176,7 +176,7 @@ IMPACT:
 - Business logic may proceed with invalid state
 
 IMPORTANT LOCATIONS:
-1. app/src/main/kotlin/com/example/gymapprefactor/business/user/domain/UserBusinessMediator.kt
+1. app/src/main/kotlin/com/cypherose/business/user/domain/UserBusinessMediator.kt
    - getDecks() (lines 14-19)
      * Returns emptyList() on failure - hides the error
      * Should propagate error or at least log it
@@ -197,11 +197,11 @@ IMPORTANT LOCATIONS:
    - Look for onFailure handlers that don't log or propagate
 
 3. Check for silent returns:
-   - app/src/main/kotlin/com/example/gymapprefactor/business/user/domain/UserBusinessMediator.kt
+   - app/src/main/kotlin/com/cypherose/business/user/domain/UserBusinessMediator.kt
      * Multiple early returns without error reporting
 
 4. Check error handling in ViewModels:
-   - app/src/main/kotlin/com/example/gymapprefactor/features/game/presentation/viewmodel/GameViewModelImpl.kt
+   - app/src/main/kotlin/com/cypherose/features/game/presentation/viewmodel/GameViewModelImpl.kt
      * onWordPlayed() uses Result.fold() - check error handling
      * Line 139-141: invalidWordEvent.emit() - good, but check if all errors handled
 
@@ -232,7 +232,7 @@ IMPACT:
 - No way to disable in production builds
 
 IMPORTANT LOCATIONS:
-1. app/src/main/kotlin/com/example/gymapprefactor/features/game/presentation/viewmodel/GameViewModelImpl.kt
+1. app/src/main/kotlin/com/cypherose/features/game/presentation/viewmodel/GameViewModelImpl.kt
    - Line 74: println("GameViewModelImpl.updateGame: gameLost=...")
    - Line 105: println("GameViewModelImpl.updateGame: UI updated...")
    - Line 107: println("GameViewModelImpl.updateGame: Triggering game lost dialog")
@@ -243,10 +243,10 @@ IMPORTANT LOCATIONS:
    - Line 225: println("GameViewModelImpl.triggerGameLostDialog: Updating...")
    - Line 235: println("GameViewModelImpl.triggerGameLostDialog: Dialog reducer updated")
 
-2. app/src/main/kotlin/com/example/gymapprefactor/business/gameplayLoop/domain/PlayWordUseCase.kt
+2. app/src/main/kotlin/com/cypherose/business/gameplayLoop/domain/PlayWordUseCase.kt
    - Line 20: println("played word: ${letters.map { it.letter }}")
 
-3. app/src/main/kotlin/com/example/gymapprefactor/app/MainActivity.kt
+3. app/src/main/kotlin/com/cypherose/app/MainActivity.kt
    - Line 41: println(tempUserStorage.loadUser()?.username) - testing code left in
 
 4. Search entire codebase:
