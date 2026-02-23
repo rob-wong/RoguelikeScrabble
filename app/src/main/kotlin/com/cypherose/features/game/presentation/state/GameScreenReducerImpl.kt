@@ -3,7 +3,6 @@ package com.cypherose.features.game.presentation.state
 import com.cypherose.common.components.buttons.presentation.ButtonState
 import com.cypherose.common.components.buttons.presentation.IconButtonState
 import com.cypherose.common.components.presentation.BagState
-import com.cypherose.features.game.presentation.models.InputButtonState
 import com.cypherose.common.components.presentation.DeckType
 import com.cypherose.common.components.presentation.ImageState
 import com.cypherose.common.components.presentation.LetterState
@@ -12,15 +11,18 @@ import com.cypherose.common.components.presentation.ResourceState
 import com.cypherose.features.game.presentation.models.GameScreenAction
 import com.cypherose.features.game.presentation.models.GameScreenState
 import com.cypherose.features.game.presentation.models.GameScreenState.DraggableLetter
+import com.cypherose.features.game.presentation.models.InputButtonState
 import com.cypherose.features.game.presentation.models.components.DiscardsRemainingState
 import com.cypherose.features.game.presentation.models.components.EnemyHealthBarState
 import com.cypherose.features.game.presentation.models.components.RoundsRemainingState
 import com.cypherose.features.game.presentation.models.midshop.MidshopLetterSelectionState
+import com.cypherose.features.game.presentation.state.PreviouslyPlayedEffectsMapper.Param
 import kotlinx.coroutines.flow.MutableStateFlow
 import javax.inject.Inject
 
 class GameScreenReducerImpl @Inject constructor(
-	private val midshopOptionStateMapper: MidshopOptionStateMapper
+	private val midshopOptionStateMapper: MidshopOptionStateMapper,
+	private val previouslyPlayedEffectsMapper: PreviouslyPlayedEffectsMapper,
 ) : GameScreenReducer {
 	override val state = MutableStateFlow<GameScreenState>(GameScreenState.None)
 
@@ -75,6 +77,14 @@ class GameScreenReducerImpl @Inject constructor(
 					confirmButton = mapExpungeConfirmButton(expungeState)
 				)
 			},
+			previouslyPlayedEffects = previouslyPlayedEffectsMapper.map(
+				Param(
+					effectLabels = action.previouslyPlayedEffects,
+					hand = action.hand
+				)
+			),
+			onPreviouslyPlayedPressed = action.onPreviouslyPlayedPressed,
+			previouslyPlayedOverlayVisible = action.previouslyPlayedOverlayVisible,
 		)
 	}
 

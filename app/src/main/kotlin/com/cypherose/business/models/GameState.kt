@@ -3,6 +3,7 @@ package com.cypherose.business.models
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.Polymorphic
 import kotlinx.serialization.SerialName
+import kotlinx.serialization.Transient
 
 @Polymorphic
 interface GameState
@@ -17,6 +18,12 @@ data class ActiveGameState(
 	val activeGameVariables: ActiveGameVariables,
 	val activeGameValues: ActiveGameValues,
 	val currentRound: CurrentRound,
+	/**
+	 * Effect labels the user has previously played. Excluded from serialization via [Transient]
+	 * because this list lives on [User.previouslyPlayedEffects] and is merged in at runtime when
+	 * fetching game state. Keeping it transient avoids duplicating data in persisted game state.
+	 */
+	@Transient val previouslyPlayedEffectLabels: List<String> = emptyList(),
 ) : GameState
 
 @Serializable

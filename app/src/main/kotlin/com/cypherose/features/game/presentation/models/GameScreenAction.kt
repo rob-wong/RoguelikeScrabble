@@ -38,6 +38,9 @@ sealed class GameScreenAction : Action {
 		val onMidshopConfirmed: (() -> Unit)?,
 		val awakenLetterSelection: MidshopLetterSelectionState?,
 		val expungeLetterSelection: MidshopLetterSelectionState?,
+		val previouslyPlayedEffects: List<String>,
+		val onPreviouslyPlayedPressed: () -> Unit,
+		val previouslyPlayedOverlayVisible: Boolean,
 	) : GameScreenAction()
 
 	data object None : GameScreenAction()

@@ -1,5 +1,6 @@
 package com.cypherose.business.gameplayLoop.domain.usecases
 
+import com.cypherose.business.gameplayLoop.domain.interceptors.DrawHandInterceptor
 import com.cypherose.business.gameplayLoop.domain.mappers.DrawHandMapper
 import com.cypherose.business.models.ActiveGameState
 import com.cypherose.business.models.CurrentRound
@@ -7,7 +8,8 @@ import com.cypherose.business.models.copy
 import javax.inject.Inject
 
 class DrawHandUseCase @Inject constructor(
-	private val drawHandMapper: DrawHandMapper
+	private val drawHandMapper: DrawHandMapper,
+	@JvmSuppressWildcards private val interceptors: List<DrawHandInterceptor>,
 ) {
 	operator fun invoke(
 		drawnAmount: Int,
@@ -20,11 +22,24 @@ class DrawHandUseCase @Inject constructor(
 			level = variables.level
 		)
 
-		val result = drawHandMapper.map(
-			DrawHandMapper.Param(round.mutableDeck, levelStageSeed, drawnAmount)
-		)
+		val initialParam = DrawHandMapper.Param(round.mutableDeck, levelStageSeed, drawnAmount)
+		val param = runRequestInterceptors(initialParam)
+		val result = drawHandMapper.map(param)
+		val gameWithNewHand = applyDrawResultToGameState(game, round, result)
+		return runResponseInterceptors(gameWithNewHand, result)
+	}
 
-		return applyDrawResultToGameState(game, round, result)
+	private fun runRequestInterceptors(initialParam: DrawHandMapper.Param): DrawHandMapper.Param {
+		return interceptors.sortedBy { it.priority }
+			.fold(initialParam) { acc, interceptor -> interceptor.onRequest(acc) }
+	}
+
+	private fun runResponseInterceptors(
+		gameState: ActiveGameState,
+		drawResult: DrawHandMapper.Output
+	): ActiveGameState {
+		return interceptors.sortedByDescending { it.priority }
+			.fold(gameState) { state, interceptor -> interceptor.onResponse(state, drawResult) }
 	}
 	
 	private fun combineSeedWithLevelAndStage(

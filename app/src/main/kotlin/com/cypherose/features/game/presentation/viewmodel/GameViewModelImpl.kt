@@ -72,6 +72,7 @@ class GameViewModelImpl @Inject constructor(
 	private var awakenLetters: List<Letter> = emptyList()
 	private var selectedExpungeLetter: Letter? = null
 	private var expungeLetters: List<Letter> = emptyList()
+	private var previouslyPlayedOverlayVisible = false
 
 	init {
 		initGame()
@@ -207,7 +208,17 @@ class GameViewModelImpl @Inject constructor(
 			} else {
 				null
 			},
+			previouslyPlayedEffects = gameState.previouslyPlayedEffectLabels,
+			onPreviouslyPlayedPressed = ::onPreviouslyPlayedPressed,
+			previouslyPlayedOverlayVisible = previouslyPlayedOverlayVisible,
 		)
+	}
+
+	private fun onPreviouslyPlayedPressed() {
+		viewModelScope.launch(dispatcherProvider.main) {
+			previouslyPlayedOverlayVisible = !previouslyPlayedOverlayVisible
+			updateGame()
+		}
 	}
 
 	private fun onQuitPressed() {

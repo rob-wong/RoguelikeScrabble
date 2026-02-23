@@ -5,8 +5,11 @@ import android.util.Log
 import com.cypherose.app.util.dispatcher.DispatcherProvider
 import com.cypherose.business.effects.templating.domain.EffectDescriptor
 import dagger.hilt.android.qualifiers.ApplicationContext
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.flow.MutableSharedFlow
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.jsonObject
@@ -19,11 +22,32 @@ class EffectsDataSource @Inject constructor(
 	private val dispatcherProvider: DispatcherProvider,
 	private val json: Json
 ) {
-	fun getEffectDescriptors(): Flow<Map<String, EffectDescriptor>> = flow {
-		val descriptorMap = withContext(dispatcherProvider.io) {
-			loadEffectDescriptors()
+	private val scope = CoroutineScope(SupervisorJob() + dispatcherProvider.io)
+	private val _effectDescriptors = MutableSharedFlow<Map<String, EffectDescriptor>>(
+		replay = 1,
+		extraBufferCapacity = 0
+	)
+	
+	@Volatile
+	private var cachedDescriptors: Map<String, EffectDescriptor>? = null
+
+	init {
+		loadAndCacheDescriptors()
+	}
+
+	fun getEffectDescriptors(): Flow<Map<String, EffectDescriptor>> {
+		return _effectDescriptors
+	}
+
+	private fun loadAndCacheDescriptors() {
+		scope.launch {
+			if (cachedDescriptors != null) return@launch
+			val descriptorMap = withContext(dispatcherProvider.io) {
+				loadEffectDescriptors()
+			}
+			cachedDescriptors = descriptorMap
+			_effectDescriptors.emit(descriptorMap)
 		}
-		emit(descriptorMap)
 	}
 
 	private fun loadEffectDescriptors(): Map<String, EffectDescriptor> {

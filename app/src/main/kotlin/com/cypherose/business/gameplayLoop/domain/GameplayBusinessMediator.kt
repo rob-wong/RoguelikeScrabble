@@ -6,6 +6,8 @@ import com.cypherose.business.gameplayLoop.domain.mappers.EffectScoreModificatio
 import com.cypherose.business.gameplayLoop.domain.mappers.GlyphRewardMapper
 import com.cypherose.business.gameplayLoop.domain.mappers.LetterScore
 import com.cypherose.business.gameplayLoop.domain.models.MidshopOptionResult
+import com.cypherose.business.gameplayLoop.domain.interceptors.PlayWordInterceptor
+import com.cypherose.business.gameplayLoop.domain.interceptors.PlayWordRequest
 import com.cypherose.business.gameplayLoop.domain.usecases.AddEffectToActiveGameValuesUseCase
 import com.cypherose.business.gameplayLoop.domain.usecases.AdvanceToNextEnemyUseCase
 import com.cypherose.business.gameplayLoop.domain.usecases.ApplyScoreToEnemyUseCase
@@ -35,6 +37,7 @@ class GameplayBusinessMediator(
 	private val addEffectToActiveGameValuesUseCase: AddEffectToActiveGameValuesUseCase,
 	private val glyphRewardMapper: GlyphRewardMapper,
 	private val midshopBusinessMediator: MidshopBusinessMediator,
+	@JvmSuppressWildcards private val playWordInterceptors: List<PlayWordInterceptor>,
 ) {
 	suspend fun fetchOrCreateActiveGame(): ActiveGameState {
 		return getGameState() as? ActiveGameState ?: createGameUseCase()
@@ -49,7 +52,13 @@ class GameplayBusinessMediator(
 	}
 
 	suspend fun onWordPlayed(list: List<Letter>, game: ActiveGameState): Result<ScoredWordResult> {
-		return playWordUseCase(list, game)
+		val request = runPlayWordRequestInterceptors(PlayWordRequest(list, game))
+		return playWordUseCase(request.letters, request.game)
+	}
+
+	private suspend fun runPlayWordRequestInterceptors(initialRequest: PlayWordRequest): PlayWordRequest {
+		return playWordInterceptors.sortedBy { it.priority }
+			.fold(initialRequest) { acc, interceptor -> interceptor.onRequest(acc) }
 	}
 
 	suspend fun discardHand(game: ActiveGameState): ActiveGameState {
@@ -74,6 +83,21 @@ class GameplayBusinessMediator(
 	}
 
 	suspend fun processScoredWord(
+		result: ScoredWordResult
+	): ProcessedWordResult {
+		val processed = processScoredWordInternal(result)
+		return runPlayWordResponseInterceptors(result, processed)
+	}
+
+	private suspend fun runPlayWordResponseInterceptors(
+		result: ScoredWordResult,
+		processed: ProcessedWordResult
+	): ProcessedWordResult {
+		return playWordInterceptors.sortedByDescending { it.priority }
+			.fold(processed) { acc, interceptor -> interceptor.onResponse(result, acc) }
+	}
+
+	private suspend fun processScoredWordInternal(
 		result: ScoredWordResult
 	): ProcessedWordResult {
 		val rawScore = calculateRawScore(result.letterScores)
