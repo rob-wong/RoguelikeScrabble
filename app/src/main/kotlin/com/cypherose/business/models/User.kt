@@ -9,7 +9,8 @@ interface User {
 	val username: String
 	val runesCount: Int
 	val decks: List<Deck>
-	val unlockedEffects : List<Effect>
+	val unlockedEffects: List<Effect>
+	val previouslyPlayedEffects: List<String>
 	val gameState: GameState
 }
 
@@ -20,6 +21,7 @@ class DefaultUser(
 	override val runesCount: Int,
 	override val decks: List<Deck>,
 	override val unlockedEffects: List<Effect>,
+	override val previouslyPlayedEffects: List<String> = emptyList(),
 	override val gameState: GameState
 ): User
 
@@ -30,6 +32,7 @@ object NoneUser : User {
 	override val runesCount = 0
 	override val decks = listOf<Deck>()
 	override val unlockedEffects = listOf<Effect>()
+	override val previouslyPlayedEffects = listOf<String>()
 	override val gameState = NoneGameState
 }
 
@@ -38,6 +41,7 @@ fun User.copy(
 	runesCount: Int = this.runesCount,
 	decks: List<Deck> = this.decks,
 	unlockedEffects: List<Effect> = this.unlockedEffects,
+	previouslyPlayedEffects: List<String> = this.previouslyPlayedEffects,
 	gameState: GameState = this.gameState
 ): User {
 	return when (this) {
@@ -46,6 +50,7 @@ fun User.copy(
 			runesCount = runesCount,
 			decks = decks,
 			unlockedEffects = unlockedEffects,
+			previouslyPlayedEffects = previouslyPlayedEffects,
 			gameState = gameState
 		)
 

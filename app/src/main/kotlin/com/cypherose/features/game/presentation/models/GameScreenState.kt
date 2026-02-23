@@ -41,6 +41,9 @@ sealed class GameScreenState : State {
 		val onMidshopConfirmed: (() -> Unit)?,
 		val awakenLetterSelection: MidshopLetterSelectionState?,
 		val expungeLetterSelection: MidshopLetterSelectionState?,
+		val previouslyPlayedEffects: List<PreviouslyPlayedEffectItem>,
+		val onPreviouslyPlayedPressed: () -> Unit,
+		val previouslyPlayedOverlayVisible: Boolean,
 	): GameScreenState()
 
 	data object None : GameScreenState()

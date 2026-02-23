@@ -1,12 +1,8 @@
 package com.cypherose.features.game.ui
 
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -16,34 +12,33 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.zIndex
 import com.cypherose.app.util.DevicePreviews
 import com.cypherose.business.models.DefaultEffect
+import com.cypherose.business.models.Letter
+import com.cypherose.common.components.buttons.presentation.ButtonState
 import com.cypherose.common.components.buttons.presentation.IconButtonState
-import com.cypherose.common.components.buttons.ui.ButtonRouter
 import com.cypherose.common.components.presentation.BagState
 import com.cypherose.common.components.presentation.DeckType
 import com.cypherose.common.components.presentation.ImageState
 import com.cypherose.common.components.presentation.LetterState
 import com.cypherose.common.components.presentation.ResourceBarState
 import com.cypherose.common.components.presentation.ResourceState
-import com.cypherose.common.components.ui.ResourceBarRouter
-import com.cypherose.features.game.presentation.models.animation.EffectAnimationPayload
 import com.cypherose.features.game.presentation.models.GameScreenState
 import com.cypherose.features.game.presentation.models.GameScreenState.DraggableLetter
 import com.cypherose.features.game.presentation.models.InputButtonState
-import com.cypherose.features.game.presentation.models.midshop.MidshopResultPayload
-import com.cypherose.features.game.presentation.models.animation.ScoreAnimationPayload
+import com.cypherose.features.game.presentation.models.animation.EffectAnimationPayload
 import com.cypherose.features.game.presentation.models.animation.GlyphAnimationPayload
+import com.cypherose.features.game.presentation.models.animation.ScoreAnimationPayload
 import com.cypherose.features.game.presentation.models.components.DiscardsRemainingState
 import com.cypherose.features.game.presentation.models.components.EnemyHealthBarState
 import com.cypherose.features.game.presentation.models.components.RoundsRemainingState
-import com.cypherose.business.models.Letter
-import com.cypherose.common.components.buttons.presentation.ButtonState
-import com.cypherose.features.game.ui.components.EnemyHealthBarRouter
+import com.cypherose.features.game.presentation.models.midshop.MidshopResultPayload
 import com.cypherose.features.game.ui.overlays.EffectSelectionOverlay
 import com.cypherose.features.game.ui.overlays.GlyphAnimationOverlay
-import com.cypherose.features.game.ui.overlays.midshopresults.MidshopResultOverlay
 import com.cypherose.features.game.ui.overlays.MidshopSelectionOverlay
+import com.cypherose.features.game.ui.overlays.PreviouslyPlayedOverlayRoot
+import com.cypherose.features.game.ui.overlays.midshopresults.MidshopResultOverlay
 import kotlinx.coroutines.delay
 
 @Composable
@@ -78,42 +73,27 @@ fun GamePlayScreen(
 		}
 	}
 	
-	Box(modifier.fillMaxSize()) {
-		Column(horizontalAlignment = Alignment.CenterHorizontally) {
-			ResourceBarRouter(state.resourceBar)
-			EnemyHealthBarRouter(state.enemyHealthBarState)
-			Column(Modifier.fillMaxSize()) {
-				Spacer(Modifier.height(50.dp))
-				LetterBoard(
-					state = state,
-					invalidWordTrigger = invalidWordTrigger,
-					onInvalidWordConsumed = onInvalidWordConsumed,
-					levelAdvanceShakeTrigger = levelAdvanceShakeTrigger,
-					onLevelAdvanceShakeConsumed = onLevelAdvanceShakeConsumed,
-					scoreBreakdown = scoreBreakdown,
-					onScoreAnimationConsumed = onScoreAnimationConsumed,
-					onScoreAnimationComplete = onScoreAnimationComplete,
-					effectAnimations = effectAnimations,
-					onEffectAnimationConsumed = onEffectAnimationConsumed,
-					onEffectAnimationComplete = onEffectAnimationComplete,
-				)
-			}
-		}
-		
-		// Glyph drop animation overlay - centered on screen, above main content
+	Box(modifier = modifier.fillMaxSize()) {
+		MainGameContent(state, invalidWordTrigger, onInvalidWordConsumed, levelAdvanceShakeTrigger,
+			onLevelAdvanceShakeConsumed, scoreBreakdown, onScoreAnimationConsumed,
+			onScoreAnimationComplete, effectAnimations, onEffectAnimationConsumed, onEffectAnimationComplete)
 		GlyphAnimationOverlay(
 			glyphAnimation = glyphAnimation,
 			onGlyphAnimationComplete = onGlyphAnimationComplete,
 			modifier = Modifier
 		)
-		
-		ButtonRouter(
-			state.quitButton, Modifier
+		PreviouslyPlayedOverlayRoot(
+			visible = state.previouslyPlayedOverlayVisible,
+			effects = state.previouslyPlayedEffects,
+			onDismiss = state.onPreviouslyPlayedPressed
+		)
+		TopRightButtons(
+			state = state,
+			modifier = Modifier
+				.zIndex(2f)
 				.padding(top = 10.dp, end = 10.dp)
 				.align(Alignment.TopEnd)
-				.size(40.dp)
 		)
-		
 		GameOverlays(
 			state = state,
 			showOverlay = showOverlay,
@@ -359,6 +339,9 @@ private fun GamePlayScreenPreview() {
 			onMidshopConfirmed = null,
 			awakenLetterSelection = null,
 			expungeLetterSelection = null,
+			previouslyPlayedEffects = emptyList(),
+			onPreviouslyPlayedPressed = { },
+			previouslyPlayedOverlayVisible = false,
 		),
 		invalidWordTrigger = false,
 		onInvalidWordConsumed = { },

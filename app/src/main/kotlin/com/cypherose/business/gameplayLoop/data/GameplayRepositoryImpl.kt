@@ -4,9 +4,12 @@ import com.cypherose.business.gameplayLoop.domain.GameplayRepository
 import com.cypherose.business.interfaces.DataSource
 import com.cypherose.business.models.ActiveGameState
 import com.cypherose.business.models.AppDataModel
+import com.cypherose.business.models.DefaultUser
 import com.cypherose.business.models.GameState
 import com.cypherose.business.models.NoneGameState
 import com.cypherose.business.models.copy
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
 import javax.inject.Inject
 
 class GameplayRepositoryImpl(
@@ -27,13 +30,45 @@ class GameplayRepositoryImpl(
 			dataSource.quitGame(game)
 		}
 	}
+
+	override fun getPreviouslyPlayedEffects(): List<String> {
+		return dataSource.getPreviouslyPlayedEffects()
+	}
+
+	override suspend fun addPreviouslyPlayedEffect(label: String) {
+		dataSource.addPreviouslyPlayedEffect(label)
+	}
 }
 
 class GameplayDataSource @Inject constructor(
 	private val appDataModel: AppDataModel,
 ) : DataSource {
+	private val addEffectMutex = Mutex()
+
 	fun fetchGameState(): GameState {
-		return appDataModel.getCurrentUser().gameState
+		val user = appDataModel.getCurrentUser()
+		return mergePreviouslyPlayedEffects(user.gameState, user.previouslyPlayedEffects)
+	}
+
+	fun getPreviouslyPlayedEffects(): List<String> {
+		return appDataModel.getCurrentUser().previouslyPlayedEffects
+	}
+
+	private fun mergePreviouslyPlayedEffects(gameState: GameState, labels: List<String>): GameState {
+		return if (gameState is ActiveGameState) {
+			gameState.copy(previouslyPlayedEffectLabels = labels)
+		} else {
+			gameState
+		}
+	}
+
+	suspend fun addPreviouslyPlayedEffect(label: String) {
+		addEffectMutex.withLock {
+			val user = appDataModel.getCurrentUser()
+			if (user !is DefaultUser || label in user.previouslyPlayedEffects) return
+			val updatedUser = user.copy(previouslyPlayedEffects = user.previouslyPlayedEffects + label)
+			appDataModel.saveUser(updatedUser).getOrThrow()
+		}
 	}
 
 	suspend fun saveGameState(gameState: GameState): GameState {

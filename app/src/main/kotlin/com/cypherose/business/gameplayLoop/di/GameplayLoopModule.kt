@@ -1,24 +1,6 @@
 package com.cypherose.business.gameplayLoop.di
 
 import android.content.Context
-import com.cypherose.business.gameplayLoop.data.GameplayDataSource
-import com.cypherose.business.gameplayLoop.data.GameplayRepositoryImpl
-import com.cypherose.business.gameplayLoop.domain.usecases.AddEffectToActiveGameValuesUseCase
-import com.cypherose.business.gameplayLoop.domain.usecases.AdvanceToNextEnemyUseCase
-import com.cypherose.business.gameplayLoop.domain.usecases.ApplyScoreToEnemyUseCase
-import com.cypherose.business.gameplayLoop.domain.usecases.CheckGameConditionsUseCase
-import com.cypherose.business.gameplayLoop.domain.usecases.CreateGameUseCase
-import com.cypherose.business.gameplayLoop.domain.mappers.DrawHandMapper
-import com.cypherose.business.gameplayLoop.domain.mappers.DrawHandMapperImpl
-import com.cypherose.business.gameplayLoop.domain.usecases.DrawHandUseCase
-import com.cypherose.business.gameplayLoop.domain.usecases.EndGameUseCase
-import com.cypherose.business.gameplayLoop.domain.GameRules
-import com.cypherose.business.gameplayLoop.domain.GameRulesImpl
-import com.cypherose.business.gameplayLoop.domain.GameplayBusinessMediator
-import com.cypherose.business.gameplayLoop.domain.GameplayRepository
-import com.cypherose.business.gameplayLoop.domain.usecases.GetGameStateUseCase
-import com.cypherose.business.gameplayLoop.domain.usecases.PlayWordUseCase
-import com.cypherose.business.gameplayLoop.domain.usecases.SaveGameStateUseCase
 import com.cypherose.business.effects.data.EffectsDataSource
 import com.cypherose.business.effects.data.EffectsRepositoryImpl
 import com.cypherose.business.effects.domain.EffectsRepository
@@ -27,41 +9,62 @@ import com.cypherose.business.effects.templating.domain.processors.ComboProcesso
 import com.cypherose.business.effects.templating.domain.processors.FixedAdditionProcessor
 import com.cypherose.business.effects.templating.domain.processors.MonetaryProcessor
 import com.cypherose.business.effects.templating.domain.processors.MultiplicationProcessor
-import com.cypherose.business.gameplayLoop.domain.mappers.EffectScoreMapper
-import com.cypherose.business.gameplayLoop.domain.mappers.EffectScoreMapperImpl
-import com.cypherose.business.gameplayLoop.domain.mappers.ScoreWordMapper
-import com.cypherose.business.gameplayLoop.domain.mappers.ScoreWordMapperImpl
-import com.cypherose.business.gameplayLoop.domain.mappers.WordValidityMapper
-import com.cypherose.business.gameplayLoop.domain.mappers.WordValidityMapperImpl
-import com.cypherose.business.gameplayLoop.domain.mappers.EnemyCreationMapper
-import com.cypherose.business.gameplayLoop.domain.mappers.EnemyCreationMapperImpl
-import com.cypherose.business.gameplayLoop.domain.mappers.EnemyLabelMapper
-import com.cypherose.business.gameplayLoop.domain.mappers.EnemyLabelMapperImpl
-import com.cypherose.business.gameplayLoop.domain.mappers.DiscardsRemainingMapper
-import com.cypherose.business.gameplayLoop.domain.mappers.DiscardsRemainingMapperImpl
-import com.cypherose.business.gameplayLoop.domain.mappers.EffectAnimationPayloadMapper
-import com.cypherose.business.gameplayLoop.domain.mappers.EffectAnimationPayloadMapperImpl
-import com.cypherose.business.gameplayLoop.domain.mappers.GlyphRewardMapper
-import com.cypherose.business.gameplayLoop.domain.mappers.GlyphRewardMapperImpl
-import com.cypherose.business.gameplayLoop.domain.mappers.MidshopOptionMapper
-import com.cypherose.business.gameplayLoop.domain.mappers.MidshopOptionMapperImpl
+import com.cypherose.business.gameplayLoop.data.GameplayDataSource
+import com.cypherose.business.gameplayLoop.data.GameplayRepositoryImpl
+import com.cypherose.business.gameplayLoop.domain.GameRules
+import com.cypherose.business.gameplayLoop.domain.GameRulesImpl
+import com.cypherose.business.gameplayLoop.domain.GameplayBusinessMediator
+import com.cypherose.business.gameplayLoop.domain.GameplayRepository
+import com.cypherose.business.gameplayLoop.domain.MidshopBusinessMediator
 import com.cypherose.business.gameplayLoop.domain.handlers.AwakenOptionHandler
 import com.cypherose.business.gameplayLoop.domain.handlers.ExpungeOptionHandler
 import com.cypherose.business.gameplayLoop.domain.handlers.MidshopOptionHandlerRegistry
 import com.cypherose.business.gameplayLoop.domain.handlers.PerfectionismOptionHandler
 import com.cypherose.business.gameplayLoop.domain.handlers.PersistenceOptionHandler
 import com.cypherose.business.gameplayLoop.domain.handlers.UpgradeOptionHandler
+import com.cypherose.business.gameplayLoop.domain.interceptors.RefreshPreviouslyPlayedEffectInterceptor
+import com.cypherose.business.gameplayLoop.domain.interceptors.SavePreviouslyPlayedEffectInterceptor
 import com.cypherose.business.gameplayLoop.domain.mappers.AwakenMidshopOptionMapper
 import com.cypherose.business.gameplayLoop.domain.mappers.AwakenMidshopOptionMapperImpl
+import com.cypherose.business.gameplayLoop.domain.mappers.DiscardsRemainingMapper
+import com.cypherose.business.gameplayLoop.domain.mappers.DiscardsRemainingMapperImpl
+import com.cypherose.business.gameplayLoop.domain.mappers.DrawHandMapper
+import com.cypherose.business.gameplayLoop.domain.mappers.DrawHandMapperImpl
+import com.cypherose.business.gameplayLoop.domain.mappers.EffectAnimationPayloadMapper
+import com.cypherose.business.gameplayLoop.domain.mappers.EffectAnimationPayloadMapperImpl
+import com.cypherose.business.gameplayLoop.domain.mappers.EffectScoreMapper
+import com.cypherose.business.gameplayLoop.domain.mappers.EffectScoreMapperImpl
+import com.cypherose.business.gameplayLoop.domain.mappers.EnemyCreationMapper
+import com.cypherose.business.gameplayLoop.domain.mappers.EnemyCreationMapperImpl
+import com.cypherose.business.gameplayLoop.domain.mappers.EnemyLabelMapper
+import com.cypherose.business.gameplayLoop.domain.mappers.EnemyLabelMapperImpl
 import com.cypherose.business.gameplayLoop.domain.mappers.ExpungeMidshopOptionMapper
 import com.cypherose.business.gameplayLoop.domain.mappers.ExpungeMidshopOptionMapperImpl
+import com.cypherose.business.gameplayLoop.domain.mappers.GlyphRewardMapper
+import com.cypherose.business.gameplayLoop.domain.mappers.GlyphRewardMapperImpl
+import com.cypherose.business.gameplayLoop.domain.mappers.MidshopOptionMapper
+import com.cypherose.business.gameplayLoop.domain.mappers.MidshopOptionMapperImpl
 import com.cypherose.business.gameplayLoop.domain.mappers.PerfectionismMidshopOptionMapper
 import com.cypherose.business.gameplayLoop.domain.mappers.PerfectionismMidshopOptionMapperImpl
 import com.cypherose.business.gameplayLoop.domain.mappers.PersistenceMidshopOptionMapper
 import com.cypherose.business.gameplayLoop.domain.mappers.PersistenceMidshopOptionMapperImpl
+import com.cypherose.business.gameplayLoop.domain.mappers.ScoreWordMapper
+import com.cypherose.business.gameplayLoop.domain.mappers.ScoreWordMapperImpl
 import com.cypherose.business.gameplayLoop.domain.mappers.UpgradeMidshopOptionMapper
 import com.cypherose.business.gameplayLoop.domain.mappers.UpgradeMidshopOptionMapperImpl
-import com.cypherose.business.gameplayLoop.domain.MidshopBusinessMediator
+import com.cypherose.business.gameplayLoop.domain.mappers.WordValidityMapper
+import com.cypherose.business.gameplayLoop.domain.mappers.WordValidityMapperImpl
+import com.cypherose.business.gameplayLoop.domain.usecases.AddEffectToActiveGameValuesUseCase
+import com.cypherose.business.gameplayLoop.domain.usecases.AddPreviouslyPlayedEffectUseCase
+import com.cypherose.business.gameplayLoop.domain.usecases.AdvanceToNextEnemyUseCase
+import com.cypherose.business.gameplayLoop.domain.usecases.ApplyScoreToEnemyUseCase
+import com.cypherose.business.gameplayLoop.domain.usecases.CheckGameConditionsUseCase
+import com.cypherose.business.gameplayLoop.domain.usecases.CreateGameUseCase
+import com.cypherose.business.gameplayLoop.domain.usecases.DrawHandUseCase
+import com.cypherose.business.gameplayLoop.domain.usecases.EndGameUseCase
+import com.cypherose.business.gameplayLoop.domain.usecases.GetGameStateUseCase
+import com.cypherose.business.gameplayLoop.domain.usecases.PlayWordUseCase
+import com.cypherose.business.gameplayLoop.domain.usecases.SaveGameStateUseCase
 import com.cypherose.business.models.AppDataModel
 import com.cypherose.business.user.domain.UserBusinessMediator
 import dagger.Module
@@ -349,10 +352,18 @@ object GameplayLoopModule {
 	}
 
 	@Provides
+	fun provideAddPreviouslyPlayedEffectUseCase(
+		repository: GameplayRepository
+	): AddPreviouslyPlayedEffectUseCase {
+		return AddPreviouslyPlayedEffectUseCase(repository)
+	}
+
+	@Provides
 	fun provideDrawHandUseCase(
-		drawHandMapper: DrawHandMapper
+		drawHandMapper: DrawHandMapper,
+		refreshInterceptor: RefreshPreviouslyPlayedEffectInterceptor
 	): DrawHandUseCase {
-		return DrawHandUseCase(drawHandMapper)
+		return DrawHandUseCase(drawHandMapper, listOf(refreshInterceptor))
 	}
 
 	@Provides
@@ -425,7 +436,8 @@ object GameplayLoopModule {
 		advanceToNextEnemyUseCase: AdvanceToNextEnemyUseCase,
 		addEffectToActiveGameValuesUseCase: AddEffectToActiveGameValuesUseCase,
 		glyphRewardMapper: GlyphRewardMapper,
-		midshopBusinessMediator: MidshopBusinessMediator
+		midshopBusinessMediator: MidshopBusinessMediator,
+		savePreviouslyPlayedEffectInterceptor: SavePreviouslyPlayedEffectInterceptor
 	): GameplayBusinessMediator {
 		return GameplayBusinessMediator(
 			getGameStateUseCase = getGameStateUseCase,
@@ -440,7 +452,8 @@ object GameplayLoopModule {
 			advanceToNextEnemyUseCase = advanceToNextEnemyUseCase,
 			addEffectToActiveGameValuesUseCase = addEffectToActiveGameValuesUseCase,
 			glyphRewardMapper = glyphRewardMapper,
-			midshopBusinessMediator = midshopBusinessMediator
+			midshopBusinessMediator = midshopBusinessMediator,
+			playWordInterceptors = listOf(savePreviouslyPlayedEffectInterceptor)
 		)
 	}
 }

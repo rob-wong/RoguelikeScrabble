@@ -8,4 +8,6 @@ interface GameplayRepository : Repository {
 	suspend fun getGameState(): GameState
 	suspend fun saveGameState(game: GameState): GameState
 	suspend fun endGame(game: ActiveGameState, saveProgression: Boolean)
+	fun getPreviouslyPlayedEffects(): List<String>
+	suspend fun addPreviouslyPlayedEffect(label: String)
 }
