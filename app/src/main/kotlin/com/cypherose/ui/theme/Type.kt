@@ -13,6 +13,16 @@ import com.cypherose.R
 
 // Set of Material typography styles to start with
 val Typography = Typography(
+    bodySmall = TextStyle(
+        fontFamily = FontFamily(Font(R.font.pixel_operator)),
+        color = OffWhite,
+        fontSize = 16.sp,
+        shadow = Shadow(
+            color = Color.Black,
+            offset = Offset(2f, 2f),
+            blurRadius = 2f
+        )
+    ),
     bodyMedium = TextStyle(
         fontFamily = FontFamily(Font(R.font.pixel_operator)),
         color = OffWhite,

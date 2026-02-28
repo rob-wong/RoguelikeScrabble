@@ -36,7 +36,7 @@ class SettingsRootViewModelImpl @Inject constructor(
 			state.value = SettingsRootState.Content(
 				settingsButton = IconButtonState.Content(
 					onClick = ::openSettingsDialog,
-					image = ImageState.SettingsButton
+					image = ImageState.Basic.SettingsButton
 				)
 			)
 		}

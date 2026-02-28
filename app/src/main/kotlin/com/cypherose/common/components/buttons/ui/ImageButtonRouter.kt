@@ -64,7 +64,7 @@ private fun buttonWidthRouter(): Dp {
 fun ImageButtonPreview() {
 	ImageButtonContent(state = ImageButtonState.Content(
 		onClick = { },
-		background = ImageState.RectangularButtonBackground,
-		foreground = ImageState.PlayTextIcon
+		background = ImageState.Basic.RectangularButtonBackground,
+		foreground = ImageState.Basic.PlayTextIcon
 	))
 }

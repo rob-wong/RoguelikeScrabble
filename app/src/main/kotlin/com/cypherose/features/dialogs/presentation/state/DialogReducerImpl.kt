@@ -49,7 +49,7 @@ class DialogReducerImpl : DialogReducer {
 					confirm.onConfirm()
 					action.onDismiss()
 				},
-				image = ImageState.ConfirmIcon
+				image = ImageState.Basic.ConfirmIcon
 			)
 			is ConfirmState.None -> IconButtonState.None
 		}
@@ -59,7 +59,7 @@ class DialogReducerImpl : DialogReducer {
 		return if (action.showDismissButton) {
 			IconButtonState.Content(
 				onClick = action.onDismiss,
-				image = ImageState.DismissIcon
+				image = ImageState.Basic.DismissIcon
 			)
 		} else {
 			IconButtonState.None

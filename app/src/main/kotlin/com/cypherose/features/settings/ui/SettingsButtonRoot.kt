@@ -49,7 +49,7 @@ private fun SettingsRootPreview() {
 		state = SettingsRootState.Content(
 			settingsButton = IconButtonState.Content(
 				onClick = { },
-				image = ImageState.SettingsButton
+				image = ImageState.Basic.SettingsButton
 			)
 		)
 	)

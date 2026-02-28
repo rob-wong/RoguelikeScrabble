@@ -92,11 +92,11 @@ class GameScreenReducerImpl @Inject constructor(
 		return ResourceBarState.Content(
 			runeState = ResourceState.Content(
 				amount = action.runesCount.toString(),
-				icon = ImageState.RuneIcon
+				icon = ImageState.Basic.RuneIcon
 			),
 			glyphState = ResourceState.Content(
 				amount = action.glyphCount.toString(),
-				icon = ImageState.GlyphIcon
+				icon = ImageState.Basic.GlyphIcon
 			),
 		)
 	}
@@ -104,27 +104,27 @@ class GameScreenReducerImpl @Inject constructor(
 	private fun mapQuitButton(action: GameScreenAction.StartPlaying): ButtonState {
 		return IconButtonState.Content(
 			onClick = action.onQuitPressed,
-			image = ImageState.QuitIcon,
+			image = ImageState.Basic.QuitIcon,
 		)
 	}
 
 	private fun mapPlayButton(action: GameScreenAction.StartPlaying): InputButtonState {
 		return InputButtonState.InputWordButton(
 			onClick = action.onWordPlayed,
-			image = ImageState.ConfirmIcon,
+			image = ImageState.Basic.ConfirmIcon,
 		)
 	}
 
 	private fun mapDiscardButton(action: GameScreenAction.StartPlaying): ButtonState {
 		return IconButtonState.Content(
 			onClick = action.onDiscardPressed,
-			image = ImageState.DiscardIcon,
+			image = ImageState.Basic.DiscardIcon,
 		)
 	}
 
 	private fun mapBag(action: GameScreenAction.StartPlaying): BagState {
 		return BagState.Content(
-			image = ImageState.BasicBagIcon, // mapper when a bag exists
+			image = ImageState.Basic.BasicBagIcon, // mapper when a bag exists
 			currentLetters = action.currentLettersInDeck,
 			maxLetters = action.maxLettersInDeck
 		)
@@ -132,7 +132,7 @@ class GameScreenReducerImpl @Inject constructor(
 
 	private fun mapRoundsRemaining(action: GameScreenAction.StartPlaying): RoundsRemainingState {
 		return RoundsRemainingState.Content(
-			image = ImageState.PlaysLeftIcon,
+			image = ImageState.Basic.PlaysLeftIcon,
 			currentRound = action.currentRound,
 			maxRounds = action.maxRounds
 		)
@@ -140,7 +140,7 @@ class GameScreenReducerImpl @Inject constructor(
 
 	private fun mapDiscardsRemaining(action: GameScreenAction.StartPlaying): DiscardsRemainingState {
 		return DiscardsRemainingState.Content(
-			image = ImageState.DiscardsLeftIcon,
+			image = ImageState.Basic.DiscardsLeftIcon,
 			remaining = action.discardsRemaining
 		)
 	}
@@ -157,7 +157,7 @@ class GameScreenReducerImpl @Inject constructor(
 		return if (action.needsMidshopSelection && action.selectedMidshopOption != null) {
 			IconButtonState.Content(
 				onClick = action.onMidshopConfirmed ?: {},
-				image = ImageState.ConfirmIcon
+				image = ImageState.Basic.ConfirmIcon
 			)
 		} else {
 			IconButtonState.None
@@ -168,7 +168,7 @@ class GameScreenReducerImpl @Inject constructor(
 		return if (awakenState.needsSelection && awakenState.selectedLetter != null) {
 			IconButtonState.Content(
 				onClick = awakenState.onConfirmed ?: {},
-				image = ImageState.ConfirmIcon
+				image = ImageState.Basic.ConfirmIcon
 			)
 		} else {
 			IconButtonState.None
@@ -179,7 +179,7 @@ class GameScreenReducerImpl @Inject constructor(
 		return if (expungeState.needsSelection && expungeState.selectedLetter != null) {
 			IconButtonState.Content(
 				onClick = expungeState.onConfirmed ?: {},
-				image = ImageState.ConfirmIcon
+				image = ImageState.Basic.ConfirmIcon
 			)
 		} else {
 			IconButtonState.None

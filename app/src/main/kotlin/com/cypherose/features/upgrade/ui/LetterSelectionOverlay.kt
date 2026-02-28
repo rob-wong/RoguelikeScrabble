@@ -62,7 +62,7 @@ fun LetterSelectionOverlay(
 					useGlow = false
 				)
 				ImageRouter(
-					state = ImageState.RuneIcon,
+					state = ImageState.Basic.RuneIcon,
 					modifier = Modifier
 						.padding(start = 16.dp)
 						.size(48.dp)
@@ -81,7 +81,7 @@ fun LetterSelectionOverlay(
 				state = if (state.canAfford) {
 					ImageButtonState.Content(
 						onClick = state.onUpgrade,
-						background = ImageState.UpgradeButton,
+						background = ImageState.Basic.UpgradeButton,
 						foreground = ImageState.None
 					)
 				} else {

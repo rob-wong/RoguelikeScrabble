@@ -223,7 +223,7 @@ private fun renderEffectModifier(
 					useGlow = false
 				)
 				ImageRouter(
-					state = ImageState.GlyphIcon,
+					state = ImageState.Basic.GlyphIcon,
 					modifier = Modifier.padding(start = 4.dp).size(20.dp)
 				)
 			}

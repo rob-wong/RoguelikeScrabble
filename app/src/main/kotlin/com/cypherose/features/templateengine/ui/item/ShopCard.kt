@@ -45,9 +45,9 @@ private fun ShopCardContent(
 // eventually there will be images from backend and use coil 
 private fun getShopCardBackgroundImage(product: ProductContent?): ImageState {
 	return when (product?.type?.lowercase()) {
-		"rune" -> ImageState.RuneShopCard
-		"glyph" -> ImageState.GlyphShopCard
-		"deck" -> ImageState.CrateShopCard
-		else -> ImageState.CrateShopCard // Default to crate if product type is unknown
+		"rune" -> ImageState.Basic.RuneShopCard
+		"glyph" -> ImageState.Basic.GlyphShopCard
+		"deck" -> ImageState.Basic.CrateShopCard
+		else -> ImageState.Basic.CrateShopCard // Default to crate if product type is unknown
 	}
 }

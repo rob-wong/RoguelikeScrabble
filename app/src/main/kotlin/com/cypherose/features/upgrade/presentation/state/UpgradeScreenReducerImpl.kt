@@ -42,7 +42,7 @@ class UpgradeScreenReducerImpl : UpgradeScreenReducer {
 			resourceBar = ResourceBarState.Content(
 				runeState = ResourceState.Content(
 					amount = action.runesCount.toString(),
-					icon = ImageState.RuneIcon
+					icon = ImageState.Basic.RuneIcon
 				),
 				glyphState = ResourceState.None
 			),
@@ -91,7 +91,7 @@ class UpgradeScreenReducerImpl : UpgradeScreenReducer {
 	private fun mapBackButton(action: UpgradeScreenAction.SetContent): ButtonState {
 		return IconButtonState.Content(
 			onClick = action.onBackPressed,
-			image = ImageState.BackIcon
+			image = ImageState.Basic.BackIcon
 		)
 	}
 }
