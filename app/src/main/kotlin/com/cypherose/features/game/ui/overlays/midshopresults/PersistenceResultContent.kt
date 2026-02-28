@@ -64,7 +64,7 @@ internal fun PersistenceResultContent(
 				horizontalAlignment = Alignment.CenterHorizontally
 			) {
 				ImageRouter(
-					state = ImageState.PlaysLeftIcon,
+					state = ImageState.Basic.PlaysLeftIcon,
 					modifier = Modifier.width(70.dp)
 				)
 				OutlinedText(

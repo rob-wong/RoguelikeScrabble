@@ -39,12 +39,12 @@ internal fun GlyphDropAnimation(
 			) {
 				CurrencyDropAnimationRow(
 					amount = glyphAnimation.glyphAmount,
-					icon = ImageState.GlyphIcon,
+					icon = ImageState.Basic.GlyphIcon,
 					modifier = Modifier.offset(x = glyphHorizontalOffset.dp)
 				)
 				CurrencyDropAnimationRow(
 					amount = glyphAnimation.runeAmount,
-					icon = ImageState.RuneIcon,
+					icon = ImageState.Basic.RuneIcon,
 					modifier = Modifier.offset(x = runeHorizontalOffset.dp)
 				)
 			}
@@ -52,14 +52,14 @@ internal fun GlyphDropAnimation(
 			if (glyphAnimation.glyphAmount > 0) {
 				CurrencyDropAnimationRow(
 					amount = glyphAnimation.glyphAmount,
-					icon = ImageState.GlyphIcon,
+					icon = ImageState.Basic.GlyphIcon,
 					modifier = Modifier.offset(x = glyphHorizontalOffset.dp)
 				)
 			}
 			if (glyphAnimation.runeAmount > 0) {
 				CurrencyDropAnimationRow(
 					amount = glyphAnimation.runeAmount,
-					icon = ImageState.RuneIcon,
+					icon = ImageState.Basic.RuneIcon,
 					modifier = Modifier.offset(x = runeHorizontalOffset.dp)
 				)
 			}

@@ -246,14 +246,14 @@ private fun GamePlayScreenPreview() {
 			resourceBar = ResourceBarState.Content(
 				runeState = ResourceState.Content(
 					amount = "30",
-					icon = ImageState.RuneIcon
+					icon = ImageState.Basic.RuneIcon
 				),
 				glyphState = ResourceState.Content(
 					amount = "20",
-					icon = ImageState.GlyphIcon
+					icon = ImageState.Basic.GlyphIcon
 				),
 			),
-			quitButton = IconButtonState.Content({ }, ImageState.QuitIcon),
+			quitButton = IconButtonState.Content({ }, ImageState.Basic.QuitIcon),
 			letters = listOf(
 				DraggableLetter(
 					"",
@@ -294,24 +294,24 @@ private fun GamePlayScreenPreview() {
 			),
 			playButton = InputButtonState.InputWordButton(
 				onClick = { _ -> },
-				image = ImageState.ConfirmIcon
+				image = ImageState.Basic.ConfirmIcon
 			),
 			discardButton = IconButtonState.Content(
 				onClick = { },
-				image = ImageState.DiscardIcon
+				image = ImageState.Basic.DiscardIcon
 			),
 			bag = BagState.Content(
-				image = ImageState.BasicBagIcon,
+				image = ImageState.Basic.BasicBagIcon,
 				currentLetters = 10,
 				maxLetters = 20
 			),
 			roundsRemainingState = RoundsRemainingState.Content(
-				image = ImageState.PlaysLeftIcon,
+				image = ImageState.Basic.PlaysLeftIcon,
 				currentRound = 5,
 				maxRounds = 10
 			),
 			discardsRemainingState = DiscardsRemainingState.Content(
-				image = ImageState.DiscardsLeftIcon,
+				image = ImageState.Basic.DiscardsLeftIcon,
 				remaining = 3
 			),
 			enemyHealthBarState = EnemyHealthBarState.Content(

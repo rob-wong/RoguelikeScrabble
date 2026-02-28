@@ -3,14 +3,10 @@ package com.cypherose.common.components.ui
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.widthIn
-import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -19,6 +15,7 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import com.cypherose.app.util.DevicePreviews
 import com.cypherose.app.util.DeviceUtil
 import com.cypherose.common.components.presentation.ImageState
 import com.cypherose.common.components.presentation.ResourceBarState
@@ -48,28 +45,35 @@ private fun ResourceBarLayout(
 	}
 }
 
+// Height multiplier for 9-patch resource bar - adjust this value to change height
+private const val RESOURCE_BAR_HEIGHT_MULTIPLIER = 2f // Increase to make taller, decrease to make shorter
+
 @Composable
 private fun ResourceBarContent(
 	state: ResourceBarState.Content,
 	modifier: Modifier = Modifier,
 ) {
 	Box(
-		modifier = modifier.wrapContentSize(),
+		modifier = modifier,
 		contentAlignment = Alignment.Center
 	) {
 		ImageRouter(
-			state = ImageState.ResourceBarBackground,
-			contentScale = ContentScale.Fit
+			state = ImageState.NinePatch.ResourceBarBackground,
+			modifier = Modifier.fillMaxWidth(),
+			contentScale = ContentScale.FillWidth,
+			heightMultiplier = RESOURCE_BAR_HEIGHT_MULTIPLIER
 		)
 
 		Column(
-			Modifier.height(IntrinsicSize.Max),
-			verticalArrangement = Arrangement.Top,
+			modifier = Modifier.fillMaxWidth(),
+			horizontalAlignment = Alignment.CenterHorizontally,
+			verticalArrangement = Arrangement.Center,
 		) {
-			Spacer(Modifier.padding(top = 10.dp))
-			Row(Modifier) {
+			Row(
+				horizontalArrangement = Arrangement.spacedBy(20.dp),
+				verticalAlignment = Alignment.CenterVertically,
+			) {
 				ResourceStateRouter(state.runeState, Modifier)
-				Spacer(Modifier.padding(start = 20.dp))
 				ResourceStateRouter(state.glyphState, Modifier)
 			}
 		}
@@ -119,16 +123,17 @@ private fun resourceBarMaxWidthRouter(): Dp {
 
 @Composable
 @Preview
+@DevicePreviews
 private fun ResourceBarPreview() {
 	ResourceBarLayout(
 		ResourceBarState.Content(
 			runeState = ResourceState.Content(
 				amount = "40",
-				icon = ImageState.RuneIcon,
+				icon = ImageState.Basic.RuneIcon,
 			),
 			glyphState = ResourceState.Content(
 				amount = "0",
-				icon = ImageState.GlyphIcon,
+				icon = ImageState.Basic.GlyphIcon,
 			),
 		)
 	)

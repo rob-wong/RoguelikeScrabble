@@ -35,7 +35,7 @@ class HomeScreenReducerImpl : HomeScreenReducer {
         return ResourceBarState.Content(
 	        runeState = ResourceState.Content(
                 amount = action.runesCount.toString(),
-                icon = ImageState.RuneIcon
+                icon = ImageState.Basic.RuneIcon
             ),
 	        glyphState = ResourceState.None
         )
@@ -44,22 +44,22 @@ class HomeScreenReducerImpl : HomeScreenReducer {
     private fun mapShopButton(action: HomeScreenAction.SetContent): ButtonState {
         return IconButtonState.Content(
 	        onClick = action.navigateToShop,
-	        image = ImageState.ShopIcon,
+	        image = ImageState.Basic.ShopIcon,
         )
     }
 
     private fun mapUpgradeButton(action: HomeScreenAction.SetContent): ButtonState {
         return IconButtonState.Content(
             onClick = action.navigateToUpgrade,
-            image = ImageState.UpgradeIcon
+            image = ImageState.Basic.UpgradeIcon
         )
     }
 
     private fun mapPlayButton(action: HomeScreenAction.SetContent): ButtonState {
         return ImageButtonState.Content(
 	        onClick = action.navigateToGame,
-	        background = ImageState.RectangularButtonBackground,
-	        foreground = ImageState.PlayTextIcon,
+	        background = ImageState.Basic.RectangularButtonBackground,
+	        foreground = ImageState.Basic.PlayTextIcon,
         )
     }
 }

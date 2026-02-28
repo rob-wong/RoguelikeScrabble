@@ -8,7 +8,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import com.cypherose.app.util.DevicePreviews
 import com.cypherose.common.components.buttons.presentation.IconButtonState
-import com.cypherose.common.components.presentation.ImageState.SettingsButton
+import com.cypherose.common.components.presentation.ImageState
 import com.cypherose.common.components.ui.ImageRouter
 
 
@@ -41,5 +41,5 @@ private fun IconButton(
 @Composable
 @DevicePreviews
 private fun IconButtonPreview() {
-	IconButtonRouter(IconButtonState.Content(onClick = { }, image = SettingsButton))
+	IconButtonRouter(IconButtonState.Content(onClick = { }, image = ImageState.Basic.SettingsButton))
 }

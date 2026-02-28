@@ -14,22 +14,22 @@ class HomeScreenProvider : PreviewParameterProvider<HomeScreenState.Content> {
 			resourceBar = ResourceBarState.Content(
 				runeState = ResourceState.Content(
 					amount = "30",
-					icon = ImageState.RuneIcon
+					icon = ImageState.Basic.RuneIcon
 				),
 				glyphState = ResourceState.None
 			),
 			shopButton = IconButtonState.Content(
 				onClick = { },
-				image = ImageState.ShopIcon,
+				image = ImageState.Basic.ShopIcon,
 			),
 			upgradeButton = IconButtonState.Content(
 				onClick = { },
-				image = ImageState.UpgradeIcon,
+				image = ImageState.Basic.UpgradeIcon,
 			),
 			playButton = ImageButtonState.Content(
 				onClick = { },
-				background = ImageState.RectangularButtonBackground,
-				foreground = ImageState.PlayTextIcon,
+				background = ImageState.Basic.RectangularButtonBackground,
+				foreground = ImageState.Basic.PlayTextIcon,
 			)
 		)
 	)

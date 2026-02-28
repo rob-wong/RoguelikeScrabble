@@ -48,7 +48,7 @@ fun ComingSoonOverlay(
 				)
 		)
 		ImageRouter(
-			state = ImageState.ComingSoon,
+			state = ImageState.Basic.ComingSoon,
 			modifier = Modifier.align(Alignment.Center)
 		)
 	}

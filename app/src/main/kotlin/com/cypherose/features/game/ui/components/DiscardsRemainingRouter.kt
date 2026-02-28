@@ -50,7 +50,7 @@ private fun DiscardsRemainingContent(
 private fun DiscardsRemainingRouterPreview() {
     DiscardsRemainingRouter(
         state = DiscardsRemainingState.Content(
-            image = ImageState.DiscardsLeftIcon,
+            image = ImageState.Basic.DiscardsLeftIcon,
             remaining = 1000
         )
     )

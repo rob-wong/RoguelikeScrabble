@@ -59,7 +59,7 @@ private fun DialogContent(
 			contentAlignment = Alignment.TopCenter
 		) {
 			ImageRouter(
-				state = ImageState.DialogBackground,
+				state = ImageState.Basic.DialogBackground,
 				modifier = Modifier.width(calculateDialogWidth()),
 				isLandscape = DeviceUtil.isLandscape,
 				contentScale = ContentScale.FillWidth
@@ -134,11 +134,11 @@ private fun DialogPreview() {
 			customContent = emptyList(),
 			confirmState = IconButtonState.Content(
 				onClick = { },
-				image = ImageState.ConfirmIcon
+				image = ImageState.Basic.ConfirmIcon
 			),
 			dismissState = IconButtonState.Content(
 				onClick = { },
-				image = ImageState.DismissIcon
+				image = ImageState.Basic.DismissIcon
 			),
 		))
 }

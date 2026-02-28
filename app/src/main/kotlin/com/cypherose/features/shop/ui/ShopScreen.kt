@@ -86,13 +86,13 @@ private fun ShopScreenPreview() {
 			resourceBar = ResourceBarState.Content(
 				runeState = ResourceState.Content(
 					amount = "30",
-					icon = ImageState.RuneIcon
+					icon = ImageState.Basic.RuneIcon
 				),
 				glyphState = ResourceState.None
 			),
 			backButton = IconButtonState.Content(
 				onClick = { },
-				image = ImageState.BackIcon
+				image = ImageState.Basic.BackIcon
 			),
 			templateStates = emptyList()
 		)

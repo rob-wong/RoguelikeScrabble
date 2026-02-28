@@ -21,11 +21,11 @@ class MidshopOptionStateMapperImpl : MidshopOptionStateMapper {
 
 	private fun mapImageState(type: MidshopOptionType): ImageState {
 		return when (type) {
-			is MidshopOptionType.Upgrade -> ImageState.UpgradeMidshopCard
-			is MidshopOptionType.Awaken -> ImageState.AwakenMidshopCard
-			is MidshopOptionType.Expunge -> ImageState.ExpungeMidshopCard
-			is MidshopOptionType.Perfectionism -> ImageState.PerfectionismMidshopCard
-			is MidshopOptionType.Persistence -> ImageState.PersistenceMidshopCard
+			is MidshopOptionType.Upgrade -> ImageState.Basic.UpgradeMidshopCard
+			is MidshopOptionType.Awaken -> ImageState.Basic.AwakenMidshopCard
+			is MidshopOptionType.Expunge -> ImageState.Basic.ExpungeMidshopCard
+			is MidshopOptionType.Perfectionism -> ImageState.Basic.PerfectionismMidshopCard
+			is MidshopOptionType.Persistence -> ImageState.Basic.PersistenceMidshopCard
 		}
 	}
 

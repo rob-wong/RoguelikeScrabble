@@ -64,7 +64,7 @@ internal fun PerfectionismResultContent(
 				horizontalAlignment = Alignment.CenterHorizontally
 			) {
 				ImageRouter(
-					state = ImageState.DiscardsLeftIcon,
+					state = ImageState.Basic.DiscardsLeftIcon,
 					modifier = Modifier.width(70.dp)
 				)
 				OutlinedText(

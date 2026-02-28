@@ -57,7 +57,7 @@ private fun textRouter(state: RoundsRemainingState.Content): String {
 private fun RoundsRemainingRouterPreview() {
     RoundsRemainingRouter(
         state = RoundsRemainingState.Content(
-            image = ImageState.PlaysLeftIcon,
+            image = ImageState.Basic.PlaysLeftIcon,
             currentRound = 500,
             maxRounds = 1000
         )

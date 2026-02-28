@@ -45,7 +45,7 @@ private fun LetterBackgroundRouter(
 	modifier: Modifier = Modifier,
 ) {
 	when (type) {
-		DeckType.Default -> ImageRouter(ImageState.DefaultLetterBackground, modifier)
+		DeckType.Default -> ImageRouter(ImageState.Basic.DefaultLetterBackground, modifier)
 	}
 }
 

@@ -54,7 +54,7 @@ private fun textRouter(state: BagState.Content): String {
 private fun BagPreview() {
 	BagRouter(
 		BagState.Content(
-			image = ImageState.BasicBagIcon,
+			image = ImageState.Basic.BasicBagIcon,
 			currentLetters = 5000,
 			maxLetters = 1000
 		)
