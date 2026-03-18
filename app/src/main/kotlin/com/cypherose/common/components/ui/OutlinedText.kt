@@ -98,7 +98,15 @@ private fun Particles(
 	sparkleCount: Int = 5
 ) {
 	val transition = rememberInfiniteTransition(label = "")
-	val offsets = remember { List(sparkleCount) { Random.nextFloat() to Random.nextFloat() } }
+	val offsets = remember(sparkleCount) {
+		List(sparkleCount) { Random.nextFloat() to Random.nextFloat() }
+	}
+	val alphaMultipliers = remember(sparkleCount) {
+		List(sparkleCount) { Random.nextFloat() }
+	}
+	val radii = remember(sparkleCount) {
+		List(sparkleCount) { Random.nextFloat() * 4f + 1f }
+	}
 
 	val alphaAnim = transition.animateFloat(
 		initialValue = 0.2f,
@@ -111,10 +119,10 @@ private fun Particles(
 	)
 
 	Canvas(modifier = modifier) {
-		offsets.forEach { (x, y) ->
+		offsets.forEachIndexed { index, (x, y) ->
 			drawCircle(
-				color = sparkleColor.copy(alpha = alphaAnim.value * Random.nextFloat()),
-				radius = Random.nextFloat() * 4f + 1f,
+				color = sparkleColor.copy(alpha = alphaAnim.value * alphaMultipliers[index]),
+				radius = radii[index],
 				center = Offset(size.width * x, size.height * y)
 			)
 		}
