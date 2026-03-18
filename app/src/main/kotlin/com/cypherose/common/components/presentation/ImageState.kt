@@ -3,6 +3,7 @@ package com.cypherose.common.components.presentation
 sealed class ImageState {
 	sealed class NinePatch : ImageState() {
 		data object ResourceBarBackground : NinePatch()
+		data object DialogBackground : NinePatch()
 	}
 
 	sealed class Basic : ImageState() {
