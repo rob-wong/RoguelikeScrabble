@@ -82,6 +82,7 @@ private fun UpgradeScreenContent(
 ) {
 	Column(modifier) {
 		LazyVerticalGrid(
+			modifier = Modifier.fillMaxSize(),
 			columns = if (DeviceUtil.isLandscape) GridCells.Fixed(8) else GridCells.Fixed(4),
 		) {
 			itemsIndexed(

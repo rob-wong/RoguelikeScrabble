@@ -50,7 +50,10 @@ private fun ShopScreenLayout(
 			.align(Alignment.TopEnd)
 			.size(40.dp)
 		)
-		Column(horizontalAlignment = Alignment.CenterHorizontally) {
+		Column(
+			verticalArrangement = Arrangement.Center,
+			horizontalAlignment = Alignment.CenterHorizontally
+		) {
 			ResourceBarRouter(
 				state.resourceBar
 			)
@@ -70,7 +73,7 @@ private fun ShopScreenContent(
 ) {
 	Column(
 		modifier = modifier,
-		verticalArrangement = Arrangement.spacedBy(16.dp)
+		verticalArrangement = Arrangement.spacedBy(16.dp, alignment = Alignment.CenterVertically)
 	) {
 		state.templateStates.forEach { templateState ->
 			ContentRouter(templateState)

@@ -10,6 +10,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -26,8 +27,8 @@ import com.cypherose.app.util.DeviceUtil
 import com.cypherose.app.util.SpacerUtil
 import com.cypherose.common.components.buttons.presentation.IconButtonState
 import com.cypherose.common.components.buttons.ui.ButtonRouter
-import com.cypherose.common.components.ui.ImageRouter
 import com.cypherose.common.components.presentation.ImageState
+import com.cypherose.common.components.ui.ImageRouter
 import com.cypherose.features.dialogs.presentation.models.DialogState
 import com.cypherose.features.dialogs.presentation.viewmodel.DialogViewModelImpl
 import com.cypherose.features.templateengine.ui.ContentRouter
@@ -82,15 +83,18 @@ private fun DialogContent(
 				state.message?.let { msg ->
 					item {
 						Spacer(modifier = Modifier.height(SpacerUtil.spacer_04))
+						DialogSeparator()
 						DialogMessage(msg)
 					}
 				}
 
 				items(state.customContent) { contentState ->
 					Spacer(modifier = Modifier.height(SpacerUtil.spacer_04))
+					DialogSeparator()
 					ContentRouter(contentState, Modifier.fillMaxWidth())
 				}
 				item {
+					DialogSeparator()
 					Spacer(modifier = Modifier.height(SpacerUtil.spacer_20))
 					ButtonRouter(state.confirmState, Modifier.fillMaxWidth())
 					ButtonRouter(state.dismissState, Modifier.fillMaxWidth())
@@ -145,6 +149,11 @@ private fun calculateDialogHeight(): Dp {
 		true -> DeviceUtil.getColumnWidthDp(6)
 		false -> DeviceUtil.getColumnWidthDp(6)
 	}
+}
+
+@Composable
+private fun DialogSeparator() {
+	HorizontalDivider(thickness = 1.dp)
 }
 
 @Composable
