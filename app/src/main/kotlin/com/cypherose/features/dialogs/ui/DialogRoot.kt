@@ -1,23 +1,23 @@
 package com.cypherose.features.dialogs.ui
 
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.layout.wrapContentSize
-import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.verticalScroll
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -26,8 +26,8 @@ import com.cypherose.app.util.DeviceUtil
 import com.cypherose.app.util.SpacerUtil
 import com.cypherose.common.components.buttons.presentation.IconButtonState
 import com.cypherose.common.components.buttons.ui.ButtonRouter
-import com.cypherose.common.components.presentation.ImageState
 import com.cypherose.common.components.ui.ImageRouter
+import com.cypherose.common.components.presentation.ImageState
 import com.cypherose.features.dialogs.presentation.models.DialogState
 import com.cypherose.features.dialogs.presentation.viewmodel.DialogViewModelImpl
 import com.cypherose.features.templateengine.ui.ContentRouter
@@ -54,34 +54,47 @@ private fun DialogContent(
 	Dialog(
 		onDismissRequest = state.onDismissRequest,
 	) {
+		val dialogWidth = calculateDialogWidth()
+		val dialogHeight = calculateDialogHeight()
+		val dialogPadding = calculateDialogPadding()
+
 		Box(
-			modifier = modifier.wrapContentSize(),
+			modifier = modifier
+				.width(dialogWidth)
+				.height(dialogHeight),
 			contentAlignment = Alignment.TopCenter
 		) {
 			ImageRouter(
-				state = ImageState.Basic.DialogBackground,
-				modifier = Modifier.width(calculateDialogWidth()),
-				isLandscape = DeviceUtil.isLandscape,
-				contentScale = ContentScale.FillWidth
+				state = ImageState.NinePatch.DialogBackground,
+				modifier = Modifier.fillMaxSize(),
+				heightDp = dialogHeight,
 			)
-			Column(
+			
+			// Content
+			LazyColumn(
 				modifier = Modifier
-					.padding(calculateDialogPadding())
-					.verticalScroll(rememberScrollState())
+					.fillMaxSize()
+					.padding(dialogPadding)
 			) {
-				DialogTitle(state.title)
-				state.message?.let {
-					Spacer(modifier = Modifier.height(SpacerUtil.spacer_04))
-					DialogMessage(it)
+				item {
+					DialogTitle(state.title)
 				}
-				state.customContent.forEach { contentState ->
+				state.message?.let { msg ->
+					item {
+						Spacer(modifier = Modifier.height(SpacerUtil.spacer_04))
+						DialogMessage(msg)
+					}
+				}
+
+				items(state.customContent) { contentState ->
 					Spacer(modifier = Modifier.height(SpacerUtil.spacer_04))
 					ContentRouter(contentState, Modifier.fillMaxWidth())
 				}
-
-				Spacer(modifier = Modifier.height(SpacerUtil.spacer_20))
-				ButtonRouter(state.confirmState, Modifier.fillMaxWidth())
-				ButtonRouter(state.dismissState, Modifier.fillMaxWidth())
+				item {
+					Spacer(modifier = Modifier.height(SpacerUtil.spacer_20))
+					ButtonRouter(state.confirmState, Modifier.fillMaxWidth())
+					ButtonRouter(state.dismissState, Modifier.fillMaxWidth())
+				}
 			}
 		}
 	}
@@ -110,16 +123,27 @@ private fun DialogMessage(message: String) {
 @Composable
 private fun calculateDialogWidth(): Dp {
 	return when (DeviceUtil.isLandscape) {
-		true -> DeviceUtil.getColumnWidthDp(6)
+		true -> DeviceUtil.getColumnWidthDp(8)
 		false -> DeviceUtil.getColumnWidthDp(8)
 	}
 }
 
 @Composable
-private fun calculateDialogPadding(): Dp {
+private fun calculateDialogPadding(): PaddingValues {
+	return PaddingValues(
+		horizontal = when (DeviceUtil.isLandscape) {
+			true -> DeviceUtil.getColumnWidthDp(1)
+			false -> (DeviceUtil.getColumnWidthDp(3)/2)
+		},
+		vertical = 30.dp,
+	)
+}
+
+@Composable
+private fun calculateDialogHeight(): Dp {
 	return when (DeviceUtil.isLandscape) {
-		true -> SpacerUtil.spacer_30
-		false -> SpacerUtil.spacer_20
+		true -> DeviceUtil.getColumnWidthDp(6)
+		false -> DeviceUtil.getColumnWidthDp(6)
 	}
 }
 

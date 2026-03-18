@@ -20,6 +20,7 @@ import androidx.core.content.ContextCompat
 import androidx.core.graphics.drawable.toBitmap
 import android.graphics.Bitmap
 import android.graphics.Canvas
+import androidx.compose.foundation.layout.fillMaxSize
 import com.cypherose.R
 import com.cypherose.app.util.fitAspect
 import com.cypherose.common.components.presentation.ImageState
@@ -58,6 +59,7 @@ private fun NinePatchImageRouter(
 ) {
 	val drawableRes = when (state) {
 		is ImageState.NinePatch.ResourceBarBackground -> R.drawable.resource_bar_v2
+		is ImageState.NinePatch.DialogBackground -> R.drawable.image_dialog_background
 	}
 	
 	NinePatchImageRouter(
@@ -155,19 +157,26 @@ private fun NinePatchImageRouter(
 			.height(displayHeightDp)
 	) {
 		val widthPx = with(density) { maxWidth.toPx().toInt() }
-		val heightPx = calculateHeightPx(intrinsicHeightPx, heightMultiplier)
+		val heightPx = heightDp?.let { explicitHeightDp ->
+			with(density) { explicitHeightDp.toPx().toInt() }
+		} ?: calculateHeightPx(intrinsicHeightPx, heightMultiplier)
+
+		val effectiveHeightMultiplier = if (heightDp != null) null else heightMultiplier
 		
 		drawable?.let { d ->
-			val bitmap = createNinePatchBitmap(d, widthPx, heightPx, heightMultiplier, intrinsicHeightPx)
+			val bitmap = createNinePatchBitmap(
+				drawable = d,
+				widthPx = widthPx,
+				heightPx = heightPx,
+				heightMultiplier = effectiveHeightMultiplier,
+				intrinsicHeightPx = intrinsicHeightPx,
+			)
 			
 			bitmap?.let {
-				val bitmapHeightDp = with(density) { (heightPx / density.density).toDp() }
 				Image(
 					bitmap = it.asImageBitmap(),
 					contentDescription = null,
-					modifier = Modifier
-						.fillMaxWidth()
-						.height(bitmapHeightDp),
+					modifier = Modifier.fillMaxSize(),
 					contentScale = ContentScale.FillBounds
 				)
 			}
