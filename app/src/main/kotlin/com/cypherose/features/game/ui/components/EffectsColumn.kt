@@ -1,6 +1,7 @@
 package com.cypherose.features.game.ui.components
 
-import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.offset
@@ -11,12 +12,10 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.text.TextStyle
@@ -30,15 +29,16 @@ import com.cypherose.business.models.Effect
 import com.cypherose.common.components.presentation.ImageState
 import com.cypherose.common.components.ui.ImageRouter
 import com.cypherose.common.components.ui.OutlinedText
+import com.cypherose.common.components.ui.RoseBackdropLabel
 import com.cypherose.features.game.ui.animation.EffectAnimationState
-import com.cypherose.ui.theme.chance
+import com.cypherose.ui.theme.appChance
 import com.cypherose.ui.theme.chanceMultiplierNegativeColor
 import com.cypherose.ui.theme.chanceMultiplierPositiveColor
 import com.cypherose.ui.theme.chanceOscillatingColors
-import com.cypherose.ui.theme.common
-import com.cypherose.ui.theme.legendary
-import com.cypherose.ui.theme.rare
-import com.cypherose.ui.theme.uncommon
+import com.cypherose.ui.theme.appCommon
+import com.cypherose.ui.theme.appLegendary
+import com.cypherose.ui.theme.appRare
+import com.cypherose.ui.theme.appUncommon
 import kotlin.math.roundToInt
 
 @Suppress("LongMethod", "TooManyFunctions")
@@ -60,42 +60,56 @@ fun EffectsColumn(
 		}
 	}
 	
-	LazyColumn(
-		state = listState,
+	Box(
 		modifier = modifier
-			.width(DeviceUtil.getColumnWidthDp(5))
+			.width(
+				if (DeviceUtil.isLandscape) {
+					DeviceUtil.getColumnWidthDp(2)
+				} else {
+					DeviceUtil.getColumnWidthDp(3)
+				}
+			)
 			.height(200.dp)
 	) {
-		// Render activeGameEffects with stone pattern background
-		items(
-			items = activeGameEffects,
-			key = { effect ->
-				val key = "active_${effect.id}"
-				key
+		ImageRouter(
+			state = ImageState.NinePatch.EffectBackgroundCommon,
+			modifier = Modifier.fillMaxSize()
+		)
+		LazyColumn(
+			state = listState,
+			modifier = Modifier
+				.fillMaxSize()
+				.padding(start = 8.dp, end = 20.dp, top = 20.dp, bottom = 20.dp)
+		) {
+			items(
+				items = activeGameEffects,
+				key = { effect ->
+					val key = "active_${effect.id}"
+					key
+				}
+			) { effect ->
+				EffectItem(
+					effect = effect,
+					effectState = effectState,
+					effectDescriptors = effectDescriptors,
+					isPersistentEffect = true
+				)
 			}
-		) { effect ->
-			EffectItemWithBackground(
-				effect = effect,
-				effectState = effectState,
-				effectDescriptors = effectDescriptors,
-				hasStoneBackground = true
-			)
-		}
-		
-		// Render currentRoundEffects without background
-		items(
-			items = currentRoundEffects,
-			key = { effect ->
-				val key = "round_${effect.id}"
-				key
+			
+			items(
+				items = currentRoundEffects,
+				key = { effect ->
+					val key = "round_${effect.id}"
+					key
+				}
+			) { effect ->
+				EffectItem(
+					effect = effect,
+					effectState = effectState,
+					effectDescriptors = effectDescriptors,
+					isPersistentEffect = false
+				)
 			}
-		) { effect ->
-			EffectItemWithBackground(
-				effect = effect,
-				effectState = effectState,
-				effectDescriptors = effectDescriptors,
-				hasStoneBackground = false
-			)
 		}
 	}
 }
@@ -124,11 +138,11 @@ private suspend fun scrollToEffect(
 }
 
 @Composable
-private fun EffectItemWithBackground(
+private fun EffectItem(
 	effect: Effect,
 	effectState: EffectAnimationState?,
 	effectDescriptors: Map<String, EffectDescriptor>,
-	hasStoneBackground: Boolean,
+	isPersistentEffect: Boolean,
 ) {
 	val shake = effectState?.effectShakeMap?.get(effect.id)?.value ?: 0f
 	val scoreAlpha = effectState?.effectScoreAlphaMap?.get(effect.id)?.value ?: 0f
@@ -144,7 +158,7 @@ private fun EffectItemWithBackground(
 		false
 	}
 	val textStyle = if (isChanceEffectType) {
-		chance
+		appChance
 	} else {
 		getEffectTextStyle(descriptor)
 	}
@@ -152,15 +166,21 @@ private fun EffectItemWithBackground(
 		verticalAlignment = Alignment.CenterVertically
 	) {
 		Row(
-			modifier = createEffectRowModifier(shake, hasStoneBackground),
+			modifier = createEffectRowModifier(shake),
 		) {
-			if (isChanceEffectType) {
-				// For chance multipliers, always oscillate colors on the effect label
+			if (isPersistentEffect) {
+				RoseBackdropLabel(
+					text = effect.label,
+					textStyle = textStyle,
+					showBackdrop = true,
+					oscillatingColors = if (isChanceEffectType) chanceOscillatingColors else null,
+					outlineWidth = 5,
+					useGlow = false
+				)
+			} else if (isChanceEffectType) {
 				OscillatingColorText(
 					text = effect.label,
-					baseTextStyle = textStyle.copy(
-						fontSize = textStyle.fontSize * 0.66
-					),
+					baseTextStyle = textStyle,
 					colors = chanceOscillatingColors,
 					outlineWidth = 5,
 					useGlow = false
@@ -169,9 +189,7 @@ private fun EffectItemWithBackground(
 				OutlinedText(
 					text = effect.label,
 					textAlign = TextAlign.Center,
-					textStyle = textStyle.copy(
-						fontSize = textStyle.fontSize * 0.66
-					),
+					textStyle = textStyle,
 					outlineWidth = 5,
 					useGlow = false
 				)
@@ -182,23 +200,10 @@ private fun EffectItemWithBackground(
 }
 
 @Composable
-private fun createEffectRowModifier(shake: Float, hasStoneBackground: Boolean): Modifier {
+private fun createEffectRowModifier(shake: Float): Modifier {
 	return Modifier
 		.padding(vertical = 4.dp)
 		.offset { IntOffset(shake.roundToInt(), 0) }
-		.then(
-			if (hasStoneBackground) {
-				Modifier
-					.padding(horizontal = 4.dp)
-					.background(
-						brush = stonePatternBrush(),
-						shape = RoundedCornerShape(4.dp)
-					)
-					.padding(horizontal = 8.dp, vertical = 4.dp)
-			} else {
-				Modifier
-			}
-		)
 }
 
 @Composable
@@ -210,7 +215,7 @@ private fun renderEffectModifier(
 	scoreAlpha: Float
 ) {
 	val modifier = Modifier.graphicsLayer(alpha = scoreAlpha).padding(start = 8.dp)
-	val textStyle = common.copy(fontSize = common.fontSize * 0.66)
+	val textStyle = appCommon
 	
 	when {
 		glyphAmount != null && scoreAlpha > 0f -> {
@@ -232,7 +237,7 @@ private fun renderEffectModifier(
 			if (isChanceMultiplier) {
 				ChanceMultiplierText(
 					multiplier = multiplier,
-					baseTextStyle = chance.copy(fontSize = chance.fontSize * 0.66),
+					baseTextStyle = appChance,
 					modifier = modifier
 				)
 			} else {
@@ -257,24 +262,6 @@ private fun renderEffectModifier(
 			)
 		}
 	}
-}
-
-@Composable
-private fun stonePatternBrush(): Brush {
-	// Create a grey stone-pattern effect using a gradient
-	val baseGrey = Color(0xFF808080)
-	val lightGrey = Color(0xFFA0A0A0)
-	val darkGrey = Color(0xFF606060)
-	
-	return Brush.verticalGradient(
-		colors = listOf(
-			lightGrey,
-			baseGrey,
-			darkGrey,
-			baseGrey,
-			lightGrey
-		)
-	)
 }
 
 @Composable
@@ -334,10 +321,10 @@ private fun OscillatingColorText(
 @Composable
 private fun getEffectTextStyle(descriptor: EffectDescriptor?): TextStyle {
 	return when {
-		descriptor == null -> common
-		descriptor.type == "fixed_addition" -> uncommon
-		descriptor.type == "multiplication" -> rare
-		descriptor.type == "monetary" -> legendary
-		else -> common
+		descriptor == null -> appCommon
+		descriptor.type == "fixed_addition" -> appUncommon
+		descriptor.type == "multiplication" -> appRare
+		descriptor.type == "monetary" -> appLegendary
+		else -> appCommon
 	}
 }

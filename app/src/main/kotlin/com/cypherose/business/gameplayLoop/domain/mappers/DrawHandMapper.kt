@@ -13,7 +13,7 @@ interface DrawHandMapper : Mapper<Param, Output> {
 		val deck: Deck,
 		val seed: Long,
 		val drawnAmount: Int,
-		val debugHandString: String? = "BONUS", // Debug: if provided, tries to draw these letters from deck
+		val debugHandString: String? = "AMPLIFY", // Debug: if provided, tries to draw these letters from deck
 	)
 	data class Output(
 		val drawn: List<Letter>,

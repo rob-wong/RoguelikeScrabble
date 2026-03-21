@@ -19,6 +19,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.compose.ui.window.Dialog
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -32,7 +33,7 @@ import com.cypherose.common.components.ui.ImageRouter
 import com.cypherose.features.dialogs.presentation.models.DialogState
 import com.cypherose.features.dialogs.presentation.viewmodel.DialogViewModelImpl
 import com.cypherose.features.templateengine.ui.ContentRouter
-import com.cypherose.ui.theme.Typography
+import com.cypherose.ui.theme.appCommon
 
 @Composable
 fun DialogRoot(
@@ -108,7 +109,7 @@ private fun DialogContent(
 private fun DialogTitle(title: String) {
 	Text(
 		text = title,
-		style = Typography.bodyMedium,
+		style = appCommon,
 		modifier = Modifier.fillMaxWidth(),
 		textAlign = TextAlign.Center
 	)
@@ -118,7 +119,7 @@ private fun DialogTitle(title: String) {
 private fun DialogMessage(message: String) {
 	Text(
 		text = message,
-		style = Typography.bodySmall,
+		style = appCommon.copy(fontSize = 16.sp),
 		modifier = Modifier.fillMaxWidth(),
 		textAlign = TextAlign.Center
 	)

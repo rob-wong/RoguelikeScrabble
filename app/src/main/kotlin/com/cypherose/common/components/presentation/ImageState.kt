@@ -4,6 +4,7 @@ sealed class ImageState {
 	sealed class NinePatch : ImageState() {
 		data object ResourceBarBackground : NinePatch()
 		data object DialogBackground : NinePatch()
+		data object EffectBackgroundCommon : NinePatch()
 	}
 
 	sealed class Basic : ImageState() {
@@ -28,6 +29,7 @@ sealed class ImageState {
 		data object GameOverText : Basic()
 
 		data object DefaultLetterBackground : Basic()
+		data object RoseEffectBackdrop : Basic()
 
 		data object AwakenMidshopCard : Basic()
 		data object ExpungeMidshopCard : Basic()
