@@ -20,6 +20,7 @@ import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.rememberTextMeasurer
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.dp
 import com.cypherose.R
 
@@ -43,64 +44,126 @@ fun RoseBackdropLabel(
 	useGlow: Boolean = false,
 	oscillatingColors: List<Color>? = null,
 ) {
+	val textSize = rememberMeasuredTextSize(text = text, textStyle = textStyle)
+	val density = LocalDensity.current
+	val measuredWidthDp = with(density) { textSize.width.toDp() + leftPadding + rightPadding }
+	val measuredHeightDp = with(density) { textSize.height.toDp() + (verticalPadding * 2) }
+
+	RoseBackdropContainer(
+		modifier = modifier
+			.width(measuredWidthDp)
+			.height(measuredHeightDp)
+			.then(roseBackdropModifier(showBackdrop)),
+	) {
+		RoseLabelContent(
+			text = text,
+			textStyle = textStyle,
+			textAlign = textAlign,
+			outlineWidth = outlineWidth,
+			useGlow = useGlow,
+			leftPadding = leftPadding,
+			rightPadding = rightPadding,
+			verticalPadding = verticalPadding,
+			oscillatingColors = oscillatingColors
+		)
+	}
+}
+
+@Composable
+private fun rememberMeasuredTextSize(text: String, textStyle: TextStyle): IntSize {
 	val textMeasurer = rememberTextMeasurer()
-	val textSize = remember(text, textStyle) {
+	return remember(text, textStyle) {
 		textMeasurer.measure(
 			text = AnnotatedString(text),
 			style = textStyle
 		).size
 	}
-	val density = LocalDensity.current
-	val measuredWidthDp = with(density) { textSize.width.toDp() + leftPadding + rightPadding }
-	val measuredHeightDp = with(density) { textSize.height.toDp() + (verticalPadding * 2) }
+}
 
+@Composable
+private fun roseBackdropModifier(showBackdrop: Boolean): Modifier {
+	if (!showBackdrop) return Modifier.clipToBounds()
+	return Modifier
+		.clipToBounds()
+		.paint(
+			painter = painterResource(R.drawable.image_rose_effect_backdrop),
+			alignment = Alignment.CenterStart,
+			contentScale = ContentScale.FillHeight
+		)
+}
+
+@Composable
+private fun RoseBackdropContainer(
+	modifier: Modifier,
+	content: @Composable () -> Unit
+) {
 	Box(
-		modifier = modifier
-			.width(measuredWidthDp)
-			.height(measuredHeightDp)
-			.clipToBounds()
-			.then(
-				if (showBackdrop) {
-					Modifier.paint(
-						painter = painterResource(R.drawable.image_rose_effect_backdrop),
-						alignment = Alignment.CenterStart,
-						contentScale = ContentScale.FillHeight
-					)
-				} else {
-					Modifier
-				}
-			),
+		modifier = modifier,
 		contentAlignment = Alignment.CenterStart
 	) {
-		Box(
-			modifier = Modifier.padding(
-				start = leftPadding,
-				end = rightPadding,
-				top = verticalPadding,
-				bottom = verticalPadding
+		content()
+	}
+}
+
+@Composable
+private fun RoseLabelContent(
+	text: String,
+	textStyle: TextStyle,
+	textAlign: TextAlign,
+	outlineWidth: Int,
+	useGlow: Boolean,
+	leftPadding: Dp,
+	rightPadding: Dp,
+	verticalPadding: Dp,
+	oscillatingColors: List<Color>?,
+) {
+	Box(
+		modifier = Modifier.padding(
+			start = leftPadding,
+			end = rightPadding,
+			top = verticalPadding,
+			bottom = verticalPadding
+		)
+	) {
+		if (oscillatingColors == null) {
+			OutlinedText(
+				text = text,
+				textAlign = textAlign,
+				textStyle = textStyle,
+				outlineWidth = outlineWidth,
+				useGlow = useGlow
 			)
-		) {
-			if (oscillatingColors == null) {
-				OutlinedText(
-					text = text,
-					textAlign = textAlign,
-					textStyle = textStyle,
-					outlineWidth = outlineWidth,
-					useGlow = useGlow
-				)
-			} else {
-				Row(verticalAlignment = Alignment.CenterVertically) {
-					text.forEachIndexed { index, char ->
-						OutlinedText(
-							text = char.toString(),
-							textAlign = textAlign,
-							textStyle = textStyle.copy(color = oscillatingColors[index % oscillatingColors.size]),
-							outlineWidth = outlineWidth,
-							useGlow = useGlow
-						)
-					}
-				}
-			}
+		} else {
+			OscillatingOutlinedText(
+				text = text,
+				textStyle = textStyle,
+				textAlign = textAlign,
+				outlineWidth = outlineWidth,
+				useGlow = useGlow,
+				colors = oscillatingColors
+			)
+		}
+	}
+}
+
+@Composable
+private fun OscillatingOutlinedText(
+	text: String,
+	textStyle: TextStyle,
+	textAlign: TextAlign,
+	outlineWidth: Int,
+	useGlow: Boolean,
+	colors: List<Color>,
+) {
+	Row(verticalAlignment = Alignment.CenterVertically) {
+		text.forEachIndexed { index, char ->
+			OutlinedText(
+				text = char.toString(),
+				textAlign = textAlign,
+				textStyle = textStyle.copy(color = colors[index % colors.size]),
+				outlineWidth = outlineWidth,
+				useGlow = useGlow
+			)
 		}
 	}
 }
