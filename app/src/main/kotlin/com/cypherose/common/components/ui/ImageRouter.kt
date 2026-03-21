@@ -60,6 +60,7 @@ private fun NinePatchImageRouter(
 	val drawableRes = when (state) {
 		is ImageState.NinePatch.ResourceBarBackground -> R.drawable.resource_bar_v2
 		is ImageState.NinePatch.DialogBackground -> R.drawable.image_dialog_background
+		is ImageState.NinePatch.EffectBackgroundCommon -> R.drawable.effect_background_common
 	}
 	
 	NinePatchImageRouter(
@@ -104,6 +105,7 @@ private fun BasicImageRouter(
 		is ImageState.Basic.GameOverText -> painterResource(R.drawable.icon_game_over_text)
 
 		is ImageState.Basic.DefaultLetterBackground -> painterResource(R.drawable.icon_letter_background_default)
+		is ImageState.Basic.RoseEffectBackdrop -> painterResource(R.drawable.image_rose_effect_backdrop)
 
 		is ImageState.Basic.AwakenMidshopCard -> painterResource(R.drawable.image_awaken_midshop_card)
 		is ImageState.Basic.ExpungeMidshopCard -> painterResource(R.drawable.image_expunge_midshop_card)

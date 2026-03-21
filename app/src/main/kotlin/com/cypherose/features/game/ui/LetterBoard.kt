@@ -330,7 +330,7 @@ private fun LetterBoardContent(
 			animatingEffectId = animatingEffectId,
 			modifier = Modifier
 				.align(Alignment.TopStart)
-				.padding(top = 8.dp, start = 8.dp)
+				.padding(top = 8.dp)
 		)
 	}
 }

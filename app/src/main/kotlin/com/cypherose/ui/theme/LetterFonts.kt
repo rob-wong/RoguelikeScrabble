@@ -1,6 +1,8 @@
 package com.cypherose.ui.theme
 
+import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.Shadow
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.Font
 import androidx.compose.ui.text.font.FontFamily
@@ -12,6 +14,26 @@ val common = TextStyle(
 	color = Color(0xFFFFF8E7), // Off-white
 	fontSize = 45.sp,
 )
+
+val appCommon = TextStyle(
+	fontFamily = FontFamily(Font(R.font.pixeloid_sans)),
+	color = Color(0xFFFFF8E7), // Off-white (matches `common`)
+	fontSize = 15.sp,
+	shadow = Shadow(
+		color = Color.Black,
+		offset = Offset(1.5f, 1.5f),
+		blurRadius = 1.5f
+	),
+)
+
+// App UI fonts: same font/shadow/size as `appCommon`, only color changes.
+val appUncommon = appCommon.copy(color = Color(0xFFA9EFA5)) // Soft green
+val appRare = appCommon.copy(color = Color(0xFF5CC8FF)) // Bright sky blue
+val appEpic = appCommon.copy(color = Color(0xFFC36CFF)) // Deep violet
+val appLegendary = appCommon.copy(color = Color(0xFFFFC857)) // Gold-orange
+
+// Chance multiplier base font (oscillating per-character color is applied in the composable).
+val appChance = appCommon.copy()
 
 val uncommon = TextStyle(
 	fontFamily = FontFamily(Font(R.font.pixel_operator)),

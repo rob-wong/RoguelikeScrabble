@@ -9,7 +9,7 @@ import androidx.compose.ui.Modifier
 import com.cypherose.app.util.SpacerUtil
 import com.cypherose.features.templateengine.presentation.models.settings.AppInfoItemState
 import com.cypherose.ui.theme.OffWhite
-import com.cypherose.ui.theme.Typography
+import com.cypherose.ui.theme.appCommon
 
 @Composable
 fun AppInfoItem(
@@ -34,12 +34,12 @@ private fun AppInfoItemContent(
 	) {
 		Text(
 			text = state.label,
-			style = Typography.bodyMedium.copy(fontSize = Typography.bodyMedium.fontSize * 0.7f),
+			style = appCommon.copy(fontSize = appCommon.fontSize * 0.7f),
 			color = OffWhite.copy(alpha = 0.7f)
 		)
 		Text(
 			text = state.value,
-			style = Typography.bodyMedium.copy(fontSize = Typography.bodyMedium.fontSize * 0.8f),
+			style = appCommon.copy(fontSize = appCommon.fontSize * 0.8f),
 			color = OffWhite
 		)
 	}
